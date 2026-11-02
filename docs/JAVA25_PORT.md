@@ -4,6 +4,16 @@ Target: Minecraft `26.4-snapshot-6`, Java classfile major 69, Java 25.
 The Java 8 interpreter is retained as an independent working baseline; it must
 reject a Java 25 launch rather than claiming compatibility.
 
+The incoming miniJVM parser recorded classfile versions without enforcing them;
+a host regression reproduced execution of a Java8 diagnostic relabeled major69.
+The tracked miniJVM patch now enforces 45.0..52.0 in the loader itself, covering
+direct JAR/defineClass entry points as well as the SDK's existing major gate.
+Invalid magic and short headers also fail. Failed definitions propagate through
+the existing NoClassDefFoundError path with an explicit parser log; exact
+UnsupportedClassVersionError compatibility is not implemented. Rejected classes
+retain safe GC cleanup, the native defineClass bridge checks parse failure, and
+the real JAR tests require clean teardown without executing the rejected body.
+
 ## Implemented and exercised
 
 * Versioned C SDK, AArch64 static library, runtime availability/version checks.

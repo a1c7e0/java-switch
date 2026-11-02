@@ -8,6 +8,7 @@ assets or credentials. Copy `dist/COPY_TO_SD/` to the SD root.
 | --- | --- | --- | --- |
 | `java-test.nro`, A | Bundled Java8 JAR: class loading, reflection, exceptions, threads, files, allocation and registered native | `switch/mc-runtime/logs/java-test.log` | IMPLEMENTED, CROSS-BUILT; equivalent interpreter workload HOST-PASSED |
 | `java-test.nro`, X | Trusted optional `UserMain` Java8 JAR from `switch/mc-runtime/tests/user.jar` | Same | IMPLEMENTED, CROSS-BUILT; not a Java25 launcher |
+| `java-test.nro`, X, trusted `UserMain` compiled for Java25 | Version 69.0 rejection before main executes, followed by failed launch and clean teardown | Same | Loader guard IMPLEMENTED, CROSS-BUILT, real JAR failures HOST-PASSED |
 | `ffi-test.nro`, A | Integer downcall 42; mixed integer/FP downcall 41.5 | `switch/mc-runtime/logs/ffi-test.log` | IMPLEMENTED, CROSS-BUILT; AAPCS64 execution unverified |
 | `ffi-test.nro`, X | Integer closure 42; mixed integer/FP closure 41.5, then successful close; or exact JIT allocation/transition Result | Same | IMPLEMENTED, CROSS-BUILT; lifecycle/error mocks HOST-PASSED |
 | `ffi-test.nro`, Y | 64 KiB reserve/commit, edge readback, uncommit/recommit/release; or exact raw syscall Result | Same | IMPLEMENTED, CROSS-BUILT; state/error mocks HOST-PASSED |

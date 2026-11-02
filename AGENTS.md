@@ -15,6 +15,10 @@ miniJVM is a Java 8 interpreter diagnostic with a custom native registry, not
 a complete Java 25 runtime or standard JNI Invocation implementation. Java 25
 is the required mainline target. Work on a real OpenJDK/Zero backend and preserve
 the working interpreter test while recording exact cross-build blockers.
+The miniJVM source patch now rejects classfile versions above 52.0 in the actual
+loader (including direct JAR/defineClass paths), invalid magic and short headers.
+Keep rejection cleanup null-safe and propagate failed definitions as exceptions;
+`tests/test_java.py` exercises real JAR loading and VM teardown on these failures.
 No fake successful mmap/dlopen/process/JIT implementations, game binaries,
 credentials, kernel patches, overclocking or proprietary Nintendo libraries.
 

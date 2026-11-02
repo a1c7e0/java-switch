@@ -1,0 +1,12 @@
+HOST ONLY: same major69-header regression, rejected before main with clean teardown.
+Exit code: 2
+Initializing miniJVM interpreter, classic GC, Java 8 class library
+jvm_init -> 0
+call_main -> 2
+JVM teardown begins
+JVM teardown completed
+[INFO] object layout: ptr=64b MemoryBlock=24 Instance=24 JArrayHeader=32 field_off=24 arr_len_off=24 arr_body_off=32
+[INFO] gc backend : classic malloc
+miniJVM rejected classfile version 69.0; Java 8 supports 45.0 through 52.0
+load class error: 55a30a113b60   
+[ERROR]main class not found: DiagnosticSmoke

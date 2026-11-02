@@ -350,3 +350,67 @@
 +
 +#define MBEDTLS_NO_PLATFORM_ENTROPY
 +#define MBEDTLS_ENTROPY_HARDWARE_ALT
+--- a/jvm/class_load.c
++++ b/jvm/class_load.c
+@@ -1923,9 +1923,20 @@
+ s32 _LOAD_CLASS_FROM_BYTES(JClass *_this, ByteBuf *buf) {
+     ClassFileFormat *cff = &(_this->cff);
+ 
++    /* Horizon diagnostic guard, 2026-11-02: this is a Java 8 VM, including
++     * direct JAR/defineClass entry points that bypass the public SDK gate. */
++    if (!buf || bytebuf_available(buf) < 8) {
++        jvm_printf("miniJVM rejected truncated classfile header\n");
++        return -1;
++    }
++
+     /* magic number */
+     bytebuf_read_batch(buf, (c8 *) &cff->magic_number, 4);
+     //    fread(cff->magic_number, 4, 1, fp);
++    if (memcmp(&cff->magic_number, "\xca\xfe\xba\xbe", 4) != 0) {
++        jvm_printf("miniJVM rejected invalid classfile magic\n");
++        return -1;
++    }
+ 
+     /* minor_version */
+     //fread(short_tmp, 2, 1, fp);
+@@ -1939,6 +1950,12 @@
+     s2c.c1 = (c8) bytebuf_read(buf);
+     s2c.c0 = (c8) bytebuf_read(buf);
+     cff->major_version = s2c.s;
++    if (cff->major_version < 45 || cff->major_version > 52 ||
++        (cff->major_version == 52 && cff->minor_version != 0)) {
++        jvm_printf("miniJVM rejected classfile version %u.%u; Java 8 supports 45.0 through 52.0\n",
++                   (unsigned)cff->major_version, (unsigned)cff->minor_version);
++        return -1;
++    }
+ 
+     /* constant pool */
+     //fread(short_tmp, 2, 1, fp);
+--- a/jvm/class_load.c
++++ b/jvm/class_load.c
+@@ -2048,6 +2048,10 @@
+                 jvm_printf("multiple load class: %llx  %s \n", (s64) (intptr_t) tmp_for_del, utf8_cstr(tmp_for_del->name));
+             }
+         } else {
++            /* Header rejection precedes _class_optimize(), which normally
++             * creates the name. Keep the failed GC object safe to clean up. */
++            if (!tmp_for_del->name) tmp_for_del->name = utf8_create();
++            if (!tmp_for_del->name) jvm_fatal_oom("rejected-class-name", sizeof(Utf8String));
+             jvm_printf("load class error: %llx  %s \n", (s64) (intptr_t) tmp_for_del, utf8_cstr(tmp_for_del->name));
+         }
+         if (tmp_for_del) {
+--- a/jvm/jni_reflect.c
++++ b/jvm/jni_reflect.c
+@@ -611,6 +611,12 @@
+     bytebuf_write_batch(bytebuf, jarray_body(bytesarr) + offset, len);
+     JClass *cl = class_parse(cloader, bytebuf, runtime);
+     bytebuf_destroy(bytebuf);
++    if (!cl) {
++        /* A rejected class is a real failed definition, never a null Class
++         * dereference or a successful native return. The parser logs why. */
++        push_ref(runtime->stack, exception_create_dispatch(JVM_ERROR_NOCLASSDEFFOUND, runtime));
++        return RUNTIME_STATUS_EXCEPTION;
++    }
+ 
+     Instance *clIns = insOfJavaLangClass_create_get(runtime, cl);
+ 

@@ -1,0 +1,21 @@
+HOST ONLY: baseline miniJVM loading a Java8 diagnostic whose classfile header is changed to major69.
+Exit code: 0
+Initializing miniJVM interpreter, classic GC, Java 8 class library
+jvm_init -> 0
+Hello World from Java bytecode
+PASS: arithmetic
+PASS: exception handling
+PASS: separate JAR class loading
+PASS: reflection invocation
+PASS: Java thread start/join
+PASS: allocation 512 KiB
+PASS: exclusive file creation
+PASS: Java file roundtrip
+PASS: Java test file cleanup
+PASS: miniJVM static native bridge (not JNI invocation)
+DIAGNOSTIC SUITE PASS
+call_main -> 0
+JVM teardown begins
+JVM teardown completed
+[INFO] object layout: ptr=64b MemoryBlock=24 Instance=24 JArrayHeader=32 field_off=24 arr_len_off=24 arr_body_off=32
+[INFO] gc backend : classic malloc
