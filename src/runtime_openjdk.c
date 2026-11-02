@@ -1,4 +1,5 @@
 #include "javaswitch/runtime.h"
+#include "javaswitch/native_resolver.h"
 #include <jni.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,6 +24,7 @@ int js_openjdk_launch_with_options(const JsLaunchRequest *q,const char *const *e
     for(size_t i=0;i<count;i++)options[i+3].optionString=(char *)extra[i];
     JavaVMInitArgs init={.version=JNI_VERSION_1_8,.nOptions=(jint)(3+count),.options=options,.ignoreUnrecognized=JNI_FALSE};
     JavaVM *vm=NULL;JNIEnv *env=NULL;out->stage="JNI_CreateJavaVM";
+    js_native_resolver_seal();
     jint rc=JNI_CreateJavaVM(&vm,(void **)&env,&init);free(options);free(cp);
     if(rc!=JNI_OK){out->code=JS_UNAVAILABLE;return out->code;}
     created=1;

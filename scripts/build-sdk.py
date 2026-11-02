@@ -4,11 +4,11 @@ ROOT=pathlib.Path(__file__).resolve().parents[1];os.chdir(ROOT)
 dk=pathlib.Path(os.environ.get('DEVKITPRO',str(ROOT/'.toolchain/opt/devkitpro')))
 jdk=next((ROOT/'.deps/host-jdk25').glob('*/include'))
 common=['-O2','-g','-ffunction-sections','-fdata-sections','-Iinclude','-I.deps/minijvm/jvm','-I.deps/minijvm/utils','-I'+str(jdk),'-I'+str(jdk/'linux')]
-sources=['runtime','runtime_minijvm','runtime_openjdk','runtime_services']
+sources=['runtime','runtime_minijvm','runtime_openjdk','runtime_services','native_resolver']
 for host in [False,True]:
     dest=ROOT/'build'/('sdk-host' if host else 'sdk');dest.mkdir(parents=True,exist_ok=True)
     cc='gcc' if host else str(dk/'devkitA64/bin/aarch64-none-elf-gcc')
-    flags=common+([] if host else ['-D__SWITCH__','-march=armv8-a+crc+crypto','-mtune=cortex-a57','-mtp=soft','-fPIE','-I'+str(dk/'libnx/include')])
+    flags=common+([] if host else ['-D__SWITCH__','-march=armv8-a+crc+crypto','-mtune=cortex-a57','-mno-outline-atomics','-mtp=soft','-fPIE','-I'+str(dk/'libnx/include')])
     objects=[]
     for name in sources:
         obj=dest/(name+'.o');subprocess.run([cc,*flags,'-c','src/'+name+'.c','-o',str(obj)],check=True);objects.append(obj)
