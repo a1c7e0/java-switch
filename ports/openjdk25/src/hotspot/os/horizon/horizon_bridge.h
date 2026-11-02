@@ -14,6 +14,18 @@ void js_horizon_semaphore_destroy(js_horizon_semaphore *);
 void js_horizon_semaphore_signal(js_horizon_semaphore *, unsigned count);
 void js_horizon_semaphore_wait(js_horizon_semaphore *);
 int js_horizon_semaphore_trywait(js_horizon_semaphore *);
+typedef struct js_horizon_monitor js_horizon_monitor;
+js_horizon_monitor *js_horizon_monitor_create(void);
+/* Destruction requires no owner, waiters, or concurrent accesses. */
+void js_horizon_monitor_destroy(js_horizon_monitor *);
+void js_horizon_monitor_lock(js_horizon_monitor *);
+int js_horizon_monitor_trylock(js_horizon_monitor *);
+void js_horizon_monitor_unlock(js_horizon_monitor *);
+/* Call while locked. UINT64_MAX means infinite; finite timeouts are <= INT64_MAX.
+ * Raw Horizon Result is preserved. On success/timeout libnx reacquires the mutex;
+ * other errors must be fatal to the caller because ownership is not established. */
+uint32_t js_horizon_monitor_wait(js_horizon_monitor *, uint64_t nanos);
+void js_horizon_monitor_notify(js_horizon_monitor *, int all);
 #ifdef __cplusplus
 }
 #endif

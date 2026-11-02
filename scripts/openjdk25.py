@@ -123,6 +123,7 @@ def work():
         output.mkdir(exist_ok=True)
         sources = ['src/hotspot/os/horizon/os_horizon_time.cpp',
                    'src/hotspot/os/horizon/semaphore_horizon.cpp',
+                   'src/hotspot/os/horizon/mutex_horizon.cpp',
                    'src/hotspot/share/utilities/stringUtils.cpp']
         with (ROOT / 'build/openjdk25-components.log').open('w') as log:
             for source in sources:
@@ -149,7 +150,7 @@ def work():
         metadata = {'compiler': original[0], 'flags': flags,
                     'port_digest': (PORT / '.javaswitch-patches').read_text(),
                     'objects': {name: hashlib.sha256((output / name).read_bytes()).hexdigest()
-                                for name in ['os_horizon_time.o', 'semaphore_horizon.o',
+                                for name in ['os_horizon_time.o', 'semaphore_horizon.o', 'mutex_horizon.o',
                                              'stringUtils.o', 'horizon_bridge.o']}}
         (output / 'metadata.json').write_text(json.dumps(metadata, indent=2) + '\n')
         print('HotSpot component objects: CROSS-BUILT, not a usable libjvm')
@@ -188,6 +189,29 @@ def work():
                         raise RuntimeError('Expected a fatal clock failure: ' + mode)
                     log.write(f'{mode}: rejected (signal {-result.returncode}); {result.stderr}\n')
             print('Horizon time conversion/error handling: HOST-PASSED, mocked clocks')
+            bridge_dir = PORT / 'src/hotspot/os/horizon'
+            mock_objects = []
+            for source in [bridge_dir / 'horizon_bridge.c', ROOT / 'tests/openjdk25_monitor_libnx_mock.c']:
+                obj = output / (source.stem + '-host.o')
+                subprocess.run(['gcc', '-std=gnu11', '-D_GNU_SOURCE', '-Wall', '-Wextra', '-Werror',
+                                '-I' + str(ROOT / 'tests/openjdk25_stubs'), '-I' + str(bridge_dir),
+                                '-c', str(source), '-o', str(obj)], check=True)
+                mock_objects.append(str(obj))
+            binary = output / 'monitor-host'
+            subprocess.run(['g++', *flags, str(bridge_dir / 'mutex_horizon.cpp'),
+                            str(bridge_dir / 'semaphore_horizon.cpp'),
+                            str(ROOT / 'tests/openjdk25_monitor_host.cpp'), *mock_objects,
+                            '-pthread', '-Wl,--wrap=malloc', '-o', str(binary)], check=True)
+            with (ROOT / 'build/openjdk25-monitor-host.log').open('w') as log:
+                subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True, timeout=30)
+                for mode in ['oom', 'semaphore-oom', 'wait-error']:
+                    result = subprocess.run([str(binary), mode], capture_output=True, text=True, timeout=10)
+                    if result.returncode >= 0 or 'guarantee(' not in result.stderr:
+                        raise RuntimeError('Expected fatal monitor failure: ' + mode)
+                    if mode == 'wait-error' and '0xf601' not in result.stderr:
+                        raise RuntimeError('Raw Horizon Result was lost')
+                    log.write(f'{mode}: rejected (signal {-result.returncode}); {result.stderr}\n')
+            print('Horizon monitor contention/timeouts/failures: HOST-PASSED, libnx mocks')
             return 0
         flags = metadata['flags']
         cc = metadata['compiler']
@@ -202,6 +226,7 @@ def work():
                            env=env, check=True)
         elf = output / 'zero-services-test.elf'
         objects = [output / name for name in ['os_horizon_time.o', 'semaphore_horizon.o',
+                   'mutex_horizon.o',
                    'horizon_bridge.o', 'platform.o', 'services_probe.o', 'services_runner.o']]
         subprocess.run([str(dk / 'devkitA64/bin/aarch64-none-elf-g++'), *arch,
                         '-specs=' + str(dk / 'libnx/switch.specs'), '-L' + str(dk / 'libnx/lib'),

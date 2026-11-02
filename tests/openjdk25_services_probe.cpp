@@ -3,6 +3,7 @@
 #include "runtime/os.hpp"
 #include "semaphore_horizon.hpp"
 #include "horizon_bridge.h"
+#include "mutex_horizon.hpp"
 #include "runtime/atomic.hpp"
 #include <stdarg.h>
 #include <stdio.h>
@@ -46,5 +47,16 @@ extern "C" int js_zero_services_probe() {
   atomics &= Atomic::load(&value) == 69;
   sc_log("HotSpot Atomic 64-bit add/CAS/load=%s; contention not exercised\n", atomics ? "PASS" : "FAIL");
   sc_log("No Java VM startup, classfile execution, JNI, or Java FFM was tested.\n");
-  return monotonic && counts && atomics;
+  PlatformMonitor monitor;
+  int locks = monitor.try_lock();
+  if (locks) {
+    locks &= !monitor.try_lock();
+    int result = monitor.wait(2);
+    sc_log("PlatformMonitor wait(2ms)=%d expected timeout=%d; mutex reacquired\n", result, OS_TIMEOUT);
+    locks &= result == OS_TIMEOUT;
+    locks &= !monitor.try_lock();
+    monitor.notify(); monitor.notify_all(); monitor.unlock();
+  }
+  sc_log("PlatformMutex/Monitor accounting/timeout=%s; contention not exercised\n", locks ? "PASS" : "FAIL");
+  return monotonic && counts && atomics && locks;
 }
