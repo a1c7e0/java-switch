@@ -60,3 +60,10 @@ and mixed integer/FP downcalls (A), and an executable upcall closure (X). JIT
 permission failure is reported as a libnx Result; no kernel change is attempted.
 Both NRO and SDK compile/link, but these CPU/permission tests are NOT TESTED on
 Horizon. They do not substitute for a Java 25 VM.
+
+Closure preparation validates the RW/RX pair and transitions an executable
+allocation back to writable before re-preparation. A concurrent free/preparation
+attempt is rejected with EBUSY; callers must synchronize closure lifetime and
+retry a free that reports EBUSY. Result codes are thread-local. A host test with
+simulated libnx JIT calls covers these rules and injected transition failures;
+it does not execute generated code or establish Switch memory permissions.
