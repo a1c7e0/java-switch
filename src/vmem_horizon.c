@@ -1,5 +1,6 @@
 /* Experimental address reservation and physical page mappings, not mmap. */
 #include <javaswitch/vmem.h>
+#include <javaswitch/detail/horizon_alias.h>
 #include <switch.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,11 +9,13 @@
 struct js_vmem {
     void *address;
     size_t size;
-    VirtmemReservation *reservation;
+    js_horizon_alias_reservation *reservation;
     /* Zero means unmapped; other values are js_vmem_access. */
     unsigned char *pages;
+    struct js_vmem *next;
 };
 static Mutex vmem_lock;
+static js_vmem *vmem_regions;
 
 js_vmem_status js_vmem_reserve(size_t size, js_vmem **out) {
     return js_vmem_reserve_aligned(size, PAGE_SIZE, out);
@@ -25,21 +28,24 @@ js_vmem_status js_vmem_reserve_aligned(size_t size, size_t alignment, js_vmem **
         (alignment & (alignment - 1)) || alignment > SIZE_MAX - PAGE_SIZE ||
         size > SIZE_MAX - alignment - PAGE_SIZE)
         return JS_VMEM_INVALID;
-    /* Reserve slack as well so no other allocator may use it while we align. */
-    size_t reserved_size = size + alignment - PAGE_SIZE;
     js_vmem *v = calloc(1, sizeof(*v));
     if (!v) return JS_VMEM_NO_MEMORY;
     v->pages = calloc(size / PAGE_SIZE, 1);
     if (!v->pages) { free(v); return JS_VMEM_NO_MEMORY; }
-    virtmemLock();
-    void *raw = virtmemFindAslr(reserved_size, PAGE_SIZE);
-    if (raw && (uintptr_t)raw <= UINTPTR_MAX - (alignment - 1)) {
-        v->reservation = virtmemAddReservation(raw, reserved_size);
-        v->address = (void *)(((uintptr_t)raw + alignment - 1) & ~(uintptr_t)(alignment - 1));
+    js_horizon_alias_status alias_status = js_horizon_alias_reserve(
+        size, alignment, &v->address, &v->reservation, NULL);
+    js_vmem_status status = alias_status == JS_HORIZON_ALIAS_OK ? JS_VMEM_OK :
+        alias_status == JS_HORIZON_ALIAS_NO_MEMORY ? JS_VMEM_NO_MEMORY :
+        alias_status == JS_HORIZON_ALIAS_INVALID ? JS_VMEM_INVALID :
+        alias_status == JS_HORIZON_ALIAS_STATE ? JS_VMEM_STATE : JS_VMEM_SYSTEM;
+    if (status == JS_VMEM_OK) {
+        mutexLock(&vmem_lock);
+        v->size = size;
+        v->next = vmem_regions;
+        vmem_regions = v;
+        mutexUnlock(&vmem_lock);
     }
-    virtmemUnlock();
-    if (!v->reservation) { free(v->pages); free(v); return JS_VMEM_NO_MEMORY; }
-    v->size = size;
+    if (status != JS_VMEM_OK) { free(v->pages); free(v); return status; }
     *out = v;
     return JS_VMEM_OK;
 }
@@ -140,8 +146,15 @@ js_vmem_status js_vmem_release(js_vmem *v, uint32_t *result) {
         memset(v->pages + first, 0, end - first);
         first = end;
     }
-    virtmemRemoveReservation(v->reservation);
     virtmemUnlock();
+    js_horizon_alias_status alias_status = js_horizon_alias_release(v->reservation, NULL);
+    if (alias_status != JS_HORIZON_ALIAS_OK) {
+        mutexUnlock(&vmem_lock);
+        return alias_status == JS_HORIZON_ALIAS_NO_MEMORY ? JS_VMEM_NO_MEMORY : JS_VMEM_STATE;
+    }
+    js_vmem **link = &vmem_regions;
+    while (*link != v) link = &(*link)->next;
+    *link = v->next;
     free(v->pages);
     free(v);
     mutexUnlock(&vmem_lock);

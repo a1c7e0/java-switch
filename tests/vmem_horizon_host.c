@@ -6,12 +6,17 @@
 #include <stdio.h>
 #include <string.h>
 
-struct VirtmemReservation { unsigned char *p; size_t size; };
+#define ALIAS_BASE ((uintptr_t)0x10000000)
+#define ALIAS_SIZE ((size_t)(256 * 4096))
+#define ALIAS_EXTRA_SIZE ((size_t)(2 * 4096))
+#define ALIAS_PAGES (ALIAS_SIZE / 4096)
+#define MAX_RESERVATIONS 128
+struct VirtmemReservation { uintptr_t p; size_t size; int active; };
 static int locked, map_calls, unmap_calls, protect_calls, remove_calls;
-static int map_fail, unmap_fail, protect_fail, unmap_fail_at, find_fail, add_fail;
+static int map_fail, unmap_fail, protect_fail, unmap_fail_at, add_fail, alias_full;
 static int calloc_fail_at, calloc_calls;
-static VirtmemReservation active;
-static unsigned char mapped[64];
+static VirtmemReservation reservations[MAX_RESERVATIONS];
+static unsigned char mapped[ALIAS_PAGES];
 void *__real_calloc(size_t, size_t);
 void *__wrap_calloc(size_t count, size_t size) {
     if (++calloc_calls == calloc_fail_at) return NULL;
@@ -20,29 +25,54 @@ void *__wrap_calloc(size_t count, size_t size) {
 void virtmemLock(void) { assert(!locked); locked=1; }
 void virtmemUnlock(void) { assert(locked); locked=0; }
 void *virtmemFindAslr(size_t size, size_t guard) {
-    assert(locked && guard==4096 && !active.p);
-    if (find_fail) return NULL;
-    active.p=aligned_alloc(4096,size); assert(active.p);
-    active.size=size; memset(mapped,0,sizeof(mapped));
-    return active.p;
+    (void)size; (void)guard;
+    assert(!"svcMapPhysicalMemory allocator must not use ASLR finder");
+    return NULL;
 }
 VirtmemReservation *virtmemAddReservation(void *p, size_t size) {
-    assert(locked && p==active.p && size==active.size);
-    if (add_fail) { free(active.p); active.p=NULL; return NULL; }
-    return &active;
+    uintptr_t address=(uintptr_t)p;
+    assert(locked && address>=ALIAS_BASE && address<=ALIAS_BASE+ALIAS_SIZE);
+    assert(size && size<=ALIAS_BASE+ALIAS_SIZE-address);
+    if (add_fail) return NULL;
+    for (size_t i=0;i<MAX_RESERVATIONS;i++) if (!reservations[i].active) {
+        reservations[i]=(VirtmemReservation){address,size,1};
+        return &reservations[i];
+    }
+    return NULL;
 }
 void virtmemRemoveReservation(VirtmemReservation *r) {
-    assert(locked && r==&active);
-    for (size_t i=0;i<sizeof(mapped);i++) assert(!mapped[i]);
-    remove_calls++; free(r->p); r->p=NULL;
+    assert(locked && r && r->active);
+    remove_calls++; r->active=0;
 }
 static size_t page_index(void *p, size_t size) {
-    uintptr_t address=(uintptr_t)p, base=(uintptr_t)active.p;
-    assert(active.p && address>=base && !(address&4095) && size && !(size&4095));
-    assert(address-base<=active.size && size<=active.size-(address-base));
-    size_t first=(address-base)/4096;
-    assert(first+size/4096<=sizeof(mapped));
+    uintptr_t address=(uintptr_t)p;
+    assert(address>=ALIAS_BASE && address<=ALIAS_BASE+ALIAS_SIZE);
+    assert(!(address&4095) && size && !(size&4095));
+    assert(size<=ALIAS_BASE+ALIAS_SIZE-address);
+    size_t first=(address-ALIAS_BASE)/4096;
+    assert(first+size/4096<=ALIAS_PAGES);
     return first;
+}
+Result svcGetInfo(u64 *out, unsigned id, uint64_t handle, uint64_t sub_id) {
+    assert(handle==CUR_PROCESS_HANDLE && sub_id==0);
+    if (id==InfoType_AliasRegionAddress) *out=ALIAS_BASE;
+    else if (id==InfoType_AliasRegionSize) *out=ALIAS_SIZE;
+    else if (id==InfoType_AliasRegionExtraSize) *out=ALIAS_EXTRA_SIZE;
+    else return 88;
+    return 0;
+}
+Result svcQueryMemory(MemoryInfo *info, u32 *pageinfo, u64 address) {
+    assert(address>=ALIAS_BASE && address<ALIAS_BASE+ALIAS_SIZE);
+    size_t page=(size_t)((address-ALIAS_BASE)/4096);
+    size_t first=page, last=page+1;
+    while (first>0 && mapped[first-1]==mapped[page]) first--;
+    while (last<ALIAS_PAGES && mapped[last]==mapped[page]) last++;
+    info->addr=ALIAS_BASE+first*4096;
+    info->size=(last-first)*4096;
+    info->type=(mapped[page] || alias_full) ? 2u : MemType_Unmapped;
+    info->attr=info->perm=info->ipc_refcount=info->device_refcount=info->padding=0;
+    *pageinfo=0;
+    return 0;
 }
 Result svcMapPhysicalMemory(void *p, size_t size) {
     assert(locked); map_calls++;
@@ -72,6 +102,8 @@ static void whole_region(void) {
     assert(js_vmem_reserve(8193,&v)==JS_VMEM_INVALID);
     assert(js_vmem_reserve(SIZE_MAX & ~(size_t)0xfff,&v)==JS_VMEM_INVALID);
     assert(js_vmem_reserve(8192,&v)==JS_VMEM_OK && js_vmem_address(v));
+    assert((uintptr_t)js_vmem_address(v)+js_vmem_size(v) <=
+           ALIAS_BASE+ALIAS_SIZE-ALIAS_EXTRA_SIZE);
     assert(js_vmem_uncommit(v,&rc)==JS_VMEM_STATE && rc==0);
     map_fail=1; assert(js_vmem_commit(v,&rc)==JS_VMEM_SYSTEM && rc==44);
     map_fail=0; assert(js_vmem_commit(v,&rc)==JS_VMEM_OK && rc==0);
@@ -91,18 +123,20 @@ static void allocation_failures(void) {
 }
 static void reserve_failures(void) {
     js_vmem *v=(void *)1;
-    for (int allocation=1;allocation<=2;allocation++) {
+    for (int allocation=1;allocation<=3;allocation++) {
         calloc_fail_at=calloc_calls+allocation;
         assert(js_vmem_reserve(8192,&v)==JS_VMEM_NO_MEMORY && !v);
     }
     calloc_fail_at=0;
-    find_fail=1; assert(js_vmem_reserve(8192,&v)==JS_VMEM_NO_MEMORY && !v); find_fail=0;
+    alias_full=1; assert(js_vmem_reserve(8192,&v)==JS_VMEM_NO_MEMORY && !v); alias_full=0;
     add_fail=1; assert(js_vmem_reserve(8192,&v)==JS_VMEM_NO_MEMORY && !v); add_fail=0;
 }
 static void ranges_and_protection(void) {
     js_vmem *v=NULL; uint32_t rc=999;
     assert(js_vmem_reserve_aligned(16384,65536,&v)==JS_VMEM_OK);
     assert(!((uintptr_t)js_vmem_address(v)&65535) && js_vmem_size(v)==16384);
+    assert((uintptr_t)js_vmem_address(v)+js_vmem_size(v) <=
+           ALIAS_BASE+ALIAS_SIZE-ALIAS_EXTRA_SIZE);
     int before=map_calls;
     assert(js_vmem_commit_range(v,1,4096,&rc)==JS_VMEM_INVALID && rc==0);
     assert(js_vmem_commit_range(v,0,0,&rc)==JS_VMEM_INVALID);
@@ -165,9 +199,10 @@ static void concurrent_commit(void) {
 int main(void) {
     whole_region();
     /* Validation tests must never request a huge real mock allocation. */
-    find_fail=1; allocation_failures(); find_fail=0;
+    allocation_failures();
     reserve_failures(); ranges_and_protection(); release_retry(); concurrent_commit();
-    assert(!active.p && !locked);
+    assert(!locked);
+    for (size_t i=0;i<MAX_RESERVATIONS;i++) assert(!reservations[i].active);
     puts("vmem state and injected failures: PASS");
     puts("partial mappings, alignment, protection, release retry, concurrent commit: PASS");
     return 0;
