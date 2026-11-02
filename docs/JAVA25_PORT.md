@@ -40,6 +40,9 @@ fault islands are tracked. The full build passes the precompiled header and
 compiles genuine shared/Zero VM sources; it is still an incomplete port.
 See the latest evidence logs, `docs/OPENJDK25_SYNC.md` and
 `docs/OPENJDK25_FAULTS.md` for the current exact barrier and validation boundaries.
+The latest full target generates 330 AArch64 objects, then fails at missing
+`threadCrashProtection_horizon.hpp` in `runtime/mutex.cpp`; broader crash
+protection remains unimplemented. Evidence: `openjdk25-native-build.log`.
 No `libjvm.a` or usable
 Horizon Java 25 runtime has been produced.
 

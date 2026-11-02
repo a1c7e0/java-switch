@@ -1,0 +1,20 @@
+CROSS-BUILT native TLS accessor; Switch hardware NOT TESTED
+ELF SHA256 9dc55727f5564300b8f369d3b7721993ada8524865f2967bb8e12d00c4d6248a
+thread_probe.o compiler TLS reference:
+0000000000000000 b _ZL15compiler_marker
+                 U __aarch64_read_tp
+
+/workspace/java-switch/build/openjdk25-horizon/components/zero-services-test.elf:     file format elf64-littleaarch64
+
+
+Disassembly of section .text:
+
+000000000000b9d8 <__aarch64_read_tp>:
+    b9d8:	d53bd060 	mrs	x0, tpidrro_el0
+    b9dc:	f940fc00 	ldr	x0, [x0, #504]
+    b9e0:	d65f03c0 	ret
+	...
+
+Disassembly of section .init:
+
+Disassembly of section .fini:

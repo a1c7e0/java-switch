@@ -1,5 +1,5 @@
 {
-  "port_digest": "f776b826497ffeb9c093ac428d85c4404caea3cf4ff19e79461e0a0b6b7bbd95",
+  "port_digest": "8a7cd958c13028b3c72366cd34c406c4a494928a8b8bb5e0454c2facd61df6f1",
   "java_vm_linked": false,
   "inputs": {
     "src/zero_services_test.c": "545e03002467c05d493506ff73de06189d9e3c63803f448e4fe24adef647bb7e",

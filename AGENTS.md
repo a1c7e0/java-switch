@@ -34,6 +34,9 @@ archive plus overlay/notices with the NRO. Never include libnx headers directly
 in HotSpot C++: u8/s8/Handle/Mutex conflict; use the opaque C bridge. Current
 full build passes the PCH, mutex/monitor, OSThread/Parker headers and the POSIX
 SafeFetch selection. Read the latest build evidence for its next exact blocker.
+Latest full build: 330 AArch64 objects; `runtime/mutex.cpp` needs
+`threadCrashProtection_horizon.hpp`. NMT signed bounds now use numeric_limits.
+See `openjdk25-native-build.log` and `openjdk25-native-objects.json` in evidence.
 Native-thread primitives are implemented; HotSpot create/attach/detach/TLS/reaper
 integration and safepoints remain unfinished. Runtime ABI v1 remains unchanged.
 `docs/OPENJDK25_SYNC.md` and `docs/OPENJDK25_FAULTS.md` describe the private port.

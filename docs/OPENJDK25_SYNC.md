@@ -89,12 +89,18 @@ AArch64 objects before Zero's POSIX SafeFetch selection stopped compilation.
 The dedicated Horizon fault islands now cross that barrier; see
 `docs/OPENJDK25_FAULTS.md`. Patches 0008/0009 cross the POSIX-only permitted
 function include and preserve full native IDs in shared diagnostic formats.
-The full build has generated 293 VM objects and currently stops at the missing
-newlib SSIZE_MAX macro in the NMT reporter. `openjdk25-tls-build.log` records it.
+The TLS milestone generated 293 VM objects before newlib's missing SSIZE_MAX
+macro stopped the NMT reporter (`openjdk25-tls-build.log`). Patch 0010 now uses
+the actual `std::numeric_limits<ssize_t>::max()` bound. The full build generates
+330 AArch64 objects and stops at `runtime/mutex.cpp` including the missing
+`threadCrashProtection_horizon.hpp`. See `openjdk25-native-build.log` and the
+object inventory in `openjdk25-native-objects.json`. Broader crash-protection
+semantics are not supplied by the narrow SafeFetch dispatcher; do not create an
+unconditional-success callback wrapper to cross this barrier.
 Patch 0007 keeps libnx C bridges out of the C++ PCH; their real C objects now
 compile in the upstream build, with inherited C++-only flag warnings recorded.
 No static VM archive is complete. Configuration is narrowed to Serial GC, JNI checks and
 Zero. Conservative OS capability flags decline implicit null traps and stack
-guards until actual recoverable faults exist; fixed libnx stacks are fully backed
+guards until their actual recovery exists; fixed libnx stacks are fully backed
 before start. This does not establish VM startup or correct stack overflow
 recovery. JNI, Java FFM and classfile69 execution on Horizon remain unavailable.
