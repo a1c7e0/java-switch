@@ -30,7 +30,7 @@ build/java-test-host: scripts/build-minijvm.py src/java_vm.c src/java_host.c bui
 	python3 scripts/build-minijvm.py --host
 build/minijvm_rt.jar build/diagnostic-tests.jar build/dependency.jar &: scripts/build-java-tests.py tests/java/DiagnosticSmoke.java tests/java/JarDependency.java | build
 	python3 scripts/build-java-tests.py
-build/sdk/libjavaswitch.a build/jni25-host &: scripts/build-sdk.py src/runtime.c src/runtime_minijvm.c src/runtime_openjdk.c src/runtime_services.c src/ffi_horizon.c include/javaswitch/runtime.h build/libminijvm.a build/java-test-host build/libffi-horizon.a
+build/sdk/libjavaswitch.a build/jni25-host &: scripts/build-sdk.py src/runtime.c src/runtime_minijvm.c src/runtime_openjdk.c src/runtime_services.c src/ffi_horizon.c include/javaswitch/runtime.h tests/runtime_gate.c build/libminijvm.a build/java-test-host build/libffi-horizon.a
 	python3 scripts/build-sdk.py
 build/java25-tests.jar: scripts/build-java25-tests.py tests/java25/Java25Smoke.java | build
 	python3 scripts/build-java25-tests.py
