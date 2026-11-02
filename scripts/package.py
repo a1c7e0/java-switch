@@ -14,7 +14,7 @@ for path in ['logs','tests','runtimes/minijvm','instances/java-smoke','licenses'
 shutil.copyfile(ROOT/'build/minijvm_rt.jar',runtime/'runtimes/minijvm/minijvm_rt.jar')
 for name in ['diagnostic-tests.jar','dependency.jar']:shutil.copyfile(ROOT/'build'/name,runtime/'tests'/name)
 shutil.copyfile(ROOT/'build/java25-tests.jar',runtime/'tests/java25-tests.jar')
-with tarfile.open(DIST/'javaswitch-horizon-sdk.tar.gz','w:gz') as archive:
+with tarfile.open(DIST/'javaswitch-horizon-sdk.tar.gz','w:gz',dereference=True) as archive:
     archive.add(ROOT/'include',arcname='include')
     archive.add(ROOT/'build/sdk/libjavaswitch.a',arcname='lib/libjavaswitch.a')
     archive.add(ROOT/'build/sdk/runtime-contract.json',arcname='runtime-contract.json')
