@@ -51,18 +51,31 @@ def prepare():
                     source.extract(member, SOURCE, filter='data')
     patches, overlay, files, digest = port_inputs()
     stamp = PORT / '.javaswitch-patches'
-    if not stamp.exists() or stamp.read_text() != digest:
+    patch_stamp = PORT / '.javaswitch-source-patches'
+    overlay_stamp = PORT / '.javaswitch-overlay-files.json'
+    patch_digest = hashlib.sha256(b''.join(p.name.encode() + b'\0' + p.read_bytes() for p in patches)).hexdigest()
+    names = [str(p.relative_to(overlay)) for p in files]
+    # Source patch changes or removed overlays require a clean reconstruction.
+    # Updating a native overlay alone must not rewrite all upstream headers and
+    # force configure/PCH/full rebuild on every small porting iteration.
+    rebuild = (not patch_stamp.exists() or patch_stamp.read_text() != patch_digest or
+               not overlay_stamp.exists() or bool(set(json.loads(overlay_stamp.read_text())) - set(names)))
+    if rebuild:
         if PORT.exists():
             shutil.rmtree(PORT)
         shutil.copytree(SOURCE, PORT)
         for patch in patches:
             subprocess.run(['patch', '-p1', '--batch', '--fuzz=0', '-i', str(patch)],
                            cwd=PORT, check=True)
-        for source in files:
-            target = PORT / source.relative_to(overlay)
+        patch_stamp.write_text(patch_digest)
+    for source in files:
+        target = PORT / source.relative_to(overlay)
+        if not target.exists() or target.read_bytes() != source.read_bytes():
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, target)
+    if not stamp.exists() or stamp.read_text() != digest:
         stamp.write_text(digest)
+    overlay_stamp.write_text(json.dumps(names))
     print(f'OpenJDK {entry["revision"]}, patches SHA256 {digest}', flush=True)
 
 
@@ -105,7 +118,7 @@ def work():
     if args.action == 'components':
         # Reuse the real upstream compiler command, not host-JDK headers or a
         # substitute VM. Run the normal build first to generate this command.
-        commands = sorted((BUILD / 'make-support/failure-logs').glob('*precompiled*.cmdline'))
+        commands = sorted((BUILD / 'make-support/failure-logs').glob('*.cmdline'))
         if not commands:
             raise RuntimeError('Run the upstream build first to record its compile command')
         original = shlex.split(commands[0].read_text())
@@ -115,15 +128,17 @@ def work():
             if skip:
                 skip = False
                 continue
-            if argument in ['-o', '-MF', '-x']:
+            if argument in ['-o', '-MF', '-x', '-include']:
                 skip = True
-            elif argument not in ['-c', '-MMD'] and not argument.endswith('.hpp'):
+            elif argument not in ['-c', '-MMD'] and not argument.endswith(('.hpp', '.cpp')):
                 flags.append(argument.replace('\\"', '"'))
         output = BUILD / 'components'
         output.mkdir(exist_ok=True)
         sources = ['src/hotspot/os/horizon/os_horizon_time.cpp',
                    'src/hotspot/os/horizon/semaphore_horizon.cpp',
                    'src/hotspot/os/horizon/mutex_horizon.cpp',
+                   'src/hotspot/os/horizon/park_horizon.cpp',
+                   'src/hotspot/os/horizon/parker_horizon.cpp',
                    'src/hotspot/share/utilities/stringUtils.cpp']
         with (ROOT / 'build/openjdk25-components.log').open('w') as log:
             for source in sources:
@@ -146,11 +161,19 @@ def work():
                             '-I' + str(dk / 'libnx/include'), '-c', str(bridge),
                             '-o', str(output / 'horizon_bridge.o')], env=env,
                            stdout=log, stderr=subprocess.STDOUT, check=True)
+            subprocess.run([str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'), '-std=gnu11',
+                            '-O2', '-march=armv8-a+crc+crypto', '-mtp=soft', '-fPIE',
+                            '-I' + str(dk / 'libnx/include'), '-c',
+                            str(PORT / 'src/hotspot/os/horizon/horizon_thread_bridge.c'),
+                            '-o', str(output / 'horizon_thread_bridge.o')], env=env,
+                           stdout=log, stderr=subprocess.STDOUT, check=True)
             log.write('CROSS-BUILT: time, semaphore, string utilities and C bridge; no VM linked or executed.\n')
         metadata = {'compiler': original[0], 'flags': flags,
                     'port_digest': (PORT / '.javaswitch-patches').read_text(),
                     'objects': {name: hashlib.sha256((output / name).read_bytes()).hexdigest()
                                 for name in ['os_horizon_time.o', 'semaphore_horizon.o', 'mutex_horizon.o',
+                                             'park_horizon.o', 'horizon_thread_bridge.o',
+                                             'parker_horizon.o',
                                              'stringUtils.o', 'horizon_bridge.o']}}
         (output / 'metadata.json').write_text(json.dumps(metadata, indent=2) + '\n')
         print('HotSpot component objects: CROSS-BUILT, not a usable libjvm')
@@ -200,6 +223,7 @@ def work():
             binary = output / 'monitor-host'
             subprocess.run(['g++', *flags, str(bridge_dir / 'mutex_horizon.cpp'),
                             str(bridge_dir / 'semaphore_horizon.cpp'),
+                            str(bridge_dir / 'park_horizon.cpp'), str(bridge_dir / 'os_horizon_time.cpp'),
                             str(ROOT / 'tests/openjdk25_monitor_host.cpp'), *mock_objects,
                             '-pthread', '-Wl,--wrap=malloc', '-o', str(binary)], check=True)
             with (ROOT / 'build/openjdk25-monitor-host.log').open('w') as log:
@@ -212,6 +236,14 @@ def work():
                         raise RuntimeError('Raw Horizon Result was lost')
                     log.write(f'{mode}: rejected (signal {-result.returncode}); {result.stderr}\n')
             print('Horizon monitor contention/timeouts/failures: HOST-PASSED, libnx mocks')
+            thread_tests = ROOT / 'ports/openjdk25/tests/thread_bridge'
+            binary = output / 'thread-bridge-host'
+            subprocess.run(['gcc', '-std=c11', '-Wall', '-Wextra', '-Werror', '-Dcalloc=mock_calloc',
+                            '-I' + str(thread_tests / 'mocks'), '-I' + str(bridge_dir),
+                            str(bridge_dir / 'horizon_thread_bridge.c'),
+                            str(thread_tests / 'test_thread_bridge.c'), '-o', str(binary)], check=True)
+            with (ROOT / 'build/openjdk25-thread-host.log').open('w') as log:
+                subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True, timeout=10)
             return 0
         flags = metadata['flags']
         cc = metadata['compiler']
@@ -219,14 +251,18 @@ def work():
         runner = output / 'services_runner.o'
         subprocess.run([cc, *flags, '-c', str(ROOT / 'tests/openjdk25_services_probe.cpp'),
                         '-o', str(probe)], env=env, check=True)
+        subprocess.run([cc, *flags, '-c', str(ROOT / 'tests/openjdk25_thread_probe.cpp'),
+                        '-o', str(output / 'thread_probe.o')], env=env, check=True)
         arch = ['-march=armv8-a+crc+crypto', '-mtune=cortex-a57', '-mtp=soft', '-fPIE']
         for source, obj in [('src/zero_services_test.c', runner), ('src/platform.c', output / 'platform.o')]:
-            subprocess.run([cc, *arch, '-D__SWITCH__', '-I' + str(dk / 'libnx/include'),
+            subprocess.run([str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'), *arch, '-D__SWITCH__', '-I' + str(dk / 'libnx/include'),
                             '-I' + str(ROOT / 'src'), '-c', str(ROOT / source), '-o', str(obj)],
                            env=env, check=True)
         elf = output / 'zero-services-test.elf'
         objects = [output / name for name in ['os_horizon_time.o', 'semaphore_horizon.o',
                    'mutex_horizon.o',
+                   'park_horizon.o', 'horizon_thread_bridge.o',
+                   'thread_probe.o',
                    'horizon_bridge.o', 'platform.o', 'services_probe.o', 'services_runner.o']]
         subprocess.run([str(dk / 'devkitA64/bin/aarch64-none-elf-g++'), *arch,
                         '-specs=' + str(dk / 'libnx/switch.specs'), '-L' + str(dk / 'libnx/lib'),
@@ -251,7 +287,8 @@ def work():
         evidence = {'port_digest': metadata['port_digest'], 'java_vm_linked': False,
                     'inputs': {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
                                for name in ['src/zero_services_test.c', 'src/platform.c',
-                                            'tests/openjdk25_services_probe.cpp', 'scripts/openjdk25.py']},
+                                            'tests/openjdk25_services_probe.cpp',
+                                            'tests/openjdk25_thread_probe.cpp', 'scripts/openjdk25.py']},
                     'elf_sha256': hashlib.sha256(elf.read_bytes()).hexdigest(),
                     'nro_sha256': hashlib.sha256(nro.read_bytes()).hexdigest()}
         (ROOT / 'build/openjdk25-probe.json').write_text(json.dumps(evidence, indent=2) + '\n')
@@ -283,6 +320,9 @@ def work():
                f'--with-libffi-lib={ffi}',
                '--disable-jvm-feature-jfr', '--disable-jvm-feature-cds',
                '--disable-jvm-feature-services', '--disable-jvm-feature-jvmti',
+               '--disable-jvm-feature-g1gc', '--disable-jvm-feature-parallelgc',
+               '--disable-jvm-feature-shenandoahgc', '--disable-jvm-feature-epsilongc',
+               '--disable-jvm-feature-management',
                '--disable-jvm-feature-vm-structs']
     return run(command, env, 'configure.log')
 

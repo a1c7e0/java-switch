@@ -1,12 +1,13 @@
 {
-  "port_digest": "4d8db3b67e4d1493eef955a4a3a579e0669c1a1f8314076a494750a3b8ff3e56",
+  "port_digest": "e0c7c8890d6326864410dff885623fcbf16782bdf0444edc3715b99395cc442e",
   "java_vm_linked": false,
   "inputs": {
-    "src/zero_services_test.c": "49c5b12f43d9b4482b2f5022e3df263348b718bc8657f70f2e48f5114568a08c",
+    "src/zero_services_test.c": "029cc0822a8d1e66c5a30f2dd1282a78d333813e50c83fb25b38ca6e81e1d3b4",
     "src/platform.c": "f269c268d62ccf20895485ef8f27795eb4f60c613fa9c1e8620d5a5d7ffba9c5",
-    "tests/openjdk25_services_probe.cpp": "b51f39546a1cf686c0a97415905baaefe43aefb96c26f400f595da758b2ab4a8",
-    "scripts/openjdk25.py": "bc7bce5d7f3d9d8d89e248876825cca4deb0d2df12e367205ef28724a07ffd80"
+    "tests/openjdk25_services_probe.cpp": "826818298ecd46529138edb9f5f7df095e86c15f62cec303b6540a9ca3a1b013",
+    "tests/openjdk25_thread_probe.cpp": "39ac9b3f6ad42028b308610e25976d5579f5360e18587e549c3067c536b55fe3",
+    "scripts/openjdk25.py": "c8bf2d87d6f8d3c755ff4ee514e797700189ca44c56d2d1d0853f18040783c94"
   },
-  "elf_sha256": "6876316f2d468a89462cd476a6063cb611336c264936e78864f6bafbfffdc5a7",
-  "nro_sha256": "e3771ee4b24652c3f6c163a0674817a07f911f8ad3f549058f4120560f117535"
+  "elf_sha256": "5b4252b6248af10799b9fb2a52da886436295b6daced6f2cbf4ffbd8e5f61f64",
+  "nro_sha256": "071a3c01e6a86f4dba2209f1af9207a4c7319684a433da233a0ca5760f5000f0"
 }

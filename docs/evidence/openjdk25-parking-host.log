@@ -1,0 +1,6 @@
+real PlatformMutex/Monitor + C bridge: HOST-PASSED (pthread libnx mocks)
+80000 protected increments, predicate/broadcast waits, timeout ownership, overflow/infinite conversion: PASS
+coalesced permits, reset, spurious wakes, 5000 two-thread parking handoffs: PASS
+oom: rejected (signal 6); guarantee(_native != nullptr) failed: Horizon monitor allocation failed
+semaphore-oom: rejected (signal 6); guarantee(_semaphore != nullptr) failed: Horizon semaphore allocation failed
+wait-error: rejected (signal 6); guarantee(result == 0 || timed_out) failed: Horizon condition wait failed: Result=0xf601

@@ -25,6 +25,7 @@ public:
   PlatformMonitor() = default;
   ~PlatformMonitor() = default;
   int wait(uint64_t millis);
+  int wait_nanos(uint64_t nanos);
   void notify();
   void notify_all();
 };

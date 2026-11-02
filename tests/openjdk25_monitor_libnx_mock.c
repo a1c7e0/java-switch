@@ -8,6 +8,7 @@
 #include <time.h>
 _Atomic unsigned js_mock_malloc_fail, js_mock_force_timeout, js_mock_wait_error;
 _Atomic uint64_t js_mock_timeout;
+static _Atomic unsigned spurious_wakes;
 void *__real_malloc(size_t);
 void *__wrap_malloc(size_t size) {
     return atomic_exchange(&js_mock_malloc_fail, 0) ? NULL : __real_malloc(size);
@@ -24,6 +25,7 @@ uint32_t condvarWaitTimeout(CondVar *c, Mutex *m, uint64_t nanos) {
     unsigned error = atomic_load(&js_mock_wait_error);
     if (error) return error;
     if (atomic_load(&js_mock_force_timeout)) return 0xea01;
+    if (atomic_load(&spurious_wakes)) { atomic_fetch_sub(&spurious_wakes, 1); return 0; }
     int rc;
     if (nanos == UINT64_MAX) rc = pthread_cond_wait(c, m);
     else {
@@ -59,5 +61,6 @@ void js_mock_set(unsigned mode, unsigned value) {
     if (mode == 0) atomic_store(&js_mock_malloc_fail, value);
     if (mode == 1) atomic_store(&js_mock_force_timeout, value);
     if (mode == 2) atomic_store(&js_mock_wait_error, value);
+    if (mode == 3) atomic_store(&spurious_wakes, value);
 }
 uint64_t js_mock_last_timeout(void) { return atomic_load(&js_mock_timeout); }

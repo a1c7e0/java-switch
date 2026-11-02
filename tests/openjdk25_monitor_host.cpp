@@ -2,6 +2,7 @@
 #include "runtime/os.hpp"
 #include "mutex_horizon.hpp"
 #include "semaphore_horizon.hpp"
+#include "park_horizon.hpp"
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,6 +26,14 @@ static void* waiter(void* arg) {
     s->monitor.lock(); s->ready++; s->monitor.notify_all();
     while (!s->release) check(s->monitor.wait(0) == OS_OK);
     s->count++; s->monitor.unlock(); return nullptr;
+}
+struct PingPong { HorizonParkPermit ping, pong; unsigned count = 0; };
+static void* ping_worker(void* arg) {
+    auto* s = static_cast<PingPong*>(arg);
+    for (unsigned i = 0; i < 5000; i++) {
+        check(s->ping.park(1000000000) == OS_OK); s->count++; s->pong.unpark();
+    }
+    return nullptr;
 }
 int main(int argc, char** argv) {
     if (argc > 1 && !strcmp(argv[1], "oom")) { js_mock_set(0, 1); PlatformMutex m; return 1; }
@@ -51,6 +60,19 @@ int main(int argc, char** argv) {
     check(s.monitor.wait(1) == OS_TIMEOUT); check(js_mock_last_timeout() == 1000000);
     check(s.monitor.wait(0) == OS_TIMEOUT); check(js_mock_last_timeout() == UINT64_MAX);
     js_mock_set(1, 0); s.monitor.unlock();
+    HorizonParkPermit permit;
+    permit.unpark(); permit.unpark(); check(permit.fired() == 1);
+    check(permit.park(0) == OS_OK); check(permit.park(0) == OS_TIMEOUT);
+    permit.unpark(); check(permit.try_consume()); check(!permit.try_consume());
+    permit.unpark(); permit.reset(); check(!permit.fired());
+    js_mock_set(3, 10); check(permit.park(1000000) == OS_TIMEOUT);
+    PingPong handoff; pthread_t worker;
+    check(!pthread_create(&worker, nullptr, ping_worker, &handoff));
+    for (unsigned i = 0; i < 5000; i++) {
+        handoff.ping.unpark(); check(handoff.pong.park(UINT64_MAX) == OS_OK);
+    }
+    check(!pthread_join(worker, nullptr)); check(handoff.count == 5000);
     puts("real PlatformMutex/Monitor + C bridge: HOST-PASSED (pthread libnx mocks)");
     puts("80000 protected increments, predicate/broadcast waits, timeout ownership, overflow/infinite conversion: PASS");
+    puts("coalesced permits, reset, spurious wakes, 5000 two-thread parking handoffs: PASS");
 }

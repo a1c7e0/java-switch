@@ -16,6 +16,10 @@ int PlatformMonitor::wait(uint64_t millis) {
   const uint64_t maximum = INT64_MAX;
   const uint64_t nanos = millis == 0 ? UINT64_MAX :
       (millis > maximum / 1000000 ? maximum : millis * 1000000);
+  return wait_nanos(nanos);
+}
+int PlatformMonitor::wait_nanos(uint64_t nanos) {
+  if (nanos != UINT64_MAX && nanos > INT64_MAX) nanos = INT64_MAX;
   const uint32_t result = js_horizon_monitor_wait(native(), nanos);
   const bool timed_out = (result & UINT32_C(0x3fffff)) == UINT32_C(0xea01);
   guarantee(result == 0 || timed_out, "Horizon condition wait failed: Result=0x%x", result);

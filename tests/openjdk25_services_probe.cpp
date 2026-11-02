@@ -4,16 +4,18 @@
 #include "semaphore_horizon.hpp"
 #include "horizon_bridge.h"
 #include "mutex_horizon.hpp"
+#include "park_horizon.hpp"
 #include "runtime/atomic.hpp"
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 extern "C" void sc_log(const char*, ...);
+extern "C" void js_zero_probe_error(const char*, va_list);
 [[noreturn]] void report_vm_error(const char* file, int line, const char* error,
                                  const char* detail, ...) {
   sc_log("HotSpot service diagnostic fatal: %s:%d: %s\n", file, line, error);
-  va_list args; va_start(args, detail); vfprintf(stderr, detail, args); va_end(args);
+  va_list args; va_start(args, detail); js_zero_probe_error(detail, args); va_end(args);
   abort();
 }
 
@@ -58,5 +60,11 @@ extern "C" int js_zero_services_probe() {
     monitor.notify(); monitor.notify_all(); monitor.unlock();
   }
   sc_log("PlatformMutex/Monitor accounting/timeout=%s; contention not exercised\n", locks ? "PASS" : "FAIL");
-  return monotonic && counts && atomics && locks;
+  alignas(PlatformEvent) static unsigned char event_storage[sizeof(PlatformEvent)];
+  static auto* event = ::new (event_storage) PlatformEvent;
+  event->unpark(); event->unpark();
+  int permits = event->park(1) == OS_OK;
+  permits &= event->park_nanos(1000000) == OS_TIMEOUT;
+  sc_log("PlatformEvent coalesced permits and real timed wait=%s\n", permits ? "PASS" : "FAIL");
+  return monotonic && counts && atomics && locks && permits;
 }
