@@ -5,7 +5,7 @@ ARCH := -march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE
 CFLAGS := $(ARCH) -O2 -g -Wall -Wextra -ffunction-sections -fdata-sections -D__SWITCH__ -isystem $(DEVKITPRO)/libnx/include -Isrc
 LDFLAGS := $(ARCH) -specs=$(DEVKITPRO)/libnx/switch.specs -L$(DEVKITPRO)/libnx/lib -Wl,--gc-sections
 .PHONY: all host-test clean
-all: dist/java-test.nro build/minijvm_rt.jar build/diagnostic-tests.jar build/dependency.jar
+all: dist/java-test.nro build/minijvm_rt.jar build/diagnostic-tests.jar build/dependency.jar build/sdk/libjavaswitch.a build/java25-tests.jar
 build dist:
 	mkdir -p $@
 build/platform.o: src/platform.c src/platform.h | build
@@ -23,7 +23,11 @@ build/java-test-host: scripts/build-minijvm.py src/java_vm.c src/java_host.c bui
 	python3 scripts/build-minijvm.py --host
 build/minijvm_rt.jar build/diagnostic-tests.jar build/dependency.jar &: scripts/build-java-tests.py tests/java/DiagnosticSmoke.java tests/java/JarDependency.java | build
 	python3 scripts/build-java-tests.py
-host-test: build/java-test-host build/minijvm_rt.jar build/diagnostic-tests.jar build/dependency.jar
+build/sdk/libjavaswitch.a build/jni25-host &: scripts/build-sdk.py src/runtime.c src/runtime_minijvm.c src/runtime_openjdk.c src/runtime_services.c include/javaswitch/runtime.h build/libminijvm.a build/java-test-host
+	python3 scripts/build-sdk.py
+build/java25-tests.jar: scripts/build-java25-tests.py tests/java25/Java25Smoke.java | build
+	python3 scripts/build-java25-tests.py
+host-test: build/java-test-host build/minijvm_rt.jar build/diagnostic-tests.jar build/dependency.jar build/jni25-host build/java25-tests.jar
 	python3 -m unittest discover -s tests -v
 clean:
 	rm -rf build dist

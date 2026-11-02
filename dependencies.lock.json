@@ -8,5 +8,14 @@
   "host_jdk8": {
     "url": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u504-b01/OpenJDK8U-jdk_x64_linux_hotspot_8u504b01.tar.gz",
     "sha256": "9c70e102f527ac674ac2fe9c7d47b9a04e2d19842ba5ab8e9b33f368bbadfaea"
+  },
+  "host_jdk25": {
+    "url": "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.5%2B8/OpenJDK25U-jdk_x64_linux_hotspot_25.0.5_8.tar.gz",
+    "sha256": "68982529869257d0ee6b824ec5aa270ff8b118bb438670da0b97ebdab178d7fb"
+  },
+  "openjdk25_source": {
+    "revision": "275848b087112429235f4f235822e294a1a288ef",
+    "url": "https://github.com/openjdk/jdk25u/archive/275848b087112429235f4f235822e294a1a288ef.tar.gz",
+    "sha256": "745846bd4af786f8376945ee09eb71784bdda4c35e32e79618b33e5d252eba32"
   }
 }

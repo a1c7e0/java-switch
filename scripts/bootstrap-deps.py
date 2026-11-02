@@ -30,5 +30,7 @@ def main():
         shutil.copyfile(ROOT/"src/minijvm_mman.h",target/"jvm/sc_mman.h");stamp.write_text(digest)
     if not (DEPS/"host-jdk8/jdk8u504-b01/bin/javac").exists():
         with tarfile.open(fetch("host_jdk8")) as archive:archive.extractall(DEPS/"host-jdk8",filter='data')
+    if not any((DEPS/'host-jdk25').glob('*/bin/javac')):
+        with tarfile.open(fetch('host_jdk25')) as archive:archive.extractall(DEPS/'host-jdk25',filter='data')
     print("Pinned Java dependencies verified")
 if __name__=='__main__':main()

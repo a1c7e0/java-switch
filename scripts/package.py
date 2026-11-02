@@ -12,6 +12,12 @@ if sd.exists():shutil.rmtree(sd)
 for path in ['logs','tests','runtimes/minijvm','instances/java-smoke','licenses']:(runtime/path).mkdir(parents=True)
 shutil.copyfile(ROOT/'build/minijvm_rt.jar',runtime/'runtimes/minijvm/minijvm_rt.jar')
 for name in ['diagnostic-tests.jar','dependency.jar']:shutil.copyfile(ROOT/'build'/name,runtime/'tests'/name)
+shutil.copyfile(ROOT/'build/java25-tests.jar',runtime/'tests/java25-tests.jar')
+with tarfile.open(DIST/'javaswitch-horizon-sdk.tar.gz','w:gz') as archive:
+    archive.add(ROOT/'include',arcname='include')
+    archive.add(ROOT/'build/sdk/libjavaswitch.a',arcname='lib/libjavaswitch.a')
+    archive.add(ROOT/'build/sdk/runtime-contract.json',arcname='runtime-contract.json')
+    archive.add(ROOT/'LICENSE',arcname='LICENSE')
 shutil.copytree(ROOT/'licenses',runtime/'licenses',dirs_exist_ok=True)
 shutil.copyfile(ROOT/'README.md',sd/'JAVA-SWITCH-README.md')
 with tarfile.open(DIST/'java-switch-source.tar.gz','w:gz') as archive:
@@ -25,7 +31,7 @@ with zipfile.ZipFile(DIST/'java-switch-test-package.zip','w',zipfile.ZIP_DEFLATE
         if path.is_file():z.write(path,path.relative_to(sd))
 manifest={'source_revision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
     'horizon_execution':'NOT TESTED','java8_interpreter':'built and host-tested','java25_runtime':'NOT IMPLEMENTED',
-    'standard_jni_invocation':'NOT IMPLEMENTED','artifacts':[]}
+    'standard_jni_invocation':'Host Java 25 JNI and FFM tested; no Horizon JVM 25 linked','sdk_abi':1,'artifacts':[]}
 for p in sorted(DIST.iterdir()):
     if p.is_file() and p.name not in ['manifest.json','SHA256SUMS']:
         manifest['artifacts'].append({'name':p.name,'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()})

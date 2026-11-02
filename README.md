@@ -14,6 +14,11 @@ The active runtime target is **Java 25**, required by Minecraft
 `26.4-snapshot-6`. OpenJDK/Zero investigation and exact platform/build blockers
 are recorded in `docs/`. A Linux JDK is not shipped as a Switch runtime.
 
+The SDK provides a versioned C runtime interface and a standard JNI adapter.
+The adapter passes Java 25 JNI/FFM downcall/upcall tests on the host. Its Horizon
+Java 25 backend reports unavailable until a real VM is linked; the supplied
+miniJVM backend supports Java 8 only. See [JAVA25_PORT.md](docs/JAVA25_PORT.md).
+
 ```sh
 bash scripts/build-all.sh
 ```

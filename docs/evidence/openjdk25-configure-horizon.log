@@ -1,0 +1,27 @@
+Runnable configure script is not present
+Generating runnable configure script at /tmp/openjdk25/build/.configure-support/generated-configure.sh
+Using autoconf at /tmp/switchcraft-deb/root/usr/bin/autoconf [autoconf (GNU Autoconf) 2.72]
+configure: Configuration created at Mon Nov  2 09:44:25 UTC 2026.
+checking for basename... /usr/bin/basename
+checking for dirname... /usr/bin/dirname
+checking for file... /usr/bin/file
+checking for ldd... /usr/bin/ldd
+checking for echo... echo [builtin]
+checking for tr... /usr/bin/tr
+checking for uname... /usr/bin/uname
+checking for wc... /usr/bin/wc
+checking for grep that handles long lines and -e... /usr/bin/grep
+checking for egrep... /usr/bin/grep -E
+checking for a sed that does not truncate output... /usr/bin/sed
+checking for locale... /usr/bin/locale
+checking for cygpath... [not found]
+checking for wslpath... [not found]
+checking for cmd.exe... [not found]
+checking for lsb_release... [not found]
+checking build system type... x86_64-pc-linux-gnu
+checking host system type... aarch64-none-elf
+checking target system type... aarch64-none-elf
+checking openjdk-build os-cpu... linux-x86_64
+checking openjdk-build C library... gnu
+configure: error: unsupported operating system elf
+configure exiting with result code 1
