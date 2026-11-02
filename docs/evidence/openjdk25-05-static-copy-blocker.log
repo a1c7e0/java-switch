@@ -1,0 +1,18 @@
+$ make JOBS=2 hotspot-zero-static-libs
+Building target 'hotspot-zero-static-libs' in configuration '/workspace/java-switch/build/openjdk25-horizon'
+Compiling up to 1 files for BUILD_TOOLS_HOTSPOT
+gmake[3]: *** No rule to make target '/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/conf/net.properties', needed by '/workspace/java-switch/build/openjdk25-horizon/support/modules_conf/java.base/net.properties'.  Stop.
+gmake[3]: *** Waiting for unfinished jobs....
+gmake[2]: *** [make/Main.gmk:146: java.base-copy] Error 2
+gmake[2]: *** Waiting for unfinished jobs....
+
+ERROR: Build failed for target 'hotspot-zero-static-libs' in configuration '/workspace/java-switch/build/openjdk25-horizon' (exit code 2)
+
+No indication of failed target found.
+HELP: Try searching the build log for '] Error'.
+HELP: Run 'make doctor' to diagnose build problems.
+
+make[1]: *** [/workspace/java-switch/.deps/openjdk25-horizon/make/Init.gmk:151: main] Error 2
+make: *** [/workspace/java-switch/.deps/openjdk25-horizon/make/PreInit.gmk:159: hotspot-zero-static-libs] Error 2
+
+Exit status: 2

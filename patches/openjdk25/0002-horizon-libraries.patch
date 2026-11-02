@@ -1,0 +1,29 @@
+--- a/make/autoconf/libraries.m4
++++ b/make/autoconf/libraries.m4
+@@ -81,6 +81,17 @@
+     NEEDS_LIB_ALSA=false
+   fi
+ 
++  # The Horizon bring-up builds Zero/java.base only. Desktop native services
++  # have no Horizon implementation; never satisfy these checks with host headers.
++  if test "x$OPENJDK_TARGET_OS" = xhorizon; then
++    if test "x$ENABLE_HEADLESS_ONLY" != xtrue; then
++      AC_MSG_ERROR([Horizon requires --enable-headless-only; desktop services are not ported])
++    fi
++    NEEDS_LIB_CUPS=false
++    NEEDS_LIB_FONTCONFIG=false
++    NEEDS_LIB_FREETYPE=false
++  fi
++
+   # Check if ffi is needed
+   if HOTSPOT_CHECK_JVM_VARIANT(zero) || test "x$ENABLE_FALLBACK_LINKER" = "xtrue"; then
+     NEEDS_LIB_FFI=true
+@@ -211,5 +222,8 @@
+ 
+   # Control if libzip can use mmap. Available for purposes of overriding.
+   LIBZIP_CAN_USE_MMAP=true
++  if test "x$OPENJDK_TARGET_OS" = xhorizon; then
++    LIBZIP_CAN_USE_MMAP=false
++  fi
+   AC_SUBST(LIBZIP_CAN_USE_MMAP)
+ ])

@@ -17,7 +17,34 @@ reject a Java 25 launch rather than claiming compatibility.
   FFM downcall to strlen and an FFM upcall trampoline. Passing these tests proves
   the adapter on the host, not a Horizon JVM port.
 
-## Source-build investigation
+## Source-build investigation (updated 2026-11-02)
+
+**J1 configuration gate crossed.** The tracked patches in `patches/openjdk25/`
+classify `aarch64-none-horizon` as Horizon/newlib (not POSIX/Linux) and select
+devkitA64 GCC. The real upstream configure completed with Zero and the libffi
+fallback linker. The first static build then stopped at missing Horizon
+`java.base` input files; these are being supplied before the next compile.
+See `docs/evidence/openjdk25-04-configured.log` and
+`docs/evidence/openjdk25-05-static-copy-blocker.log`. No `libjvm.a` or usable
+Horizon Java 25 runtime has been produced.
+
+Reproduce the experimental build separately from the preserved diagnostics:
+
+```sh
+bash scripts/build-all.sh
+python3 scripts/bootstrap-openjdk-tools.py # optional if system autoconf/m4 exist
+python3 scripts/openjdk25.py configure
+python3 scripts/openjdk25.py build
+```
+
+The helper verifies the upstream archive hash, preserves `.deps/openjdk25-source`,
+copies it to `.deps/openjdk25-horizon`, and applies tracked patches with zero
+fuzz. Logs are `build/openjdk25-configure.log` and `build/openjdk25-build.log`;
+the generated configuration and compiler diagnostics are under
+`build/openjdk25-horizon/`. The build target is `hotspot-zero-static-libs`.
+Linux build tools are never included as Switch runtime artifacts.
+
+### Original observed barrier
 
 OpenJDK source: `openjdk/jdk25u` `275848b087112429235f4f235822e294a1a288ef`.
 Archive SHA-256 and host JDK are fixed in `dependencies.lock.json`. After
@@ -31,7 +58,7 @@ checking target system type... aarch64-none-elf
 configure: error: unsupported operating system elf
 ```
 
-This is a missing Horizon OS port, not a completed compiler build. No Java 25
+This was the original barrier; the tracked port now passes it. No Java 25
 `libjvm.a`, runtime image, Java 25 NRO or Horizon title screen exists. See the
 complete log in `docs/evidence/openjdk25-configure-horizon.log`.
 

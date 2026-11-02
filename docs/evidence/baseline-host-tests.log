@@ -1,0 +1,11 @@
+python3 -m unittest discover -s tests -v
+test_lifecycle_with_simulated_jit_failures (test_ffi_horizon.HorizonClosureTests.test_lifecycle_with_simulated_jit_failures) ... ok
+test_interpreter_jar_io_thread_reflection_and_native_bridge (test_java.JavaTests.test_interpreter_jar_io_thread_reflection_and_native_bridge) ... ok
+test_jni_creation_native_registration_and_ffm (test_java25.Java25InvocationTests.test_jni_creation_native_registration_and_ffm) ... ok
+test_unavailable_vm_and_wrong_java_are_blocked_before_execution (test_java25.Java25InvocationTests.test_unavailable_vm_and_wrong_java_are_blocked_before_execution) ... ok
+test_state_and_injected_system_failures (test_vmem_horizon.HorizonMemoryTests.test_state_and_injected_system_failures) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.659s
+
+OK

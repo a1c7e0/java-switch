@@ -18,6 +18,12 @@ the working interpreter test while recording exact cross-build blockers.
 No fake successful mmap/dlopen/process/JIT implementations, game binaries,
 credentials, kernel patches, overclocking or proprietary Nintendo libraries.
 
+OpenJDK25 experimental build: `python3 scripts/bootstrap-openjdk-tools.py`,
+then `python3 scripts/openjdk25.py configure` and `python3 scripts/openjdk25.py build`.
+Patches live in `patches/openjdk25/`; pristine `.deps/openjdk25-source` must not
+be edited. Horizon is its own OS family, not POSIX/Linux. Keep build failures
+visible and logs in `docs/evidence/`. Configuration success is not VM startup.
+
 `javaswitch/vmem.h` is a whole-region reserve/commit/uncommit experiment using
 libnx virtual address reservations and physical-memory syscalls. ffi-test Y
 exercises it on hardware; its mocked host state test cannot establish syscall

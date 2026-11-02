@@ -1,0 +1,62 @@
+--- a/make/autoconf/build-aux/config.sub
++++ b/make/autoconf/build-aux/config.sub
+@@ -27,6 +27,12 @@
+ # autoconf system (which might easily get lost in a future update), we
+ # wrap it and fix the broken property, if needed.
+ 
++# Horizon is an explicit libnx target; generic aarch64-none-elf stays unsupported.
++if test "$#" = 1 && test "$1" = aarch64-none-horizon; then
++    echo aarch64-none-horizon
++    exit 0
++fi
++
+ DIR=`dirname $0`
+ 
+ # Allow wsl
+--- a/make/autoconf/platform.m4
++++ b/make/autoconf/platform.m4
+@@ -185,7 +185,14 @@
+ # VAR_OS, VAR_OS_TYPE and VAR_OS_ENV.
+ AC_DEFUN([PLATFORM_EXTRACT_VARS_FROM_OS],
+ [
++  # These variables are reused for build and target; do not inherit unix.
++  VAR_OS_TYPE=
++  VAR_OS_ENV=
+   case "$1" in
++    horizon)
++      VAR_OS=horizon
++      VAR_OS_TYPE=horizon
++      ;;
+     *linux*)
+       VAR_OS=linux
+       VAR_OS_TYPE=unix
+@@ -226,6 +233,9 @@
+ AC_DEFUN([PLATFORM_EXTRACT_VARS_FROM_LIBC],
+ [
+   case "$1" in
++    horizon)
++      VAR_LIBC=newlib
++      ;;
+     *linux*-musl)
+       VAR_LIBC=musl
+       ;;
+@@ -609,6 +619,9 @@
+   if test "x$OPENJDK_TARGET_OS" = "xaix"; then
+     RELEASE_FILE_OS_NAME="AIX"
+   fi
++  if test "x$OPENJDK_TARGET_OS" = "xhorizon"; then
++    RELEASE_FILE_OS_NAME="Horizon"
++  fi
+   RELEASE_FILE_OS_ARCH=${OPENJDK_TARGET_CPU}
+   RELEASE_FILE_LIBC=${OPENJDK_TARGET_LIBC}
+ 
+--- a/make/autoconf/toolchain.m4
++++ b/make/autoconf/toolchain.m4
+@@ -38,6 +38,7 @@
+ VALID_TOOLCHAINS_all="gcc clang microsoft"
+ 
+ # These toolchains are valid on different platforms
++VALID_TOOLCHAINS_horizon="gcc"
+ VALID_TOOLCHAINS_linux="gcc clang"
+ VALID_TOOLCHAINS_macosx="clang"
+ VALID_TOOLCHAINS_aix="clang"
