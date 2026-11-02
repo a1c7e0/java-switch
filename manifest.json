@@ -1,0 +1,245 @@
+{
+  "source_revision": "f1ba049029bbfe836d96ff0d4af62b0bc8e58c51",
+  "horizon_execution": "NOT TESTED",
+  "java8_interpreter": "built and host-tested",
+  "java25_runtime": "NOT IMPLEMENTED",
+  "standard_jni_invocation": "Host Java 25 JNI and FFM tested; no Horizon JVM 25 linked",
+  "sdk_abi": 1,
+  "artifacts": [
+    {
+      "name": "ffi-test.nro",
+      "purpose": "Native AAPCS64/libnx W^X test",
+      "bytes": 248005,
+      "sha256": "59f129f3b5c95794ec06f7a712283e8afe4f596dd8866753e0d15d00193306a4",
+      "source_revision": "f1ba049029bbfe836d96ff0d4af62b0bc8e58c51",
+      "build_date": "2026-11-02T10:46:08.070358+00:00",
+      "toolchain": "aarch64-none-elf-gcc (devkitA64) 15.2.0",
+      "bundled_dependencies": [
+        "libnx/newlib",
+        "miniJVM Java8 or libffi component as applicable"
+      ],
+      "build_dependencies": {
+        "toolchain_image": "devkitpro/devkita64@sha256:1fc388c3a0d34bd2045a6dadcb1020e069d5f876a187fd705de14b4440c00282",
+        "minijvm": {
+          "revision": "87c9808145fabbf13c7a0d6b6d1e5bfbdbdba5a8",
+          "url": "https://github.com/digitalgust/miniJVM/archive/87c9808145fabbf13c7a0d6b6d1e5bfbdbdba5a8.tar.gz",
+          "sha256": "958f02ebc3e13831ce57e49a87c727f997c0537a625b1abe8ec14130d07f3a6e"
+        },
+        "host_jdk8": {
+          "url": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u504-b01/OpenJDK8U-jdk_x64_linux_hotspot_8u504b01.tar.gz",
+          "sha256": "9c70e102f527ac674ac2fe9c7d47b9a04e2d19842ba5ab8e9b33f368bbadfaea"
+        },
+        "host_jdk25": {
+          "url": "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.5%2B8/OpenJDK25U-jdk_x64_linux_hotspot_25.0.5_8.tar.gz",
+          "sha256": "68982529869257d0ee6b824ec5aa270ff8b118bb438670da0b97ebdab178d7fb"
+        },
+        "openjdk25_source": {
+          "revision": "275848b087112429235f4f235822e294a1a288ef",
+          "url": "https://github.com/openjdk/jdk25u/archive/275848b087112429235f4f235822e294a1a288ef.tar.gz",
+          "sha256": "745846bd4af786f8376945ee09eb71784bdda4c35e32e79618b33e5d252eba32"
+        },
+        "libffi": {
+          "tag": "v3.8.0",
+          "url": "https://github.com/libffi/libffi/releases/download/v3.8.0/libffi-3.8.0.tar.gz",
+          "sha256": "7da3e2d9a171eb0a038f592ecad3ff2bb2550f3496d87b3b29ad0cf4430c0db4"
+        }
+      },
+      "build_verification": "PASS",
+      "tested_environment": "Linux cross-build and host runtime tests",
+      "hardware_verification": "NOT TESTED",
+      "known_limitations": [
+        "No Horizon Java25 VM linked",
+        "Native CPU/JIT permissions NOT TESTED",
+        "No Minecraft execution on Horizon"
+      ]
+    },
+    {
+      "name": "java-switch-source.tar.gz",
+      "purpose": "Corresponding source",
+      "bytes": 5858415,
+      "sha256": "8c7444d087be32ba7397ad3beb68ae86a194cc29c190e1c5f9ca1b695e261b8f",
+      "source_revision": "f1ba049029bbfe836d96ff0d4af62b0bc8e58c51",
+      "build_date": "2026-11-02T10:46:08.085366+00:00",
+      "toolchain": "aarch64-none-elf-gcc (devkitA64) 15.2.0",
+      "bundled_dependencies": [
+        "libnx/newlib",
+        "miniJVM Java8 or libffi component as applicable"
+      ],
+      "build_dependencies": {
+        "toolchain_image": "devkitpro/devkita64@sha256:1fc388c3a0d34bd2045a6dadcb1020e069d5f876a187fd705de14b4440c00282",
+        "minijvm": {
+          "revision": "87c9808145fabbf13c7a0d6b6d1e5bfbdbdba5a8",
+          "url": "https://github.com/digitalgust/miniJVM/archive/87c9808145fabbf13c7a0d6b6d1e5bfbdbdba5a8.tar.gz",
+          "sha256": "958f02ebc3e13831ce57e49a87c727f997c0537a625b1abe8ec14130d07f3a6e"
+        },
+        "host_jdk8": {
+          "url": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u504-b01/OpenJDK8U-jdk_x64_linux_hotspot_8u504b01.tar.gz",
+          "sha256": "9c70e102f527ac674ac2fe9c7d47b9a04e2d19842ba5ab8e9b33f368bbadfaea"
+        },
+        "host_jdk25": {
+          "url": "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.5%2B8/OpenJDK25U-jdk_x64_linux_hotspot_25.0.5_8.tar.gz",
+          "sha256": "68982529869257d0ee6b824ec5aa270ff8b118bb438670da0b97ebdab178d7fb"
+        },
+        "openjdk25_source": {
+          "revision": "275848b087112429235f4f235822e294a1a288ef",
+          "url": "https://github.com/openjdk/jdk25u/archive/275848b087112429235f4f235822e294a1a288ef.tar.gz",
+          "sha256": "745846bd4af786f8376945ee09eb71784bdda4c35e32e79618b33e5d252eba32"
+        },
+        "libffi": {
+          "tag": "v3.8.0",
+          "url": "https://github.com/libffi/libffi/releases/download/v3.8.0/libffi-3.8.0.tar.gz",
+          "sha256": "7da3e2d9a171eb0a038f592ecad3ff2bb2550f3496d87b3b29ad0cf4430c0db4"
+        }
+      },
+      "build_verification": "PASS",
+      "tested_environment": "Linux cross-build and host runtime tests",
+      "hardware_verification": "NOT TESTED",
+      "known_limitations": [
+        "No Horizon Java25 VM linked",
+        "Native CPU/JIT permissions NOT TESTED",
+        "No Minecraft execution on Horizon"
+      ]
+    },
+    {
+      "name": "java-switch-test-package.zip",
+      "purpose": "Installable diagnostics",
+      "bytes": 7635649,
+      "sha256": "f0c07eec7c0c8867a25826108db86e77377a47a5b4312a7bbbf360fae833aa81",
+      "source_revision": "f1ba049029bbfe836d96ff0d4af62b0bc8e58c51",
+      "build_date": "2026-11-02T10:46:08.095940+00:00",
+      "toolchain": "aarch64-none-elf-gcc (devkitA64) 15.2.0",
+      "bundled_dependencies": [
+        "libnx/newlib",
+        "miniJVM Java8 or libffi component as applicable"
+      ],
+      "build_dependencies": {
+        "toolchain_image": "devkitpro/devkita64@sha256:1fc388c3a0d34bd2045a6dadcb1020e069d5f876a187fd705de14b4440c00282",
+        "minijvm": {
+          "revision": "87c9808145fabbf13c7a0d6b6d1e5bfbdbdba5a8",
+          "url": "https://github.com/digitalgust/miniJVM/archive/87c9808145fabbf13c7a0d6b6d1e5bfbdbdba5a8.tar.gz",
+          "sha256": "958f02ebc3e13831ce57e49a87c727f997c0537a625b1abe8ec14130d07f3a6e"
+        },
+        "host_jdk8": {
+          "url": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u504-b01/OpenJDK8U-jdk_x64_linux_hotspot_8u504b01.tar.gz",
+          "sha256": "9c70e102f527ac674ac2fe9c7d47b9a04e2d19842ba5ab8e9b33f368bbadfaea"
+        },
+        "host_jdk25": {
+          "url": "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.5%2B8/OpenJDK25U-jdk_x64_linux_hotspot_25.0.5_8.tar.gz",
+          "sha256": "68982529869257d0ee6b824ec5aa270ff8b118bb438670da0b97ebdab178d7fb"
+        },
+        "openjdk25_source": {
+          "revision": "275848b087112429235f4f235822e294a1a288ef",
+          "url": "https://github.com/openjdk/jdk25u/archive/275848b087112429235f4f235822e294a1a288ef.tar.gz",
+          "sha256": "745846bd4af786f8376945ee09eb71784bdda4c35e32e79618b33e5d252eba32"
+        },
+        "libffi": {
+          "tag": "v3.8.0",
+          "url": "https://github.com/libffi/libffi/releases/download/v3.8.0/libffi-3.8.0.tar.gz",
+          "sha256": "7da3e2d9a171eb0a038f592ecad3ff2bb2550f3496d87b3b29ad0cf4430c0db4"
+        }
+      },
+      "build_verification": "PASS",
+      "tested_environment": "Linux cross-build and host runtime tests",
+      "hardware_verification": "NOT TESTED",
+      "known_limitations": [
+        "No Horizon Java25 VM linked",
+        "Native CPU/JIT permissions NOT TESTED",
+        "No Minecraft execution on Horizon"
+      ]
+    },
+    {
+      "name": "java-test.nro",
+      "purpose": "Java8 interpreter diagnostic",
+      "bytes": 1165509,
+      "sha256": "a076a6816fd9b590fa50dd6c718bd64204bfa3a9a51bb0f71fb9351378424ff5",
+      "source_revision": "f1ba049029bbfe836d96ff0d4af62b0bc8e58c51",
+      "build_date": "2026-11-02T10:46:08.100265+00:00",
+      "toolchain": "aarch64-none-elf-gcc (devkitA64) 15.2.0",
+      "bundled_dependencies": [
+        "libnx/newlib",
+        "miniJVM Java8 or libffi component as applicable"
+      ],
+      "build_dependencies": {
+        "toolchain_image": "devkitpro/devkita64@sha256:1fc388c3a0d34bd2045a6dadcb1020e069d5f876a187fd705de14b4440c00282",
+        "minijvm": {
+          "revision": "87c9808145fabbf13c7a0d6b6d1e5bfbdbdba5a8",
+          "url": "https://github.com/digitalgust/miniJVM/archive/87c9808145fabbf13c7a0d6b6d1e5bfbdbdba5a8.tar.gz",
+          "sha256": "958f02ebc3e13831ce57e49a87c727f997c0537a625b1abe8ec14130d07f3a6e"
+        },
+        "host_jdk8": {
+          "url": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u504-b01/OpenJDK8U-jdk_x64_linux_hotspot_8u504b01.tar.gz",
+          "sha256": "9c70e102f527ac674ac2fe9c7d47b9a04e2d19842ba5ab8e9b33f368bbadfaea"
+        },
+        "host_jdk25": {
+          "url": "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.5%2B8/OpenJDK25U-jdk_x64_linux_hotspot_25.0.5_8.tar.gz",
+          "sha256": "68982529869257d0ee6b824ec5aa270ff8b118bb438670da0b97ebdab178d7fb"
+        },
+        "openjdk25_source": {
+          "revision": "275848b087112429235f4f235822e294a1a288ef",
+          "url": "https://github.com/openjdk/jdk25u/archive/275848b087112429235f4f235822e294a1a288ef.tar.gz",
+          "sha256": "745846bd4af786f8376945ee09eb71784bdda4c35e32e79618b33e5d252eba32"
+        },
+        "libffi": {
+          "tag": "v3.8.0",
+          "url": "https://github.com/libffi/libffi/releases/download/v3.8.0/libffi-3.8.0.tar.gz",
+          "sha256": "7da3e2d9a171eb0a038f592ecad3ff2bb2550f3496d87b3b29ad0cf4430c0db4"
+        }
+      },
+      "build_verification": "PASS",
+      "tested_environment": "Linux cross-build and host runtime tests",
+      "hardware_verification": "NOT TESTED",
+      "known_limitations": [
+        "No Horizon Java25 VM linked",
+        "Native CPU/JIT permissions NOT TESTED",
+        "No Minecraft execution on Horizon"
+      ]
+    },
+    {
+      "name": "javaswitch-horizon-sdk.tar.gz",
+      "purpose": "Reusable runtime/JNI/FFI SDK; no Horizon Java25 VM",
+      "bytes": 2763158,
+      "sha256": "ef221f44e25e2d1e83ebab98303923df36bd0b52fc3c126a8a847ea3793f6045",
+      "source_revision": "f1ba049029bbfe836d96ff0d4af62b0bc8e58c51",
+      "build_date": "2026-11-02T10:46:08.109711+00:00",
+      "toolchain": "aarch64-none-elf-gcc (devkitA64) 15.2.0",
+      "bundled_dependencies": [
+        "libnx/newlib",
+        "miniJVM Java8 or libffi component as applicable"
+      ],
+      "build_dependencies": {
+        "toolchain_image": "devkitpro/devkita64@sha256:1fc388c3a0d34bd2045a6dadcb1020e069d5f876a187fd705de14b4440c00282",
+        "minijvm": {
+          "revision": "87c9808145fabbf13c7a0d6b6d1e5bfbdbdba5a8",
+          "url": "https://github.com/digitalgust/miniJVM/archive/87c9808145fabbf13c7a0d6b6d1e5bfbdbdba5a8.tar.gz",
+          "sha256": "958f02ebc3e13831ce57e49a87c727f997c0537a625b1abe8ec14130d07f3a6e"
+        },
+        "host_jdk8": {
+          "url": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u504-b01/OpenJDK8U-jdk_x64_linux_hotspot_8u504b01.tar.gz",
+          "sha256": "9c70e102f527ac674ac2fe9c7d47b9a04e2d19842ba5ab8e9b33f368bbadfaea"
+        },
+        "host_jdk25": {
+          "url": "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.5%2B8/OpenJDK25U-jdk_x64_linux_hotspot_25.0.5_8.tar.gz",
+          "sha256": "68982529869257d0ee6b824ec5aa270ff8b118bb438670da0b97ebdab178d7fb"
+        },
+        "openjdk25_source": {
+          "revision": "275848b087112429235f4f235822e294a1a288ef",
+          "url": "https://github.com/openjdk/jdk25u/archive/275848b087112429235f4f235822e294a1a288ef.tar.gz",
+          "sha256": "745846bd4af786f8376945ee09eb71784bdda4c35e32e79618b33e5d252eba32"
+        },
+        "libffi": {
+          "tag": "v3.8.0",
+          "url": "https://github.com/libffi/libffi/releases/download/v3.8.0/libffi-3.8.0.tar.gz",
+          "sha256": "7da3e2d9a171eb0a038f592ecad3ff2bb2550f3496d87b3b29ad0cf4430c0db4"
+        }
+      },
+      "build_verification": "PASS",
+      "tested_environment": "Linux cross-build and host runtime tests",
+      "hardware_verification": "NOT TESTED",
+      "known_limitations": [
+        "No Horizon Java25 VM linked",
+        "Native CPU/JIT permissions NOT TESTED",
+        "No Minecraft execution on Horizon"
+      ]
+    }
+  ]
+}
