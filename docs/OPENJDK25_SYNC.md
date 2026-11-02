@@ -46,7 +46,7 @@ limited to 256 MiB (not a memory availability guarantee). Lifecycle calls are
 caller-serialized. Started threads must join before close; failures retain the
 handle. libnx threadClose discards svcCloseHandle's Result internally, a known
 upstream limitation. Host failure injection covers allocation and each returned
-syscall error. This is not yet HotSpot os::create_thread/attach/detach/reaper glue.
+syscall error. The HotSpot lifecycle integration is described below.
 
 `zero-services-test.nro` A checks timers, semaphore/mutex/monitor and event
 permits. X creates a real libnx worker, checks its ID and local stack address,
@@ -104,3 +104,36 @@ Zero. Conservative OS capability flags decline implicit null traps and stack
 guards until their actual recovery exists; fixed libnx stacks are fully backed
 before start. This does not establish VM startup or correct stack overflow
 recovery. JNI, Java FFM and classfile69 execution on Horizon remain unavailable.
+
+
+## Owned-worker lifecycle (2026-11-02)
+
+`os_horizon_thread.cpp` now implements actual HotSpot create/start/attach/free.
+VM-created workers install Thread TLS, record their real libnx stack and native
+ID, report INITIALIZED, and wait on `HorizonThreadStart` until shared HotSpot
+construction completes. A failed child readiness report is joined before its
+OSThread and startup gate are freed. Main and JNI-attached native threads borrow
+the existing libnx stack/handle and never close it.
+
+A process-lifetime libnx reaper starts before the first owned worker. Exiting
+workers transfer their opaque native handle through an allocation-free queue;
+the reaper waits for actual native exit before closing/unmapping the stack.
+Timeouts retain ownership, and close failures are retried without joining twice.
+The reaper owns all accesses after transfer. The bridge publishes RUNNING before
+threadStart because a fast worker may retire and be reclaimed before threadStart
+returns. Unexpected condition Results abort before any unsafe mutex unlock.
+
+Host tests inject creation/start/wait/close failures and immediate worker exit,
+including a mocked threadStart that reclaims its own wrapper before returning.
+The real startup gate passes 400 concurrent workers and rejects early release,
+double release and duplicate readiness reports. These checks use libnx mocks.
+`zero-services-test.nro` B exercises native retirement while a worker remains
+alive, then verifies deferred cleanup; device execution is NOT TESTED.
+
+The old 330-object header barrier is crossed by a JFR-disabled crash-protection
+capability predicate. No crash-protected callback can be constructed; enabling
+JFR is a compile error until real recovery exists. This does not widen SafeFetch
+or claim recovery from arbitrary native faults. Zero native copy helpers and
+non-hour timezone formatting have separate host/instruction checks. A complete
+archive and genuine VM link are being checked independently; none of these
+lifecycle tests proves Java execution on Horizon.

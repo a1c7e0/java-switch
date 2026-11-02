@@ -3,10 +3,12 @@
 #define OS_HORIZON_OSTHREAD_HORIZON_HPP
 #include "runtime/osThreadBase.hpp"
 #include "horizon_thread_bridge.h"
+#include "thread_start_horizon.hpp"
 
 class OSThread : public OSThreadBase {
   uint64_t _thread_id;
   js_horizon_thread* _native;
+  HorizonThreadStartup _startup;
 public:
   OSThread() : _thread_id(0), _native(nullptr) { set_state(ALLOCATED); }
   // The VM free-thread/reaper path must detach ownership after native cleanup.
@@ -16,6 +18,7 @@ public:
   void set_thread_id(uint64_t value) { _thread_id = value; }
   js_horizon_thread* native_thread() const { return _native; }
   void set_native_thread(js_horizon_thread* value) { _native = value; }
+  HorizonThreadStartup* startup() { return &_startup; }
   uintx thread_id_for_printing() const override { return static_cast<uintx>(_thread_id); }
 };
 #endif

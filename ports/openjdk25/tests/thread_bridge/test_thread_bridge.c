@@ -1,6 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 #include "horizon_thread_bridge.h"
 #include <switch/kernel/thread.h>
+#include <switch/kernel/mutex.h>
+#include <switch/kernel/condvar.h>
+#include <switch/runtime/diag.h>
 #include <switch/result.h>
 #include <assert.h>
 #include <stdint.h>
@@ -19,6 +22,14 @@ static Thread current_thread;
 static unsigned close_calls;
 static unsigned wait_calls;
 static int fail_next_allocation;
+
+void mutexLock(Mutex *mutex) { (void)mutex; }
+void mutexUnlock(Mutex *mutex) { (void)mutex; }
+void condvarWake(CondVar *condvar, int count) { (void)condvar; (void)count; }
+Result condvarWaitTimeout(CondVar *condvar, Mutex *mutex, uint64_t timeout) {
+    (void)condvar; (void)mutex; (void)timeout; return 0;
+}
+void diagAbortWithResult(Result result) { (void)result; abort(); }
 
 void *mock_calloc(size_t count, size_t size) {
     if (fail_next_allocation) {
