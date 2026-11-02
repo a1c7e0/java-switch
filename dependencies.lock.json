@@ -1,0 +1,12 @@
+{
+  "toolchain_image": "devkitpro/devkita64@sha256:1fc388c3a0d34bd2045a6dadcb1020e069d5f876a187fd705de14b4440c00282",
+  "minijvm": {
+    "revision": "87c9808145fabbf13c7a0d6b6d1e5bfbdbdba5a8",
+    "url": "https://github.com/digitalgust/miniJVM/archive/87c9808145fabbf13c7a0d6b6d1e5bfbdbdba5a8.tar.gz",
+    "sha256": "958f02ebc3e13831ce57e49a87c727f997c0537a625b1abe8ec14130d07f3a6e"
+  },
+  "host_jdk8": {
+    "url": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u504-b01/OpenJDK8U-jdk_x64_linux_hotspot_8u504b01.tar.gz",
+    "sha256": "9c70e102f527ac674ac2fe9c7d47b9a04e2d19842ba5ab8e9b33f368bbadfaea"
+  }
+}
