@@ -29,6 +29,9 @@ above. "Incorporated" refers to this session's code, not the existing baseline.
 | Native launcher/JAR main | javm `javm/source/Main.cpp:main`, `machine.LoadJavaArchive`, `nx/native/nx_Java.hpp`; MIT | Useful SD/argv/error-applet example, not incorporated. Its VM method registration is not JNI. | Public SDK uses caller-supplied slash-separated main class. OpenJDK runtime image and manifest discovery still required. |
 | Files/SD paths | Clearwing `runtime/res/clearwing/src/File.cpp:M_java_io_File_exists_R_boolean`; SwitchGDX `switch-gdx/res/switchgdx/SwitchGDX.cpp`, `project/DevkitA64Libnx.cmake`; GPLv2 | Design comparison only; toolchain correctly uses Generic, static libraries, libnx and `-mtp=soft`. | JDK25 `java.base` file/NIO natives and jimage lookup need Horizon implementations; C++ filesystem success in another runtime is not evidence for Java NIO. |
 | FFM native calls | JDK25 `make/autoconf/jdk-options.m4:JDKOPT_SETUP_FALLBACK_LINKER`, `src/java.base/share/native/libfallbackLinker`; GPLv2+CE where designated | Retain real libffi fallback route; existing SDK downcall/closure code is not itself Java FFM. | Link class-library native entry points to real Zero, preserve arena lifetime and test down/upcalls on device. |
+| Atomic ordering and RMW | JDK25 `src/hotspot/os_cpu/linux_aarch64/orderAccess_linux_aarch64.hpp`, `linux_zero/atomic_linux_zero.hpp`; GPLv2 | Incorporated in the Horizon Zero overlay: AArch64 compiler fences/ISB and generic GCC Zero atomics. These functions use no Linux services. Retained notices, explicit AArch64/Zero guard, no outline-atomic runtime discovery. | Native contention/ordering still NOT TESTED; sequential checks are in the new NRO, four-thread host checks pass. |
+| Counting semaphore | libnx `nx/source/kernel/semaphore.c:semaphoreInit/Signal/Wait/TryWait`; ISC-style license | New GPL HotSpot adapter calls the installed libnx APIs through an opaque C bridge; no libnx code copied. | Native contention and integration with HotSpot safepoint checks remain unverified. |
+| Clock/time | libnx `nx/include/switch/arm/counter.h:armGetSystemTick/Freq`; ISC-style license | New `os::javaTimeNanos`, `javaTimeMillis`, `javaTimeSystemUTC`, `javaTimeNanos_info`; C bridge avoids incompatible HotSpot/libnx typedefs. | VM startup timestamp/elapsed-counter initialization still required; device counter and wall-clock accuracy not tested. |
 
 ## Techniques that cannot be carried forward
 
@@ -40,9 +43,14 @@ or a collection of server VM objects cannot provide those services. The pinned
 JDK8 reference includes successful no-op signal/affinity implementations; none
 are acceptable for this port.
 
-libnx is inspected separately at the toolchain's installed headers and the
-matching source revision in the port evidence. Its ISC-style notice remains in
-`licenses/libnx.txt`. `virtmemFindAslr`/`virtmemAddReservation` only reserve address
+libnx source was inspected at `switchbrew/libnx`
+`b156b4774fb2df7b93402169509266da7547fc4c`. Its JIT and virtmem headers match
+the installed toolchain headers byte-for-byte. The binary's complete source
+revision was not inferred from that match: the toolchain OCI digest remains
+the build pin. The installed `libnx.a` SHA256 is
+`12a59cdfdceab83e39ee129b0275dd803e393e83f19de3922a3b6cc95c767edd`.
+Its ISC-style notice remains in `licenses/LIBNX-LICENSE.md`.
+`virtmemFindAslr`/`virtmemAddReservation` only reserve address
 space; `svcMapPhysicalMemory` allocates backing pages. `jitCreate` and transition
 functions are the supported executable-memory route. Process capability and
 hardware behavior must be measured, not inferred from declarations.

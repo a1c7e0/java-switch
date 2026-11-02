@@ -1,0 +1,69 @@
+--- a/make/autoconf/build-aux/config.sub
++++ b/make/autoconf/build-aux/config.sub
+@@ -1,4 +1,5 @@
+ #!/bin/sh
++# Modified 2026-11-02 for the experimental Horizon/libnx port.
+ #
+ # Copyright (c) 2014, 2023, Oracle and/or its affiliates. All rights reserved.
+ # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+--- a/make/autoconf/platform.m4
++++ b/make/autoconf/platform.m4
+@@ -1,4 +1,5 @@
+ #
++# Modified 2026-11-02 for the experimental Horizon/libnx port.
+ # Copyright (c) 2011, 2026, Oracle and/or its affiliates. All rights reserved.
+ # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ #
+--- a/make/autoconf/toolchain.m4
++++ b/make/autoconf/toolchain.m4
+@@ -1,4 +1,5 @@
+ #
++# Modified 2026-11-02 for the experimental Horizon/libnx port.
+ # Copyright (c) 2011, 2025, Oracle and/or its affiliates. All rights reserved.
+ # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ #
+--- a/make/autoconf/libraries.m4
++++ b/make/autoconf/libraries.m4
+@@ -1,4 +1,5 @@
+ #
++# Modified 2026-11-02 for the experimental Horizon/libnx port.
+ # Copyright (c) 2011, 2025, Oracle and/or its affiliates. All rights reserved.
+ # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ #
+--- a/make/autoconf/flags-cflags.m4
++++ b/make/autoconf/flags-cflags.m4
+@@ -1,4 +1,5 @@
+ #
++# Modified 2026-11-02 for the experimental Horizon/libnx port.
+ # Copyright (c) 2011, 2025, Oracle and/or its affiliates. All rights reserved.
+ # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ #
+--- a/src/hotspot/share/utilities/forbiddenFunctions.hpp
++++ b/src/hotspot/share/utilities/forbiddenFunctions.hpp
+@@ -1,4 +1,5 @@
+ /*
++ * Modified 2026-11-02 for the experimental Horizon/libnx port.
+  * Copyright (c) 2024, 2025, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+--- a/src/hotspot/share/utilities/globalDefinitions_gcc.hpp
++++ b/src/hotspot/share/utilities/globalDefinitions_gcc.hpp
+@@ -1,4 +1,5 @@
+ /*
++ * Modified 2026-11-02 for the experimental Horizon/libnx port.
+  * Copyright (c) 1998, 2025, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+--- a/src/java.base/horizon/conf/net.properties
++++ b/src/java.base/horizon/conf/net.properties
+@@ -1 +1,2 @@
+ # Horizon networking natives are not ported. No Unix-domain socket default.
++# Modified 2026-11-02 for the experimental Horizon/libnx port.
+--- a/src/java.base/horizon/native/include/jni_md.h
++++ b/src/java.base/horizon/native/include/jni_md.h
+@@ -1,4 +1,5 @@
+ /*
++ * Modified 2026-11-02 for the experimental Horizon/libnx port.
+  * Copyright (c) 1996, 2024, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *

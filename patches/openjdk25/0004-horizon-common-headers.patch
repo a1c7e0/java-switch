@@ -1,0 +1,45 @@
+--- a/make/autoconf/flags-cflags.m4
++++ b/make/autoconf/flags-cflags.m4
+@@ -449,7 +449,9 @@
+ AC_DEFUN([FLAGS_SETUP_CFLAGS_HELPER],
+ [
+   #### OS DEFINES, these should be independent on toolchain
+-  if test "x$OPENJDK_TARGET_OS" = xlinux; then
++  if test "x$OPENJDK_TARGET_OS" = xhorizon; then
++    CFLAGS_OS_DEF_JVM="-DHORIZON"
++  elif test "x$OPENJDK_TARGET_OS" = xlinux; then
+     CFLAGS_OS_DEF_JVM="-DLINUX -D_FILE_OFFSET_BITS=64"
+     CFLAGS_OS_DEF_JDK="-D_GNU_SOURCE -D_REENTRANT -D_FILE_OFFSET_BITS=64"
+   elif test "x$OPENJDK_TARGET_OS" = xmacosx; then
+--- a/src/hotspot/share/utilities/forbiddenFunctions.hpp
++++ b/src/hotspot/share/utilities/forbiddenFunctions.hpp
+@@ -40,6 +40,8 @@
+ 
+ #ifdef _WINDOWS
+ #include "forbiddenFunctions_windows.hpp"
++#elif defined(HORIZON)
++#include "forbiddenFunctions_horizon.hpp"
+ #else
+ #include "forbiddenFunctions_posix.hpp"
+ #endif
+--- a/src/hotspot/share/utilities/globalDefinitions_gcc.hpp
++++ b/src/hotspot/share/utilities/globalDefinitions_gcc.hpp
+@@ -53,7 +53,9 @@
+ #include <math.h>
+ #include <time.h>
+ #include <fcntl.h>
++#ifndef HORIZON
+ #include <dlfcn.h>
++#endif
+ #include <pthread.h>
+ 
+ #include <limits.h>
+@@ -74,7 +76,7 @@
+ // checking for nanness
+ #if defined(__APPLE__)
+ inline int g_isnan(double f) { return isnan(f); }
+-#elif defined(LINUX) || defined(_ALLBSD_SOURCE) || defined(_AIX)
++#elif defined(LINUX) || defined(_ALLBSD_SOURCE) || defined(_AIX) || defined(HORIZON)
+ inline int g_isnan(float  f) { return isnan(f); }
+ inline int g_isnan(double f) { return isnan(f); }
+ #else

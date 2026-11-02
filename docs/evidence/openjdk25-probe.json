@@ -1,0 +1,12 @@
+{
+  "port_digest": "a55cb158ce59abf1dd70f46da9a0fd5722c9bc76af827f367aa47f718c4e076e",
+  "java_vm_linked": false,
+  "inputs": {
+    "src/zero_services_test.c": "49c5b12f43d9b4482b2f5022e3df263348b718bc8657f70f2e48f5114568a08c",
+    "src/platform.c": "f269c268d62ccf20895485ef8f27795eb4f60c613fa9c1e8620d5a5d7ffba9c5",
+    "tests/openjdk25_services_probe.cpp": "f45e67f92d0e3a951d6459ddfb0a953ab73c01a0ebbfe6a51a3f9a36ca46c9a4",
+    "scripts/openjdk25.py": "d05bec32064ca79e4d85520e12541e70ef84e62ee52749146cd46a80272c79bd"
+  },
+  "elf_sha256": "f78e4c4a5d11ec700405804fcefc39a905c52a849f914331ed01440f67a5b20a",
+  "nro_sha256": "6c9598a54797c3faa9a138bf84921ebd872a84f9cb7a201e0cb8dfeb196133da"
+}

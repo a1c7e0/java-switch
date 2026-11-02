@@ -23,6 +23,15 @@ miniJVM backend supports Java 8 only. See [JAVA25_PORT.md](docs/JAVA25_PORT.md).
 libnx W^X upcall allocation, prerequisites for Zero's fallback FFM linker. These
 are cross-built CPU/ABI tests; hardware execution is still NOT TESTED.
 
+The experimental OpenJDK25 build now passes configure as a distinct Horizon
+target, then fails at the missing HotSpot monitor platform (`mutex_horizon.hpp`).
+Tracked patches/overlay and exact logs are in `patches/openjdk25/`,
+`ports/openjdk25/` and `docs/evidence/`. An optional `zero-services-test.nro`
+links actual port time/semaphore/atomic components, but has **no Java VM**.
+Its source bundle includes the full pinned OpenJDK archive and GPL notices.
+See [the port instructions](ports/openjdk25/README.md) and
+[the downstream handoff](docs/SWITCHCRAFT_HANDOFF.md).
+
 ```sh
 bash scripts/build-all.sh
 ```
@@ -39,6 +48,8 @@ root remains shared with Switchcraft for compatibility. Logs are at
 `sdmc:/switch/mc-runtime/logs/java-test.log`. A synchronous Java call runs once
 per process and may require HOME/relaunch if a custom program does not return.
 
-Original code is MIT; miniJVM C is MIT, its Java class library retains GPL-2.0
+Original SDK/diagnostic code is MIT; the OpenJDK port overlay and its component
+tests are GPL-2.0-only or retain their upstream per-file license. miniJVM C is MIT,
+its Java class library retains GPL-2.0
 and per-file exception notices. Complete class-library and modified C source
 accompany distributions. No game JARs or account credentials are included.

@@ -1,0 +1,29 @@
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE -D__SWITCH__ -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMTI=0 -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_SERVICES=0 -DINCLUDE_CDS=0 -DINCLUDE_ZGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_time.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/os_horizon_time.o
+In file included from /workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/arm/counter.h:8,
+                 from /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_time.cpp:7:
+/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/arm/../types.h:19:17: error: conflicting declaration 'typedef uint8_t u8'
+   19 | typedef uint8_t u8;       ///<   8-bit unsigned integer.
+      |                 ^~
+In file included from /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/utilities/align.hpp:31,
+                 from /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/runtime/os.hpp:30,
+                 from /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_time.cpp:4:
+/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/utilities/globalDefinitions.hpp:504:17: note: previous declaration as 'typedef julong u8'
+  504 | typedef julong  u8;
+      |                 ^~
+/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/arm/../types.h:25:16: error: conflicting declaration 'typedef int8_t s8'
+   25 | typedef int8_t s8;       ///<   8-bit signed integer.
+      |                ^~
+/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/utilities/globalDefinitions.hpp:514:16: note: previous declaration as 'typedef jlong s8'
+  514 | typedef jlong  s8;
+      |                ^~
+/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/arm/../types.h:43:13: error: conflicting declaration 'typedef u32 Handle'
+   43 | typedef u32 Handle;                 ///< Kernel object handle.
+      |             ^~~~~~
+In file included from /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/runtime/os.hpp:31:
+/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/utilities/exceptions.hpp:52:7: note: previous declaration as 'class Handle'
+   52 | class Handle;
+      |       ^~~~~~
+/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_time.cpp: In static member function 'static void os::javaTimeNanos_info(jvmtiTimerInfo*)':
+/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_time.cpp:24:21: error: 'ALL_64_BITS' was not declared in this scope
+   24 |   info->max_value = ALL_64_BITS;
+      |                     ^~~~~~~~~~~

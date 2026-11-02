@@ -1,0 +1,3 @@
+HOST REFERENCE ONLY: Linux Temurin 25; no Horizon VM executed.
+$ /workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/bin/java -jar /workspace/java-switch/build/java25-hello.jar
+Hello from Horizon Java 25

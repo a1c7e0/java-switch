@@ -1,0 +1,4 @@
+real os:: Horizon time conversion, overflow and metadata: HOST-PASSED (mocked clocks)
+HotSpot Atomic add/CAS with four host threads: HOST-PASSED (not AArch64 execution)
+zero-frequency: rejected (signal 6); guarantee(frequency != 0) failed: Horizon system counter frequency is zero
+clock-error: rejected (signal 6); guarantee(result == 0) failed: Horizon gettimeofday failed: 5

@@ -1,0 +1,9 @@
+CROSS-BUILT only: AArch64 barriers/exclusive accesses present; hardware ordering NOT TESTED.
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-objdump -d /workspace/java-switch/build/openjdk25-horizon/components/services_probe.o
+ 1dc:	c85f7c04 	ldxr	x4, [x0]
+ 1e4:	c801fc04 	stlxr	w1, x4, [x0]
+ 1ec:	d5033bbf 	dmb	ish
+ 1f0:	d5033bbf 	dmb	ish
+ 1f8:	c85f7c02 	ldxr	x2, [x0]
+ 204:	c8037c01 	stxr	w3, x1, [x0]
+ 20c:	d5033bbf 	dmb	ish

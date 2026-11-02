@@ -1,0 +1,6 @@
+Java NRO architecture/container and package checksums: PASS
+SDK ABI v1 header/library and notices: PASS
+libjavaswitch.a SHA256 3d2c5f12966693cfeb9c99b9810cd5ad57b9e9279c1f3520b4ce1f3ad926c8be
+SD ZIP binaries and accompanying source: PASS
+Full pinned OpenJDK archive, five zero-fuzz patches and native overlay reconstructed from shipped source: PASS
+All artifact SHA256 checks: PASS; Horizon hardware NOT TESTED

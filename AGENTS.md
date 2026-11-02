@@ -23,6 +23,13 @@ then `python3 scripts/openjdk25.py configure` and `python3 scripts/openjdk25.py 
 Patches live in `patches/openjdk25/`; pristine `.deps/openjdk25-source` must not
 be edited. Horizon is its own OS family, not POSIX/Linux. Keep build failures
 visible and logs in `docs/evidence/`. Configuration success is not VM startup.
+Tracked native files are in `ports/openjdk25/`. Follow a failed full static build
+with `components`, `test-host`, and `probe` actions to build the standalone
+`zero-services-test.nro`. It has no Java VM. Package its full pinned upstream
+archive plus overlay/notices with the NRO. Never include libnx headers directly
+in HotSpot C++: u8/s8/Handle/Mutex conflict; use the opaque C bridge. Current
+full-build blocker is `mutex_horizon.hpp` (PlatformMutex/PlatformMonitor), then
+OSThread/Parker/safepoints/fault handling. Runtime ABI v1 remains unchanged.
 
 `javaswitch/vmem.h` reserves aligned address space and maps/unmaps page ranges
 using real physical-memory syscalls. Protect uses svcSetMemoryPermission for
