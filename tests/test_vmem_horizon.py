@@ -11,7 +11,7 @@ class HorizonMemoryTests(unittest.TestCase):
             binary = pathlib.Path(directory) / 'vmem-test'
             subprocess.run(['gcc', '-std=c11', '-Wall', '-Wextra', '-Werror',
                 '-Itests/ffi_stubs', '-Iinclude', 'src/vmem_horizon.c',
-                'tests/vmem_horizon_host.c', '-pthread', '-o', str(binary)],
+                'tests/vmem_horizon_host.c', '-pthread', '-Wl,--wrap=calloc', '-o', str(binary)],
                 cwd=ROOT, check=True)
             result = subprocess.run([str(binary)], cwd=ROOT, check=True,
                 text=True, capture_output=True)

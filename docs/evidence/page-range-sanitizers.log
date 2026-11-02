@@ -1,0 +1,2 @@
+vmem state and injected failures: PASS
+partial mappings, alignment, protection, release retry, concurrent commit: PASS

@@ -23,4 +23,6 @@ VirtmemReservation *virtmemAddReservation(void *, size_t);
 void virtmemRemoveReservation(VirtmemReservation *);
 Result svcMapPhysicalMemory(void *, size_t);
 Result svcUnmapPhysicalMemory(void *, size_t);
+enum { Perm_None = 0, Perm_R = 1, Perm_Rw = 3 };
+Result svcSetMemoryPermission(void *, size_t, unsigned);
 #endif

@@ -24,11 +24,12 @@ Patches live in `patches/openjdk25/`; pristine `.deps/openjdk25-source` must not
 be edited. Horizon is its own OS family, not POSIX/Linux. Keep build failures
 visible and logs in `docs/evidence/`. Configuration success is not VM startup.
 
-`javaswitch/vmem.h` is a whole-region reserve/commit/uncommit experiment using
-libnx virtual address reservations and physical-memory syscalls. ffi-test Y
-exercises it on hardware; its mocked host state test cannot establish syscall
-availability. Partial mappings, memory protection and JVM integration remain
-unimplemented. Serialize release against other operations on the same region.
+`javaswitch/vmem.h` reserves aligned address space and maps/unmaps page ranges
+using real physical-memory syscalls. Protect uses svcSetMemoryPermission for
+NONE/R/RW; executable requests fail as unsupported. ffi-test Y keeps the original
+whole-region test; B tests partial mapping and permissions. Mocked host tests do
+not establish syscall availability. Partial release and full JVM integration
+remain unimplemented. Serialize release against all accesses to the same region.
 
 Export reusable runtime APIs and package the Java class library with its source
 and GPL notices. Do not imply that binary-only distribution avoids GPL terms.
