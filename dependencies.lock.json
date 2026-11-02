@@ -17,5 +17,10 @@
     "revision": "275848b087112429235f4f235822e294a1a288ef",
     "url": "https://github.com/openjdk/jdk25u/archive/275848b087112429235f4f235822e294a1a288ef.tar.gz",
     "sha256": "745846bd4af786f8376945ee09eb71784bdda4c35e32e79618b33e5d252eba32"
+  },
+  "libffi": {
+    "tag": "v3.8.0",
+    "url": "https://github.com/libffi/libffi/releases/download/v3.8.0/libffi-3.8.0.tar.gz",
+    "sha256": "7da3e2d9a171eb0a038f592ecad3ff2bb2550f3496d87b3b29ad0cf4430c0db4"
   }
 }

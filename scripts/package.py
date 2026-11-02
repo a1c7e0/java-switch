@@ -9,6 +9,7 @@ size=struct.unpack_from('<I',data,24)[0];assert data[size:size+4]==b'ASET'
 sd=DIST/'COPY_TO_SD';runtime=sd/'switch/mc-runtime'
 if sd.exists():shutil.rmtree(sd)
 (sd/'switch/java-test').mkdir(parents=True);shutil.copyfile(nro,sd/'switch/java-test/java-test.nro')
+(sd/'switch/ffi-test').mkdir(parents=True);shutil.copyfile(DIST/'ffi-test.nro',sd/'switch/ffi-test/ffi-test.nro')
 for path in ['logs','tests','runtimes/minijvm','instances/java-smoke','licenses']:(runtime/path).mkdir(parents=True)
 shutil.copyfile(ROOT/'build/minijvm_rt.jar',runtime/'runtimes/minijvm/minijvm_rt.jar')
 for name in ['diagnostic-tests.jar','dependency.jar']:shutil.copyfile(ROOT/'build'/name,runtime/'tests'/name)
@@ -17,6 +18,8 @@ with tarfile.open(DIST/'javaswitch-horizon-sdk.tar.gz','w:gz') as archive:
     archive.add(ROOT/'include',arcname='include')
     archive.add(ROOT/'build/sdk/libjavaswitch.a',arcname='lib/libjavaswitch.a')
     archive.add(ROOT/'build/sdk/runtime-contract.json',arcname='runtime-contract.json')
+    archive.add(ROOT/'build/libffi/include/ffi.h',arcname='include/ffi.h')
+    archive.add(ROOT/'build/libffi/include/ffitarget.h',arcname='include/ffitarget.h')
     archive.add(ROOT/'LICENSE',arcname='LICENSE')
 shutil.copytree(ROOT/'licenses',runtime/'licenses',dirs_exist_ok=True)
 shutil.copyfile(ROOT/'README.md',sd/'JAVA-SWITCH-README.md')
@@ -25,6 +28,7 @@ with tarfile.open(DIST/'java-switch-source.tar.gz','w:gz') as archive:
         if name:archive.add(ROOT/name.decode(),arcname='java-switch/'+name.decode())
     archive.add(ROOT/'.deps/minijvm-source',arcname='third-party/minijvm-source')
     archive.add(ROOT/'.deps/minijvm',arcname='third-party/minijvm-horizon-c')
+    archive.add(ROOT/'.deps/libffi-source',arcname='third-party/libffi-source')
 shutil.copyfile(DIST/'java-switch-source.tar.gz',sd/'java-switch-source.tar.gz')
 with zipfile.ZipFile(DIST/'java-switch-test-package.zip','w',zipfile.ZIP_DEFLATED) as z:
     for path in sorted(sd.rglob('*')):

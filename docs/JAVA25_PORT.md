@@ -50,3 +50,13 @@ Linux mmap/dlopen/signal-context semantics automatically. Unsupported operations
 must fail explicitly; unconditional-success stubs do not constitute a port.
 Zero plus fallback FFM is the first source-port route; HotSpot AArch64 JIT follows
 only after memory/fault/exception support works. No kernel patches or overclocking.
+
+## Native FFI prerequisite delivered
+
+libffi 3.8.0 cross-compiles for AAPCS64. Its generic ELF malloc-based closure
+allocator was replaced with real libnx JIT RW/RX allocation, pointer translation,
+cache/permission transition and teardown. `ffi-test.nro` separately tests integer
+and mixed integer/FP downcalls (A), and an executable upcall closure (X). JIT
+permission failure is reported as a libnx Result; no kernel change is attempted.
+Both NRO and SDK compile/link, but these CPU/permission tests are NOT TESTED on
+Horizon. They do not substitute for a Java 25 VM.

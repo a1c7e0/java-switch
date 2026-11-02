@@ -19,6 +19,10 @@ The adapter passes Java 25 JNI/FFM downcall/upcall tests on the host. Its Horizo
 Java 25 backend reports unavailable until a real VM is linked; the supplied
 miniJVM backend supports Java 8 only. See [JAVA25_PORT.md](docs/JAVA25_PORT.md).
 
+`ffi-test.nro` and the SDK also contain native AAPCS64 libffi support and real
+libnx W^X upcall allocation, prerequisites for Zero's fallback FFM linker. These
+are cross-built CPU/ABI tests; hardware execution is still NOT TESTED.
+
 ```sh
 bash scripts/build-all.sh
 ```
