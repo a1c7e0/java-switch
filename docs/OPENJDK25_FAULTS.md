@@ -71,3 +71,22 @@ Stack guard/overflow recovery, implicit Java null traps, thread suspension,
 fault-driven safepoints, reentrant general exception dispatch and HotSpot OS
 startup remain separate work. Their capabilities are not advertised by this
 SafeFetch implementation. No Java VM, JNI or Java FFM has run on Horizon.
+
+
+## Full static-image integration (2026-11-02)
+
+A genuine JNI VM link exposed conditional-branch relocations beyond AArch64's
+32 KiB TB[N]Z and 1 MiB B.cond reach. All exception-entry rejection paths now
+branch to nearby local labels before taking an unconditional branch to the
+stock-compatible fatal fallback. No recovery decision changed. The 60 actual
+ARM64 instruction/fatal-path emulator cases pass after this correction; native
+kernel transfer remains mocked and Switch execution is NOT TESTED.
+
+`horizon_fault_context.h` and its C reader assert libnx's public AArch64 dump
+layout and copy registers without interpreting them as POSIX ucontext_t.
+`os_horizon_diagnostics.cpp` prints these registers, real process memory metrics,
+and static NRO code bounds. Missing symbol reverse lookup, native unwinding and
+mapping diagnostics remain explicitly unavailable. `vmError_horizon.cpp` tracks
+the reporting thread; secondary POSIX signal recovery is unavailable, and a
+report timeout terminates rather than pretending to interrupt that thread.
+These diagnostics do not establish general managed-fault recovery or VM startup.

@@ -53,15 +53,15 @@ js_horizon_safefetchN_continuation:
 .type __libnx_exception_entry,%function
 __libnx_exception_entry:
     cmp x0, #0x101
-    b.ne js_horizon_unhandled_exception_entry
-    cbz x1, js_horizon_unhandled_exception_entry
+    b.ne .Lfatal
+    cbz x1, .Lfatal
     ldr w2, [x1, #0x60] // PSTATE
-    tbnz w2, #4, js_horizon_unhandled_exception_entry // reject AArch32
+    tbnz w2, #4, .Lfatal // reject AArch32
     ldr w2, [x1, #0x6c] // ESR
-    tbnz w2, #6, js_horizon_unhandled_exception_entry // reject writes
+    tbnz w2, #6, .Lfatal // reject writes
     lsr w2, w2, #26
     cmp w2, #0x24 // Data Abort from a lower exception level
-    b.ne js_horizon_unhandled_exception_entry
+    b.ne .Lfatal
     ldr x2, [x1, #0x58] // saved PC
     adrp x3, js_horizon_safefetch32_fault
     add x3, x3, :lo12:js_horizon_safefetch32_fault
@@ -70,7 +70,7 @@ __libnx_exception_entry:
     adrp x3, js_horizon_safefetchN_fault
     add x3, x3, :lo12:js_horizon_safefetchN_fault
     cmp x2, x3
-    b.ne js_horizon_unhandled_exception_entry
+    b.ne .Lfatal
 .Ldebug_policy:
     /* Preserve the stock debugger policy, including failed GetInfo. The same
      * small native-stack scratch sequence is used by libnx's stock entry. */
@@ -98,11 +98,11 @@ __libnx_exception_entry:
     ldp x13, x14, [sp], #16
     ldp x11, x12, [sp], #16
     ldp x9, x10, [sp], #16
-    cbnz w6, js_horizon_unhandled_exception_entry_abort
+    cbnz w6, .Lfatal_abort
     adrp x2, __nx_exception_ignoredebug
     ldr w2, [x2, :lo12:__nx_exception_ignoredebug]
     cbnz w2, .Lrecover
-    cbnz x7, js_horizon_unhandled_exception_entry_abort
+    cbnz x7, .Lfatal_abort
 .Lrecover:
     ldr x2, [x1, #0x58]
     adrp x3, js_horizon_safefetch32_fault
@@ -122,5 +122,13 @@ __libnx_exception_entry:
     mov w0, wzr
     bl svcReturnFromException
     b . // noreturn; never RET if exception return unexpectedly fails
+/* Conditional branches cannot span a full statically linked VM: TB[N]Z has
+ * only 32 KiB reach. Keep their targets local, then use an unconditional branch
+ * (which also permits the linker to insert a range-extension thunk).
+ */
+.Lfatal:
+    b js_horizon_unhandled_exception_entry
+.Lfatal_abort:
+    b js_horizon_unhandled_exception_entry_abort
 .size __libnx_exception_entry, .-__libnx_exception_entry
 .section .note.GNU-stack,"",%progbits
