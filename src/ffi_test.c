@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <javaswitch/vmem.h>
 extern Result js_ffi_last_result(void);
 static int add(int a,int b){return a+b;}
 static double mixed(int a,double b,uint64_t c){return a+b+(double)c;}
@@ -28,6 +29,27 @@ static void closure(void){
     else sc_log("ffi_prep_closure_loc=%d libnx Result=0x%x\n",s,js_ffi_last_result());
     ffi_closure_free(rw);sc_log("jitClose Result=0x%x\n",js_ffi_last_result());
 }
+static void memory_probe(void){
+    js_vmem *region=NULL; uint32_t result=0;
+    js_vmem_status status=js_vmem_reserve(65536,&region);
+    if(status!=JS_VMEM_OK){sc_log("vmem reserve failed: status=%d\n",status);return;}
+    sc_log("vmem reserved 65536 bytes at %p\n",js_vmem_address(region));
+    status=js_vmem_commit(region,&result);
+    if(status==JS_VMEM_OK){
+        volatile unsigned char *p=js_vmem_address(region);
+        p[0]=0x5a;p[65535]=0xa5;
+        sc_log("vmem commit and readback %s\n",p[0]==0x5a&&p[65535]==0xa5?"PASS":"FAIL");
+        status=js_vmem_uncommit(region,&result);
+        sc_log("vmem uncommit status=%d Result=0x%x\n",status,result);
+        if(status==JS_VMEM_OK){
+            status=js_vmem_commit(region,&result);
+            sc_log("vmem recommit status=%d Result=0x%x\n",status,result);
+        }
+    }else sc_log("vmem commit failed: status=%d Result=0x%x\n",status,result);
+    status=js_vmem_release(region,&result);
+    sc_log("vmem release status=%d Result=0x%x\n",status,result);
+}
 int main(void){sc_init("ffi-test");sc_log("libffi Horizon / Java 25 fallback linker prerequisites\nA: native downcalls | X: W^X upcall closure | +: exit\nThis does not initialize a Java 25 VM. Hardware NOT TESTED.\n");u64 keys;
-    while(sc_frame(&keys)){if(keys&HidNpadButton_A)downcalls();if(keys&HidNpadButton_X)closure();}sc_exit();return 0;
+    sc_log("Y: virtual memory reserve / commit / uncommit probe\n");
+    while(sc_frame(&keys)){if(keys&HidNpadButton_A)downcalls();if(keys&HidNpadButton_X)closure();if(keys&HidNpadButton_Y)memory_probe();}sc_exit();return 0;
 }

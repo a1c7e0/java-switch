@@ -67,3 +67,19 @@ attempt is rejected with EBUSY; callers must synchronize closure lifetime and
 retry a free that reports EBUSY. Result codes are thread-local. A host test with
 simulated libnx JIT calls covers these rules and injected transition failures;
 it does not execute generated code or establish Switch memory permissions.
+
+## Whole-region memory experiment
+
+The SDK exposes `javaswitch/vmem.h`: it reserves an unmapped libnx virtual
+address range and can commit or uncommit the complete range with real Horizon
+physical-memory syscalls. System Result codes are returned; failed unmaps keep
+the reservation so callers can retry. Release must be synchronized against all
+other accesses to that region. Partial range operations, page protection and
+HotSpot integration are not implemented. This is an experiment, not mmap.
+
+In `ffi-test.nro`, Y reserves 64 KiB, attempts commit, writes and reads both
+ends, uncommits, recommits and releases it; every syscall failure is logged.
+The process may lack permission to map physical memory and that failure is an
+expected diagnostic result, not a reason to patch the kernel. A host mock tests
+the state machine and injected failures. The actual syscalls, readback and
+memory limits remain NOT TESTED on Switch hardware.

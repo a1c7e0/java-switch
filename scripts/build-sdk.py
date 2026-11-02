@@ -14,6 +14,9 @@ for host in [False,True]:
         obj=dest/(name+'.o');subprocess.run([cc,*flags,'-c','src/'+name+'.c','-o',str(obj)],check=True);objects.append(obj)
     objects+=sorted((ROOT/'build'/('minijvm-host-objects' if host else 'minijvm')).glob('*.o'))
     if not host:
+        vmem_obj=dest/'vmem_horizon.o'
+        subprocess.run([cc,*flags,'-c','src/vmem_horizon.c','-o',str(vmem_obj)],check=True)
+        objects.append(vmem_obj)
         ffi_obj=dest/'ffi_horizon.o'
         subprocess.run([cc,*flags,'-Ibuild/libffi/include','-c','src/ffi_horizon.c','-o',str(ffi_obj)],check=True)
         objects.append(ffi_obj)

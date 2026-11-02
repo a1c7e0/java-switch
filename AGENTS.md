@@ -18,6 +18,12 @@ the working interpreter test while recording exact cross-build blockers.
 No fake successful mmap/dlopen/process/JIT implementations, game binaries,
 credentials, kernel patches, overclocking or proprietary Nintendo libraries.
 
+`javaswitch/vmem.h` is a whole-region reserve/commit/uncommit experiment using
+libnx virtual address reservations and physical-memory syscalls. ffi-test Y
+exercises it on hardware; its mocked host state test cannot establish syscall
+availability. Partial mappings, memory protection and JVM integration remain
+unimplemented. Serialize release against other operations on the same region.
+
 Export reusable runtime APIs and package the Java class library with its source
 and GPL notices. Do not imply that binary-only distribution avoids GPL terms.
 Host Linux JDKs are build/reference tools, never Horizon runtime artifacts.

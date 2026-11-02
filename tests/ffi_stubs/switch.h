@@ -15,4 +15,12 @@ Result jitTransitionToExecutable(Jit *);
 Result jitClose(Jit *);
 static inline void *jitGetRwAddr(Jit *j) { return j->rw_addr; }
 static inline void *jitGetRxAddr(Jit *j) { return j->rx_addr; }
+typedef struct VirtmemReservation VirtmemReservation;
+void virtmemLock(void);
+void virtmemUnlock(void);
+void *virtmemFindAslr(size_t, size_t);
+VirtmemReservation *virtmemAddReservation(void *, size_t);
+void virtmemRemoveReservation(VirtmemReservation *);
+Result svcMapPhysicalMemory(void *, size_t);
+Result svcUnmapPhysicalMemory(void *, size_t);
 #endif
