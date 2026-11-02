@@ -1,0 +1,4 @@
+C SDK example: Horizon AArch64 ELF linked, hardware NOT TESTED.
+Host refusal check, no VM linked or executed:
+backend=openjdk25 ABI=1 Java=25 available=0 standard_jni=0
+launch=-100 stage=runtime-not-linked

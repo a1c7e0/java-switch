@@ -1,0 +1,5 @@
+SDK ABI v1 header/library and notices: PASS
+libjavaswitch.a SHA256 ccfaee3eeff02df2906bb8dd1cc1dc2214acb6b7f79eed4ce20777447da3108d
+SD ZIP binaries and accompanying source: PASS
+Full pinned OpenJDK archive, five zero-fuzz patches and native overlay reconstructed from shipped source: PASS
+All artifact SHA256 checks: PASS; Horizon hardware NOT TESTED

@@ -45,3 +45,7 @@ callers dereferencing mapped addresses, and does not make concurrent release
 safe. Callers must quiesce all accesses before uncommit/protect/release. The NRO
 retains failed-release handles and retries before creating another region.
 No successful memory permission call proves that a fault can be recovered.
+
+The experimental semaphore bridge uses newlib malloc/free for its small opaque
+control object. It is not yet accounted through HotSpot NMT; full VM memory
+accounting and startup integration remain required.
