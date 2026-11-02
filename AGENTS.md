@@ -32,8 +32,19 @@ with `components`, `test-host`, and `probe` actions to build the standalone
 `zero-services-test.nro`. It has no Java VM. Package its full pinned upstream
 archive plus overlay/notices with the NRO. Never include libnx headers directly
 in HotSpot C++: u8/s8/Handle/Mutex conflict; use the opaque C bridge. Current
-full-build blocker is `mutex_horizon.hpp` (PlatformMutex/PlatformMonitor), then
-OSThread/Parker/safepoints/fault handling. Runtime ABI v1 remains unchanged.
+full build passes the PCH, mutex/monitor, OSThread/Parker headers and the POSIX
+SafeFetch selection. Read the latest build evidence for its next exact blocker.
+Native-thread primitives are implemented; HotSpot create/attach/detach/TLS/reaper
+integration and safepoints remain unfinished. Runtime ABI v1 remains unchanged.
+`docs/OPENJDK25_SYNC.md` and `docs/OPENJDK25_FAULTS.md` describe the private port.
+The strong exception entry recovers only exact SafeFetch load PCs; unmatched
+faults retain the libnx fatal path and debugger policy. Never extend that to a
+general success stub. Run optional `bootstrap-openjdk-emulator.py` then
+`test-openjdk25-faults.py` for actual ARM64 instruction tests with mocked kernel
+transfer/return; these are not hardware evidence. C bridges are excluded from
+the HotSpot C++ PCH by patch 0007. Keep all native source inputs staged before
+packaging, regenerate components/probe after port changes, and serialize helper
+actions through its existing flock.
 
 `javaswitch/vmem.h` reserves aligned address space and maps/unmaps page ranges
 using real physical-memory syscalls. Protect uses svcSetMemoryPermission for

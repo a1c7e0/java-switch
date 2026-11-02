@@ -55,10 +55,14 @@ handle and callback context across X retries; callback memory is never a returne
 stack frame. Unexpected condition Results reach the SD log before abort.
 All Switch behavior remains NOT TESTED.
 
-The full upstream Zero build now passes the precompiled header and has generated
-133 shared/Zero AArch64 VM objects. The current blocker is
-`runtime/safefetch.hpp` selecting POSIX `safefetch_sigjmp.hpp` for Zero. No static
-VM archive is complete. Configuration is narrowed to Serial GC, JNI checks and
+The parking milestone passed the precompiled header and generated 133 shared/Zero
+AArch64 objects before Zero's POSIX SafeFetch selection stopped compilation.
+The dedicated Horizon fault islands now cross that barrier; see
+`docs/OPENJDK25_FAULTS.md`. The full build has generated 279 VM objects and
+currently stops at the POSIX-specific permitForbiddenFunctions include.
+Patch 0007 keeps libnx C bridges out of the C++ PCH; their real C objects now
+compile in the upstream build, with inherited C++-only flag warnings recorded.
+No static VM archive is complete. Configuration is narrowed to Serial GC, JNI checks and
 Zero. Conservative OS capability flags decline implicit null traps and stack
 guards until actual recoverable faults exist; fixed libnx stacks are fully backed
 before start. This does not establish VM startup or correct stack overflow

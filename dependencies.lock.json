@@ -32,5 +32,10 @@
       "url": "https://deb.debian.org/debian/pool/main/m/m4/m4_1.4.21-1_amd64.deb",
       "sha256": "c89bcb330ad58997ec4ca34993ed8591bdb9077fe56a7b1d46fa13d65240d436"
     }
+  },
+  "openjdk_test_emulator": {
+    "version": "2.1.4",
+    "url": "https://files.pythonhosted.org/packages/e7/df/ded5e3684c2d7600b30cc8a7530277b8cb36644a1a9d34cade7ebb45604c/unicorn-2.1.4-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "9d6e6dea140560de4ebd8446661f7ef84a357d428c14a3ef09dacd306ec8c239"
   }
 }

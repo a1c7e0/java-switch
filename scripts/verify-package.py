@@ -41,7 +41,10 @@ if (dist / 'zero-services-test.nro').exists():
         assert hashlib.sha256(upstream).hexdigest() == lock['openjdk25_source']['sha256']
         patches = {p.name: bundle.extractfile(p).read() for p in bundle
                    if p.isfile() and p.name.startswith('java-switch/patches/openjdk25/')}
-        assert len(patches) == 5
+        expected = list((root / 'patches/openjdk25').glob('*.patch'))
+        assert len(patches) == len(expected)
+        for path in expected:
+            assert patches['java-switch/patches/openjdk25/' + path.name] == path.read_bytes()
         originals = set()
         for data in patches.values():
             originals.update(line[6:] for line in data.decode().splitlines() if line.startswith('--- a/'))
@@ -72,5 +75,5 @@ if (dist / 'zero-services-test.nro').exists():
                 assert (target / name).read_bytes() == (PORT / name).read_bytes(), name
             for path in files:
                 assert (target / path.relative_to(overlay)).read_bytes() == path.read_bytes()
-        print('Full pinned OpenJDK archive, five zero-fuzz patches and native overlay reconstructed from shipped source: PASS')
+        print('Full pinned OpenJDK archive, tracked zero-fuzz patches and native overlay reconstructed from shipped source: PASS')
 print('All artifact SHA256 checks: PASS; Horizon hardware NOT TESTED')

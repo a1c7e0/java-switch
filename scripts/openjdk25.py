@@ -130,7 +130,7 @@ def work():
                 continue
             if argument in ['-o', '-MF', '-x', '-include']:
                 skip = True
-            elif argument not in ['-c', '-MMD'] and not argument.endswith(('.hpp', '.cpp')):
+            elif argument not in ['-c', '-MMD'] and not argument.endswith(('.hpp', '.cpp', '.c', '.s', '.S')):
                 flags.append(argument.replace('\\"', '"'))
         output = BUILD / 'components'
         output.mkdir(exist_ok=True)
@@ -167,13 +167,21 @@ def work():
                             str(PORT / 'src/hotspot/os/horizon/horizon_thread_bridge.c'),
                             '-o', str(output / 'horizon_thread_bridge.o')], env=env,
                            stdout=log, stderr=subprocess.STDOUT, check=True)
-            log.write('CROSS-BUILT: time, semaphore, string utilities and C bridge; no VM linked or executed.\n')
+            for name in ['safefetch_horizon.S', 'exception_fallback_horizon.S', 'horizon_fault_abi.c']:
+                subprocess.run([str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'),
+                                '-march=armv8-a+crc+crypto', '-fPIE',
+                                '-I' + str(dk / 'libnx/include'), '-c',
+                                str(PORT / 'src/hotspot/os/horizon' / name),
+                                '-o', str(output / (pathlib.Path(name).stem + '.o'))], env=env,
+                               stdout=log, stderr=subprocess.STDOUT, check=True)
+            log.write('CROSS-BUILT: time, synchronization, parking, thread bridge, SafeFetch/fatal entry and string utilities; no VM linked or executed.\n')
         metadata = {'compiler': original[0], 'flags': flags,
                     'port_digest': (PORT / '.javaswitch-patches').read_text(),
                     'objects': {name: hashlib.sha256((output / name).read_bytes()).hexdigest()
                                 for name in ['os_horizon_time.o', 'semaphore_horizon.o', 'mutex_horizon.o',
                                              'park_horizon.o', 'horizon_thread_bridge.o',
                                              'parker_horizon.o',
+                                             'safefetch_horizon.o', 'exception_fallback_horizon.o', 'horizon_fault_abi.o',
                                              'stringUtils.o', 'horizon_bridge.o']}}
         (output / 'metadata.json').write_text(json.dumps(metadata, indent=2) + '\n')
         print('HotSpot component objects: CROSS-BUILT, not a usable libjvm')
@@ -263,6 +271,7 @@ def work():
                    'mutex_horizon.o',
                    'park_horizon.o', 'horizon_thread_bridge.o',
                    'thread_probe.o',
+                   'safefetch_horizon.o', 'exception_fallback_horizon.o', 'horizon_fault_abi.o',
                    'horizon_bridge.o', 'platform.o', 'services_probe.o', 'services_runner.o']]
         subprocess.run([str(dk / 'devkitA64/bin/aarch64-none-elf-g++'), *arch,
                         '-specs=' + str(dk / 'libnx/switch.specs'), '-L' + str(dk / 'libnx/lib'),
@@ -272,7 +281,8 @@ def work():
                                            '-C', str(elf)], text=True)
         if 'JNI_CreateJavaVM' in symbols:
             raise RuntimeError('Unexpected VM entry in standalone service diagnostic')
-        for symbol in ['os::javaTimeNanos()', 'HorizonSemaphore::wait()']:
+        for symbol in ['os::javaTimeNanos()', 'HorizonSemaphore::wait()', 'SafeFetch32_impl',
+                       'SafeFetchN_impl', '__libnx_exception_entry', 'js_horizon_unhandled_exception_entry']:
             if symbol not in symbols:
                 raise RuntimeError('Missing real service symbol: ' + symbol)
         data = elf.read_bytes()

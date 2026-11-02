@@ -1,0 +1,14 @@
+--- a/src/hotspot/share/runtime/safefetch.hpp
++++ b/src/hotspot/share/runtime/safefetch.hpp
+@@ -31,7 +31,10 @@
+ // Safefetch allows to load a value from a location that's not known
+ // to be valid. If the load causes a fault, the error value is returned.
+ 
+-#if defined(_WIN32) && !defined(_M_ARM64)
++#if defined(HORIZON) && defined(AARCH64)
++  // Modified 2026-11-02: dedicated, narrowly filtered Horizon fault islands.
++  #include "safefetch_horizon.hpp"
++#elif defined(_WIN32) && !defined(_M_ARM64)
+   // Windows x86_64 uses Structured Exception Handling
+   #include "safefetch_windows.hpp"
+ #elif defined(ZERO) || defined (_AIX)

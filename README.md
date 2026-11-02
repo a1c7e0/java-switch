@@ -23,14 +23,18 @@ miniJVM backend supports Java 8 only. See [JAVA25_PORT.md](docs/JAVA25_PORT.md).
 libnx W^X upcall allocation, prerequisites for Zero's fallback FFM linker. These
 are cross-built CPU/ABI tests; hardware execution is still NOT TESTED.
 
-The experimental OpenJDK25 build now passes configure as a distinct Horizon
-target, then fails at the missing HotSpot monitor platform (`mutex_horizon.hpp`).
+The experimental OpenJDK25 build passes configure as a distinct Horizon target
+and compiles genuine shared/Zero VM sources beyond the precompiled header.
+Monitors, parking permits, native-thread primitives and narrow SafeFetch fault
+islands are implemented; the complete OS layer and VM remain unfinished.
 Tracked patches/overlay and exact logs are in `patches/openjdk25/`,
 `ports/openjdk25/` and `docs/evidence/`. An optional `zero-services-test.nro`
-links actual port time/semaphore/atomic components, but has **no Java VM**.
+links actual port synchronization/thread/fault components, but has **no Java VM**.
 Its source bundle includes the full pinned OpenJDK archive and GPL notices.
 See [the port instructions](ports/openjdk25/README.md) and
 [the downstream handoff](docs/SWITCHCRAFT_HANDOFF.md).
+Host mock tests and ARM64 instruction emulation are separate from physical
+Switch evidence. All hardware behavior, including fault recovery, is NOT TESTED.
 
 ```sh
 bash scripts/build-all.sh

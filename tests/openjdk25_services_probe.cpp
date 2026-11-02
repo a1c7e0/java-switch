@@ -5,6 +5,7 @@
 #include "horizon_bridge.h"
 #include "mutex_horizon.hpp"
 #include "park_horizon.hpp"
+#include "safefetch_horizon.hpp"
 #include "runtime/atomic.hpp"
 #include <stdarg.h>
 #include <stdio.h>
@@ -67,4 +68,18 @@ extern "C" int js_zero_services_probe() {
   permits &= event->park_nanos(1000000) == OS_TIMEOUT;
   sc_log("PlatformEvent coalesced permits and real timed wait=%s\n", permits ? "PASS" : "FAIL");
   return monotonic && counts && atomics && locks && permits;
+}
+
+extern "C" void js_zero_fault_probe() {
+  int narrow = 0x12345678; intptr_t wide = static_cast<intptr_t>(UINT64_C(0x123456789abcdef0));
+  int passed = SafeFetch32_impl(&narrow, -12345) == narrow && SafeFetchN_impl(&wide, -67890) == wide;
+  sc_log("SafeFetch valid 32/64-bit loads=%s\n", passed ? "PASS" : "FAIL");
+  sc_log("Attempt SafeFetch32 at unreadable address 0; recovery is hardware NOT TESTED\n");
+  int result32 = SafeFetch32_impl(nullptr, -12345);
+  sc_log("SafeFetch32 fault result=%d expected=-12345\n", result32);
+  sc_log("Attempt SafeFetchN at unreadable address 0\n");
+  intptr_t resultN = SafeFetchN_impl(nullptr, -67890);
+  sc_log("SafeFetchN fault result=%lld expected=-67890\n", (long long)resultN);
+  passed &= result32 == -12345 && resultN == -67890;
+  sc_log("SafeFetch fault-island recovery=%s; no general Java exception/VM claim\n", passed ? "PASS" : "FAIL");
 }

@@ -1,0 +1,70 @@
+$ make JOBS=2 hotspot-zero-static-libs
+Building target 'hotspot-zero-static-libs' in configuration '/workspace/java-switch/build/openjdk25-horizon'
+Creating hotspot/variant-zero/libjvm/objs/static/libjvm.a from 10 file(s)
+cc1: warning: command-line option '-Woverloaded-virtual=2' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wreorder' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wno-delete-non-virtual-dtor' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-std=c++14' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-fno-rtti' is valid for C++/D/ObjC++ but not for C
+In file included from /workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/arm/counter.h:8,
+                 from /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/horizon_bridge.c:3:
+/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/arm/../types.h:89:5: warning: '__cplusplus' is not defined, evaluates to '0' [-Wundef]
+   89 | #if __cplusplus >= 201402L
+      |     ^~~~~~~~~~~
+cc1: warning: command-line option '-Woverloaded-virtual=2' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wreorder' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wno-delete-non-virtual-dtor' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-std=c++14' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-fno-rtti' is valid for C++/D/ObjC++ but not for C
+In file included from /workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/arm/thread_context.h:9,
+                 from /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/horizon_fault_abi.c:4:
+/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/arm/../types.h:89:5: warning: '__cplusplus' is not defined, evaluates to '0' [-Wundef]
+   89 | #if __cplusplus >= 201402L
+      |     ^~~~~~~~~~~
+cc1: warning: command-line option '-Woverloaded-virtual=2' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wreorder' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wno-delete-non-virtual-dtor' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-std=c++14' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-fno-rtti' is valid for C++/D/ObjC++ but not for C
+In file included from /workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/kernel/svc.h:7,
+                 from /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/horizon_thread_bridge.c:4:
+/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/kernel/../types.h:89:5: warning: '__cplusplus' is not defined, evaluates to '0' [-Wundef]
+   89 | #if __cplusplus >= 201402L
+      |     ^~~~~~~~~~~
+/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/runtime/javaThread.cpp: In member function 'virtual void JavaThread::print_on_error(outputStream*, char*, int) const':
+/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/runtime/javaThread.cpp:1587:22: warning: format '%d' expects argument of type 'int', but argument 3 has type 'uint64_t' {aka 'long unsigned int'} [-Wformat=]
+ 1587 |     st->print(", id=%d", osthread()->thread_id());
+      |                     ~^   ~~~~~~~~~~~~~~~~~~~~~~~
+      |                      |                        |
+      |                      int                      uint64_t {aka long unsigned int}
+      |                     %ld
+In file included from /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/logging/logTagSet.cpp:37:
+/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/utilities/permitForbiddenFunctions.hpp:34:10: fatal error: permitForbiddenFunctions_posix.hpp: No such file or directory
+   34 | #include "permitForbiddenFunctions_posix.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[3]: *** [lib/CompileJvm.gmk:180: /workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/logTagSet.o] Error 1
+gmake[3]: *** Waiting for unfinished jobs....
+gmake[2]: *** [make/Main.gmk:250: hotspot-zero-static-libs] Error 2
+
+ERROR: Build failed for target 'hotspot-zero-static-libs' in configuration '/workspace/java-switch/build/openjdk25-horizon' (exit code 2)
+
+=== Output from failing command(s) repeated here ===
+* For target hotspot_variant-zero_libjvm_objs_static_logTagSet.o:
+In file included from /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/logging/logTagSet.cpp:37:
+/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/utilities/permitForbiddenFunctions.hpp:34:10: fatal error: permitForbiddenFunctions_posix.hpp: No such file or directory
+   34 | #include "permitForbiddenFunctions_posix.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+
+* All command lines available in /workspace/java-switch/build/openjdk25-horizon/make-support/failure-logs.
+=== End of repeated output ===
+
+No indication of failed target found.
+HELP: Try searching the build log for '] Error'.
+HELP: Run 'make doctor' to diagnose build problems.
+
+make[1]: *** [/workspace/java-switch/.deps/openjdk25-horizon/make/Init.gmk:151: main] Error 2
+make: *** [/workspace/java-switch/.deps/openjdk25-horizon/make/PreInit.gmk:159: hotspot-zero-static-libs] Error 2
+
+Exit status: 2

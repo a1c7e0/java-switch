@@ -1,0 +1,1 @@
+EMULATOR-PASSED: 60 actual AArch64 fault-island/boundary/production-fatal cases; kernel transfer/return mocked; Switch NOT TESTED

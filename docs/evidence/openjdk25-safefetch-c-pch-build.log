@@ -1,0 +1,41 @@
+$ make JOBS=2 hotspot-zero-static-libs
+Building target 'hotspot-zero-static-libs' in configuration '/workspace/java-switch/build/openjdk25-horizon'
+Creating hotspot/variant-zero/libjvm/objs/static/libjvm.a from 10 file(s)
+cc1: warning: command-line option '-Woverloaded-virtual=2' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wreorder' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wno-delete-non-virtual-dtor' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-std=c++14' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-fno-rtti' is valid for C++/D/ObjC++ but not for C
+cc1: warning: /workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled/precompiled.hpp.gch: not for GNU C23 [-Winvalid-pch]
+cc1: error: one or more PCH files were found, but they were invalid
+<command-line>: fatal error: precompiled.hpp: No such file or directory
+compilation terminated.
+gmake[3]: *** [lib/CompileJvm.gmk:180: /workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/horizon_bridge.o] Error 1
+gmake[3]: *** Waiting for unfinished jobs....
+gmake[2]: *** [make/Main.gmk:250: hotspot-zero-static-libs] Error 2
+
+ERROR: Build failed for target 'hotspot-zero-static-libs' in configuration '/workspace/java-switch/build/openjdk25-horizon' (exit code 2)
+
+=== Output from failing command(s) repeated here ===
+* For target hotspot_variant-zero_libjvm_objs_static_horizon_bridge.o:
+cc1: warning: command-line option '-Woverloaded-virtual=2' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wreorder' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wno-delete-non-virtual-dtor' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-std=c++14' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-fno-rtti' is valid for C++/D/ObjC++ but not for C
+cc1: warning: /workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled/precompiled.hpp.gch: not for GNU C23 [-Winvalid-pch]
+cc1: error: one or more PCH files were found, but they were invalid
+<command-line>: fatal error: precompiled.hpp: No such file or directory
+compilation terminated.
+
+* All command lines available in /workspace/java-switch/build/openjdk25-horizon/make-support/failure-logs.
+=== End of repeated output ===
+
+No indication of failed target found.
+HELP: Try searching the build log for '] Error'.
+HELP: Run 'make doctor' to diagnose build problems.
+
+make[1]: *** [/workspace/java-switch/.deps/openjdk25-horizon/make/Init.gmk:151: main] Error 2
+make: *** [/workspace/java-switch/.deps/openjdk25-horizon/make/PreInit.gmk:159: hotspot-zero-static-libs] Error 2
+
+Exit status: 2

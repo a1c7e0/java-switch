@@ -73,13 +73,13 @@ with zipfile.ZipFile(DIST/'java-switch-test-package.zip','w',zipfile.ZIP_DEFLATE
 manifest={'source_revision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
     'source_tree_dirty':bool(subprocess.check_output(['git','status','--porcelain'],cwd=ROOT)),
     'horizon_execution':'NOT TESTED','java8_interpreter':'built and host-tested','java25_runtime':'NOT IMPLEMENTED',
-    'openjdk25_services_probe':'CROSS-BUILT; time/semaphore/atomic services only; no VM' if probe.exists() else 'not built',
+    'openjdk25_services_probe':'CROSS-BUILT; time/synchronization/native-thread/SafeFetch probes; no VM; faults NOT TESTED on hardware' if probe.exists() else 'not built',
     'standard_jni_invocation':'Host Java 25 JNI and FFM tested; no Horizon JVM 25 linked','sdk_abi':1,'artifacts':[]}
 for p in sorted(DIST.iterdir()):
     if p.is_file() and p.name not in ['manifest.json','SHA256SUMS']:
         dk=pathlib.Path(os.environ.get('DEVKITPRO',str(ROOT/'.toolchain/opt/devkitpro')))
         compiler=subprocess.check_output([str(dk/'devkitA64/bin/aarch64-none-elf-gcc'),'--version'],text=True).splitlines()[0]
-        manifest['artifacts'].append({'name':p.name,'purpose':{'java-test.nro':'Java8 interpreter diagnostic','ffi-test.nro':'Native AAPCS64/libnx W^X and page-mapping tests','zero-services-test.nro':'OpenJDK25 native time/semaphore/atomic probe; NO Java VM','javaswitch-horizon-sdk.tar.gz':'Reusable runtime/JNI/FFI SDK; no Horizon Java25 VM','java-switch-source.tar.gz':'Corresponding source','java-switch-test-package.zip':'Installable diagnostics'}.get(p.name,'Build artifact'),
+        manifest['artifacts'].append({'name':p.name,'purpose':{'java-test.nro':'Java8 interpreter diagnostic','ffi-test.nro':'Native AAPCS64/libnx W^X and page-mapping tests','zero-services-test.nro':'OpenJDK25 native synchronization/thread/fault probe; NO Java VM','javaswitch-horizon-sdk.tar.gz':'Reusable runtime/JNI/FFI SDK; no Horizon Java25 VM','java-switch-source.tar.gz':'Corresponding source','java-switch-test-package.zip':'Installable diagnostics'}.get(p.name,'Build artifact'),
             'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'source_revision':manifest['source_revision'],'build_date':datetime.datetime.now(datetime.timezone.utc).isoformat(),
             'toolchain':compiler,'bundled_dependencies':['libnx/newlib','miniJVM Java8 or libffi component as applicable'],'build_dependencies':json.loads((ROOT/'dependencies.lock.json').read_text()),'build_verification':'PASS','tested_environment':'Linux cross-build and host runtime tests',
             'hardware_verification':'NOT TESTED','known_limitations':['No Horizon Java25 VM linked','Native CPU/JIT permissions NOT TESTED','No Minecraft execution on Horizon']})
