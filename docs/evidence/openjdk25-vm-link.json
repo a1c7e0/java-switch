@@ -1,0 +1,10 @@
+{
+  "archive_port_digest": "724d282b139ca4d9231466b26747dfe0d7c330856caf9e2a921bee3068bdc08b",
+  "archive_sha256": "1378a87608f925200a073eb5f4911352ac38837ba2d7044d69046df314d865c3",
+  "sdk_sha256": "933e2ae6e92808158c36b2f04460b9cd0e02087d2dabf1bb8bf9e19dce3e87ef",
+  "link_exit_status": 0,
+  "missing_symbols": [],
+  "java_execution": "NOT TESTED",
+  "horizon_execution": "NOT TESTED",
+  "elf_sha256": "28230c4c5b4672f4ec15caa2136fbe9c700b60c06b525f21a79c8ed40f400c9d"
+}

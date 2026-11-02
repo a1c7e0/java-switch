@@ -47,3 +47,100 @@
        print_stack_trace(st, jt, buf, sizeof(buf), true);
      }
  
+--- a/src/hotspot/share/runtime/safepointMechanism.cpp
++++ b/src/hotspot/share/runtime/safepointMechanism.cpp
+@@ -80,14 +80,14 @@
+ 
+ uintptr_t SafepointMechanism::compute_poll_word(bool armed, uintptr_t stack_watermark) {
+   if (armed) {
+-    log_debug(stackbarrier)("Computed armed for tid %d", Thread::current()->osthread()->thread_id());
++    log_debug(stackbarrier)("Computed armed for tid %" PRIuPTR, Thread::current()->osthread()->thread_id_for_printing());
+     return _poll_word_armed_value;
+   }
+   if (stack_watermark == 0) {
+-    log_debug(stackbarrier)("Computed disarmed for tid %d", Thread::current()->osthread()->thread_id());
++    log_debug(stackbarrier)("Computed disarmed for tid %" PRIuPTR, Thread::current()->osthread()->thread_id_for_printing());
+     return _poll_word_disarmed_value;
+   }
+-  log_debug(stackbarrier)("Computed watermark for tid %d", Thread::current()->osthread()->thread_id());
++  log_debug(stackbarrier)("Computed watermark for tid %" PRIuPTR, Thread::current()->osthread()->thread_id_for_printing());
+   return stack_watermark;
+ }
+ 
+--- a/src/hotspot/share/runtime/stackWatermark.cpp
++++ b/src/hotspot/share/runtime/stackWatermark.cpp
+@@ -112,8 +112,8 @@
+   const uintptr_t frames_per_poll_gc = 5;
+ 
+   ResourceMark rm;
+-  log_info(stackbarrier)("Processing whole stack for tid %d",
+-                         _jt->osthread()->thread_id());
++  log_info(stackbarrier)("Processing whole stack for tid %" PRIuPTR,
++                         _jt->osthread()->thread_id_for_printing());
+   uint i = 0;
+   while (has_next()) {
+     frame f = current();
+@@ -197,8 +197,8 @@
+ }
+ 
+ void StackWatermark::start_processing_impl(void* context) {
+-  log_info(stackbarrier)("Starting stack processing for tid %d",
+-                         _jt->osthread()->thread_id());
++  log_info(stackbarrier)("Starting stack processing for tid %" PRIuPTR,
++                         _jt->osthread()->thread_id_for_printing());
+   delete _iterator;
+   if (_jt->has_last_Java_frame()) {
+     _iterator = new StackWatermarkFramesIterator(*this);
+@@ -236,8 +236,8 @@
+   } else {
+     Atomic::release_store(&_watermark, uintptr_t(0)); // Release stack data modifications w.r.t. watermark
+     Atomic::release_store(&_state, StackWatermarkState::create(epoch_id(), true /* is_done */)); // release watermark w.r.t. epoch
+-    log_info(stackbarrier)("Finished stack processing iteration for tid %d",
+-                           _jt->osthread()->thread_id());
++    log_info(stackbarrier)("Finished stack processing iteration for tid %" PRIuPTR,
++                           _jt->osthread()->thread_id_for_printing());
+   }
+ }
+ 
+--- a/src/hotspot/share/runtime/safepoint.cpp
++++ b/src/hotspot/share/runtime/safepoint.cpp
+@@ -743,8 +743,8 @@
+   const char *s = _safepoint_safe ? "_at_safepoint" : "_running";
+ 
+   st->print_cr("Thread: " INTPTR_FORMAT
+-              "  [0x%2x] State: %s _at_poll_safepoint %d",
+-               p2i(_thread), _thread->osthread()->thread_id(), s, _at_poll_safepoint);
++              "  [0x%" PRIxPTR "] State: %s _at_poll_safepoint %d",
++               p2i(_thread), _thread->osthread()->thread_id_for_printing(), s, _at_poll_safepoint);
+ 
+   _thread->print_thread_state_on(st);
+ }
+--- a/src/hotspot/share/gc/shared/threadLocalAllocBuffer.cpp
++++ b/src/hotspot/share/gc/shared/threadLocalAllocBuffer.cpp
+@@ -155,9 +155,9 @@
+ 
+   size_t aligned_new_size = align_object_size(new_size);
+ 
+-  log_trace(gc, tlab)("TLAB new size: thread: " PTR_FORMAT " [id: %2d]"
++  log_trace(gc, tlab)("TLAB new size: thread: " PTR_FORMAT " [id: %" PRIuPTR "]"
+                       " refills %d  alloc: %8.6f desired_size: %zu -> %zu",
+-                      p2i(thread()), thread()->osthread()->thread_id(),
++                      p2i(thread()), thread()->osthread()->thread_id_for_printing(),
+                       _target_refills, _allocation_fraction.average(), desired_size(), aligned_new_size);
+ 
+   set_desired_size(aligned_new_size);
+@@ -290,12 +290,12 @@
+   size_t waste = _gc_waste + _refill_waste;
+   double waste_percent = percent_of(waste, _allocated_size);
+   size_t tlab_used  = Universe::heap()->tlab_used(thrd);
+-  log.trace("TLAB: %s thread: " PTR_FORMAT " [id: %2d]"
++  log.trace("TLAB: %s thread: " PTR_FORMAT " [id: %" PRIuPTR "]"
+             " desired_size: %zuKB"
+             " slow allocs: %d  refill waste: %zuB"
+             " alloc:%8.5f %8.0fKB refills: %d waste %4.1f%% gc: %dB"
+             " slow: %dB",
+-            tag, p2i(thrd), thrd->osthread()->thread_id(),
++            tag, p2i(thrd), thrd->osthread()->thread_id_for_printing(),
+             _desired_size / (K / HeapWordSize),
+             _slow_allocations, _refill_waste_limit * HeapWordSize,
+             _allocation_fraction.average(),

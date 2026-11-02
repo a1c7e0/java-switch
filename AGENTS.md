@@ -34,11 +34,14 @@ archive plus overlay/notices with the NRO. Never include libnx headers directly
 in HotSpot C++: u8/s8/Handle/Mutex conflict; use the opaque C bridge. Current
 full build passes the PCH, mutex/monitor, OSThread/Parker headers and the POSIX
 SafeFetch selection. Read the latest build evidence for its next exact blocker.
-Latest full build: 330 AArch64 objects; `runtime/mutex.cpp` needs
-`threadCrashProtection_horizon.hpp`. NMT signed bounds now use numeric_limits.
-See `openjdk25-native-build.log` and `openjdk25-native-objects.json` in evidence.
-Native-thread primitives are implemented; HotSpot create/attach/detach/TLS/reaper
-integration and safepoints remain unfinished. Runtime ABI v1 remains unchanged.
+Latest full build: 553 AArch64 objects and the genuine upstream libjvm.a target
+complete. A real Horizon PIE link containing JNI_CreateJavaVM now passes with
+zero missing symbols (not VM startup). See openjdk25-static-archive.json and
+openjdk25-vm-link.log/json in evidence. Native class libraries and the minimal
+runtime image are being integrated; no classfile69 or Minecraft execution on
+Horizon has been verified.
+HotSpot create/attach/detach/TLS/startup handshake and deferred native cleanup
+are implemented and host-mocked. Safepoint/managed execution remains unverified. Runtime ABI v1 remains unchanged.
 `docs/OPENJDK25_SYNC.md` and `docs/OPENJDK25_FAULTS.md` describe the private port.
 The strong exception entry recovers only exact SafeFetch load PCs; unmatched
 faults retain the libnx fatal path and debugger policy. Never extend that to a
@@ -53,9 +56,18 @@ actions through its existing flock.
 using real physical-memory syscalls. Protect uses svcSetMemoryPermission for
 NONE/R/RW; executable requests fail as unsupported. ffi-test Y keeps the original
 whole-region test; B tests partial mapping and permissions. Mocked host tests do
-not establish syscall availability. Partial release and full JVM integration
-remain unimplemented. Serialize release against all accesses to the same region.
+not establish syscall availability. The public SDK does not expose partial reservation release. The private HotSpot
+bridge implements it; both use the shared Alias coordinator. See
+`docs/OPENJDK25_MEMORY.md` for syscall eligibility, budget and ownership rules. Serialize release against all accesses to the same region.
 
 Export reusable runtime APIs and package the Java class library with its source
 and GPL notices. Do not imply that binary-only distribution avoids GPL terms.
 Host Linux JDKs are build/reference tools, never Horizon runtime artifacts.
+
+Full VM link diagnostics use `python3 scripts/openjdk25.py link-vm`; the result
+is an actual AArch64 Horizon ELF, not an NRO or execution proof. It checks the
+upstream archive hash and records exact source/SDK/ELF hashes. `java-base` runs
+actual target javac and copies resources, while `native-base` continues native
+compilation after errors to expose remaining platform dependencies. Image
+construction uses host jmod/jlink as tools only; never bundle a host VM/native
+library. Keep native JNI symbol registration derived from actual archives.

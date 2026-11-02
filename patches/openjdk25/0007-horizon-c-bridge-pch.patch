@@ -1,17 +1,18 @@
 --- a/make/hotspot/lib/JvmOverrideFiles.gmk
 +++ b/make/hotspot/lib/JvmOverrideFiles.gmk
-@@ -143,6 +143,16 @@
+@@ -149,6 +149,17 @@
  
  endif
  
-+# Modified 2026-11-02: libnx types must stay in C translation units. These
-+# bridges cannot consume HotSpot's C++ precompiled header.
++# Modified 2026-11-02: libnx types must stay in real C translation units,
++# without the HotSpot C++ precompiled header.
 +ifeq ($(call isTargetOs, horizon), true)
-+  JVM_PRECOMPILED_HEADER_EXCLUDE += \
-+      horizon_bridge.c horizon_thread_bridge.c horizon_fault_abi.c
++  JVM_PRECOMPILED_HEADER_EXCLUDE += horizon_bridge.c horizon_thread_bridge.c horizon_fault_abi.c horizon_memory_bridge.c horizon_system_bridge.c
 +  BUILD_LIBJVM_horizon_bridge.c_CFLAGS := -std=gnu11
 +  BUILD_LIBJVM_horizon_thread_bridge.c_CFLAGS := -std=gnu11
 +  BUILD_LIBJVM_horizon_fault_abi.c_CFLAGS := -std=gnu11
++  BUILD_LIBJVM_horizon_memory_bridge.c_CFLAGS := -std=gnu11
++  BUILD_LIBJVM_horizon_system_bridge.c_CFLAGS := -std=gnu11
 +endif
 +
  ################################################################################

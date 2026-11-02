@@ -1,0 +1,23 @@
+--- a/src/hotspot/share/memory/memoryReserver.cpp
++++ b/src/hotspot/share/memory/memoryReserver.cpp
+@@ -297,11 +297,19 @@
+ ReservedSpace CodeMemoryReserver::reserve(size_t size,
+                                           size_t alignment,
+                                           size_t page_size) {
++  // Modified 2026-11-02: Zero CodeBuffers hold records with pointers to
++  // precompiled C routines; Zero calls those routines, not the record bytes.
++  // Keep the generic CodeMemoryReserver policy for all other configurations.
++#if defined(HORIZON) && defined(ZERO)
++  constexpr bool executable_code_cache = false;
++#else
++  constexpr bool executable_code_cache = ExecMem;
++#endif
+   return MemoryReserver::reserve(nullptr /* requested_address */,
+                                  size,
+                                  alignment,
+                                  page_size,
+-                                 ExecMem,
++                                 executable_code_cache,
+                                  mtCode);
+ }
+ 
