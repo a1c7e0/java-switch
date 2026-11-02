@@ -29,6 +29,7 @@ typedef struct {
 typedef struct {int code;const char *stage;} JsLaunchResult;
 int js_runtime_query(const char *backend,JsRuntimeInfo *info);
 int js_runtime_launch(const JsLaunchRequest *request,JsLaunchResult *result);
+int js_runtime_launch_with_options(const JsLaunchRequest *request,const char *const *options,size_t option_count,JsLaunchResult *result);
 #ifdef __cplusplus
 }
 #endif

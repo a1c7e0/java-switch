@@ -8,16 +8,22 @@
 extern jint JNI_CreateJavaVM(JavaVM **,void **,void *) __attribute__((weak));
 int js_openjdk_available(void){return JNI_CreateJavaVM!=NULL;}
 int js_openjdk_launch(const JsLaunchRequest *q,JsLaunchResult *out) {
+    return js_runtime_launch_with_options(q,NULL,0,out);
+}
+int js_openjdk_launch_with_options(const JsLaunchRequest *q,const char *const *extra,size_t count,JsLaunchResult *out) {
     static int created;
     if(created){out->code=JS_UNAVAILABLE;out->stage="JVM-reinitialization-unsupported";return out->code;}
     if(!js_openjdk_available()){out->code=JS_UNAVAILABLE;out->stage="runtime-not-linked";return out->code;}
     size_t bytes=strlen(q->classpath)+32;char *cp=malloc(bytes);
     if(!cp){out->code=JS_UNAVAILABLE;out->stage="native-allocation";return out->code;}
     snprintf(cp,bytes,"-Djava.class.path=%s",q->classpath);char heap[32];snprintf(heap,sizeof(heap),"-Xmx%uM",q->heap_mib);
-    JavaVMOption options[]={{cp,NULL},{heap,NULL},{"--enable-native-access=ALL-UNNAMED",NULL}};
-    JavaVMInitArgs init={.version=JNI_VERSION_1_8,.nOptions=3,.options=options,.ignoreUnrecognized=JNI_FALSE};
+    JavaVMOption *options=calloc(3+count,sizeof(*options));
+    if(!options){free(cp);out->code=JS_UNAVAILABLE;out->stage="native-allocation";return out->code;}
+    options[0].optionString=cp;options[1].optionString=heap;options[2].optionString="--enable-native-access=ALL-UNNAMED";
+    for(size_t i=0;i<count;i++)options[i+3].optionString=(char *)extra[i];
+    JavaVMInitArgs init={.version=JNI_VERSION_1_8,.nOptions=(jint)(3+count),.options=options,.ignoreUnrecognized=JNI_FALSE};
     JavaVM *vm=NULL;JNIEnv *env=NULL;out->stage="JNI_CreateJavaVM";
-    jint rc=JNI_CreateJavaVM(&vm,(void **)&env,&init);free(cp);
+    jint rc=JNI_CreateJavaVM(&vm,(void **)&env,&init);free(options);free(cp);
     if(rc!=JNI_OK){out->code=JS_UNAVAILABLE;return out->code;}
     created=1;
     int result=JS_JAVA_EXCEPTION;out->stage="vm-ready-hook";

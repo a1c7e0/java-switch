@@ -9,6 +9,7 @@ public final class Java25Smoke {
     static void check(boolean value,String text){if(!value)throw new AssertionError(text);System.out.println("PASS: "+text);}
     public static void main(String[] args)throws Throwable {
         check(Runtime.version().feature()==25,"Java 25 runtime / classfile 69");
+        check("yes".equals(System.getProperty("js.option.forwarded")),"structured JVM option forwarding");
         Point p=new Point(20,22);check(p.x()+p.y()==42&&Point.class.getRecordComponents().length==2,"record / reflection");
         check(nativeAdd(20,22)==42,"standard JNI RegisterNatives / native call");
         int[] state={0};Thread t=Thread.ofPlatform().start(()->state[0]=42);t.join();check(state[0]==42,"thread / lambda / synchronization");
