@@ -1,7 +1,7 @@
 # Switchcraft runtime handoff
 
 Published runtime/SDK source pin on `a1c7e0/java-switch`, branch `main`:
-**`aea0bab1cf18d4948650dffbfff64766298c2737`**.
+**`26e8387e1a78a78ed7d5bd5f8b50886de70d4275`**.
 Later documentation/example commits may accompany the package; use the full
 `source_revision` in `dist/manifest.json` for exact package reproduction. The
 final packaging run is performed from a clean committed tree. Never pin a
@@ -51,7 +51,7 @@ HotSpot memory services; partial reservation release remains absent.
 | --- | --- |
 | `dist/java-test.nro` | Preserved Java8 miniJVM diagnostic |
 | `dist/ffi-test.nro` | AAPCS64 integer/FP downcalls and closures; whole/partial VM probes |
-| `dist/zero-services-test.nro` | Real OpenJDK25 port time/semaphore/atomic components; **no Java VM** |
+| `dist/zero-services-test.nro` | Real OpenJDK25 time/sync/native-thread/TLS/SafeFetch probes; **no Java VM** |
 | `dist/javaswitch-horizon-sdk.tar.gz` | `include/javaswitch/{runtime,vmem}.h`, ffi headers, `lib/libjavaswitch.a`, runtime contract and notices |
 | `build/sdk/libjavaswitch.a` | AArch64 SDK, miniJVM C, libffi and native memory/closure helpers; no OpenJDK VM |
 | `build/openjdk25-horizon/components/*.o` | Experimental HotSpot service/utility objects only; not included as a VM in the SDK |
@@ -149,10 +149,12 @@ and container checks. Additional commands:
 
 ```sh
 python3 scripts/openjdk25.py configure   # PASS: horizon-aarch64/newlib/Zero
-python3 scripts/openjdk25.py build       # BLOCKED: mutex_horizon.hpp
+python3 scripts/openjdk25.py build       # incomplete OS platform; retain exact log
 python3 scripts/openjdk25.py components  # CROSS-BUILT genuine components
-python3 scripts/openjdk25.py test-host   # HOST-PASSED, mocked clocks + real host atomics
+python3 scripts/openjdk25.py test-host   # HOST-PASSED clock/sync/thread/TLS mocks
 python3 scripts/openjdk25.py probe       # CROSS-BUILT service NRO, no VM
+python3 scripts/bootstrap-openjdk-emulator.py # optional hash-pinned Linux tool
+python3 scripts/test-openjdk25-faults.py # EMULATOR-PASSED; kernel is mocked
 python3 scripts/verify-package.py        # bytes/headers/notices/source reconstruction
 ```
 
@@ -162,14 +164,40 @@ all NROs. Host Java25 JNI and FFM down/upcalls pass; JNI/FFM **on Horizon remain
 BLOCKED**, as do classfile69 execution, JVMTI/instrumentation/retransformation,
 Java25 NIO/networking and the complete class library.
 
-Next high-value file: `src/hotspot/os/horizon/mutex_horizon.hpp` in the overlay,
-implementing `PlatformMutex` / `PlatformMonitor` with the opaque C bridge.
-libnx `condvarWaitTimeout` returns raw timeout `0xEA01`; preserve real error
-semantics and reacquisition rules, then test contention/timeouts/failure paths.
-Follow with OSThread/Parker/TLS/stack bounds, safepoints, recoverable fault design,
-real virtual-memory binding and java.base native/image initialization. Returning
-from libnx's ordinary exception callback breaks the process; it is not a
-resumable POSIX signal handler. Do not skip these services to manufacture a VM.
+The PCH, monitor/parking platform, POSIX SafeFetch and permitted-function include
+barriers are crossed. Implemented code lives under
+`ports/openjdk25/src/hotspot/os/horizon/` and `os_cpu/horizon_zero/`; maintained
+shared/build changes live in `patches/openjdk25/`. The exact newest full-build
+failure is recorded in `docs/OPENJDK25_SYNC.md` and its evidence log. No archive
+of incomplete objects is advertised as a functioning VM.
+
+Current source-build blocker: `runtime/mutex.cpp` includes the missing
+`threadCrashProtection_horizon.hpp`, after 330 genuine AArch64 VM objects.
+The NMT SSIZE_MAX and earlier header/format barriers are crossed. Resolve the
+broader crash-protection contract explicitly; SafeFetch covers only two native
+read instructions and cannot stand in for that interface.
+
+Next high-value lifecycle file: `src/hotspot/os/horizon/os_horizon_thread.cpp` in the
+overlay, implementing genuine `os::create_attached_thread`, `create_main_thread`
+and VM-created worker startup/lifetime. Main/attached threads must not close
+libnx-owned handles/stacks. Created workers need an INITIALIZED/start gate and
+deferred reaping: JavaThread::post_run can delete its OSThread before libnx's
+threadExit finishes on that same stack. Transfer native ownership before
+destruction and join/close it from a surviving thread. See
+`docs/OPENJDK25_SYNC.md`; native primitives and TLS alone do not implement this.
+
+Follow with safepoints, real virtual-memory binding, general stack/Java fault
+handling and java.base native/image initialization. The new early exception
+entry resumes only exact SafeFetch load PCs; the ordinary callback still breaks
+the process. It preserves debugger policy and the original fatal path, with
+actual HOS transfer/resume NOT TESTED. The private port owns a strong libnx entry;
+other custom exception entries require explicit integration. See
+`docs/OPENJDK25_FAULTS.md`. These private objects are not added to the public SDK.
+
+Hardware plan: application-mode hbmenu, Java8 A and FFI A/X/Y/B; then native
+services A, X (ID/stack/TLS/64 handoffs), experimental Y (SafeFetch32/N fallbacks),
+and X again if Y returns. Relaunch and repeat, retaining complete logs/crash
+reports. Native Y can abort or stall. No physical-device result exists yet.
 
 Downstream request: retain the ABI v1 availability gate and pin this repository's
 full SHA. Defer Java25/LWJGL execution until an actual VM/image arrives. Identify
