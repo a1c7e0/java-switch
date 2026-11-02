@@ -1,0 +1,12 @@
+--- a/src/hotspot/share/utilities/permitForbiddenFunctions.hpp
++++ b/src/hotspot/share/utilities/permitForbiddenFunctions.hpp
+@@ -30,6 +30,9 @@
+ 
+ #ifdef _WINDOWS
+ #include "permitForbiddenFunctions_windows.hpp"
++#elif defined(HORIZON)
++// Modified 2026-11-02: select actual newlib wrappers without POSIX OS inputs.
++#include "permitForbiddenFunctions_horizon.hpp"
+ #else
+ #include "permitForbiddenFunctions_posix.hpp"
+ #endif

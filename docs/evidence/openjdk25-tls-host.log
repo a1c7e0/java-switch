@@ -1,0 +1,4 @@
+HOST-PASSED: real Horizon ThreadLocalStorage + compiler TLS; four isolated workers, restore/clear; libnx TLS mocked
+allocation-failure: rejected (signal 6); guarantee(slot >= 0) failed: libnx threadTlsAlloc failed: no available TLS slot
+uninitialized: rejected (signal 6); guarantee(is_initialized()) failed: Horizon TLS accessed before initialization
+double-init: rejected (signal 6); guarantee(!is_initialized()) failed: Horizon TLS initialized more than once

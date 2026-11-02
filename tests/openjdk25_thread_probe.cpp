@@ -2,21 +2,38 @@
 // Standalone native thread/permit probe; no JavaThread or JNI VM is created.
 #include "runtime/os.hpp"
 #include "runtime/atomic.hpp"
+#include "runtime/threadLocalStorage.hpp"
 #include "park_horizon.hpp"
 #include "horizon_thread_bridge.h"
 #include <new>
 extern "C" void sc_log(const char*, ...);
+static THREAD_LOCAL void* compiler_marker = nullptr;
+struct TLSProbeScope {
+  Thread* previous;
+  void* previous_compiler;
+  bool initially_empty;
+  explicit TLSProbeScope(void* marker) : previous(ThreadLocalStorage::thread()),
+      previous_compiler(compiler_marker), initially_empty(previous == nullptr && previous_compiler == nullptr) {
+    ThreadLocalStorage::set_thread(reinterpret_cast<Thread*>(marker)); compiler_marker = marker;
+  }
+  ~TLSProbeScope() { ThreadLocalStorage::set_thread(previous); compiler_marker = previous_compiler; }
+  bool matches(void* marker) const {
+    return compiler_marker == marker && ThreadLocalStorage::thread() == reinterpret_cast<Thread*>(marker);
+  }
+};
 struct NativeProbeState {
   HorizonParkPermit ping, pong;
   js_horizon_thread* handle = nullptr;
   bool started = false, joined = false;
-  volatile int stop = 0, completed = 0, stack_valid = 0;
+  volatile int stop = 0, completed = 0, stack_valid = 0, tls_valid = 0;
   volatile uint64_t child_id = 0;
   volatile uint32_t stack_result = 0, id_result = 0;
 };
 static void worker(void* opaque) {
   auto* state = static_cast<NativeProbeState*>(opaque);
   uintptr_t low = 0, high = 0; uint32_t raw = 0; int marker;
+  TLSProbeScope tls(&marker);
+  bool tls_passed = tls.initially_empty;
   auto status = js_horizon_thread_current_stack_bounds(&low, &high, &raw);
   Atomic::store(&state->stack_result, raw);
   Atomic::store(&state->stack_valid, status == JS_HORIZON_THREAD_OK &&
@@ -27,6 +44,8 @@ static void worker(void* opaque) {
   if (status == JS_HORIZON_THREAD_OK) Atomic::store(&state->child_id, id);
   for (int i = 0; i < 64; i++) {
     if (state->ping.park(1000000000) != OS_OK || Atomic::load(&state->stop)) return;
+    tls_passed &= tls.matches(&marker);
+    Atomic::store(&state->tls_valid, tls_passed ? 1 : 0);
     Atomic::add(&state->completed, 1); state->pong.unpark();
   }
 }
@@ -53,9 +72,12 @@ extern "C" void js_zero_thread_probe() {
     sc_log("Retry pending native thread cleanup before another probe\n");
     cleanup(state, 0); return;
   }
+  if (!ThreadLocalStorage::is_initialized()) ThreadLocalStorage::init();
+  TLSProbeScope tls(state);
   state->ping.reset(); state->pong.reset();
   Atomic::store(&state->stop, 0); Atomic::store(&state->completed, 0);
   Atomic::store(&state->stack_valid, 0); Atomic::store(&state->child_id, UINT64_C(0));
+  Atomic::store(&state->tls_valid, 0);
   uint64_t parent_id = 0; uint32_t raw = 0;
   auto status = js_horizon_thread_current_id(&parent_id, &raw);
   sc_log("native parent identity status=%d Result=0x%x id=%llu\n", status, raw, (unsigned long long)parent_id);
@@ -71,6 +93,7 @@ extern "C" void js_zero_thread_probe() {
   for (int i = 0; i < 64; i++) {
     state->ping.unpark();
     if (state->pong.park(1000000000) != OS_OK) { passed = false; break; }
+    passed &= tls.initially_empty && tls.matches(state);
   }
   Atomic::store(&state->stop, 1); state->ping.unpark();
   if (!cleanup(state, 2000000000)) {
@@ -78,9 +101,11 @@ extern "C" void js_zero_thread_probe() {
   }
   const uint64_t child = Atomic::load(&state->child_id);
   passed &= Atomic::load(&state->completed) == 64 && Atomic::load(&state->stack_valid) &&
-            child != 0 && child != parent_id;
+            child != 0 && child != parent_id && Atomic::load(&state->tls_valid);
   sc_log("native child id=%llu stack Result=0x%x identity Result=0x%x completed=%d\n",
       (unsigned long long)child, Atomic::load(&state->stack_result), Atomic::load(&state->id_result),
       Atomic::load(&state->completed));
   sc_log("native thread / stack bounds / 64 permit handoffs: %s; no VM/JNI test\n", passed ? "PASS" : "FAIL");
+  sc_log("HotSpot library TLS + compiler __thread isolation=%s; opaque markers, no Thread/JavaThread objects\n",
+      passed && Atomic::load(&state->tls_valid) ? "PASS" : "FAIL");
 }

@@ -55,11 +55,42 @@ handle and callback context across X retries; callback memory is never a returne
 stack frame. Unexpected condition Results reach the SD log before abort.
 All Switch behavior remains NOT TESTED.
 
+## Library and compiler TLS
+
+`threadLocalStorage_horizon.cpp` supplies the actual JDK25 ThreadLocalStorage
+interface using one process-lifetime libnx slot. Initialization is serialized
+before VM workers; allocation failure, repeated initialization and uninitialized
+access are fatal. There is no fake per-process Thread pointer. libnx clears the
+slot before its native-exit callback; the callback restores the association so
+a later native/JNI destructor can detach and clear it, following HotSpot's
+existing restore design. Cross-library destructor order and actual JNI detach
+remain unverified.
+
+Host tests compile this implementation and its C bridge with mocked libnx TLS.
+They check four concurrent isolated workers, compiler TLS, callback restoration,
+explicit clear and fatal initialization failures. X now checks main/worker
+compiler `__thread` and library TLS with distinct opaque markers across 64
+handoffs, restoring prior values before returning. It constructs no Thread or
+JavaThread. The AArch64 probe references `__aarch64_read_tp`; the final ELF
+contains libnx's actual `MRS TPIDRRO_EL0; LDR [X0,#0x1F8]; RET` accessor.
+Linking and host tests do not establish native isolation on Switch.
+
+The next lifecycle implementation must handle two distinct cases: attached
+main/native threads own no libnx handle/stack, while VM-created workers require
+an INITIALIZED/start handshake and deferred native cleanup. JavaThread::post_run
+can delete its Thread/OSThread on the exiting native thread, before libnx's
+threadExit clears TLS and exits. `os::free_thread` must transfer native ownership
+to a surviving reaper; it cannot join/unmap the stack it is still using. Keep
+that ownership alive independently of a deleted OSThread. The existing checked
+native bridge is the primitive for this work, not a substitute for it.
+
 The parking milestone passed the precompiled header and generated 133 shared/Zero
 AArch64 objects before Zero's POSIX SafeFetch selection stopped compilation.
 The dedicated Horizon fault islands now cross that barrier; see
-`docs/OPENJDK25_FAULTS.md`. The full build has generated 279 VM objects and
-currently stops at the POSIX-specific permitForbiddenFunctions include.
+`docs/OPENJDK25_FAULTS.md`. Patches 0008/0009 cross the POSIX-only permitted
+function include and preserve full native IDs in shared diagnostic formats.
+The full build has generated 293 VM objects and currently stops at the missing
+newlib SSIZE_MAX macro in the NMT reporter. `openjdk25-tls-build.log` records it.
 Patch 0007 keeps libnx C bridges out of the C++ PCH; their real C objects now
 compile in the upstream build, with inherited C++-only flag warnings recorded.
 No static VM archive is complete. Configuration is narrowed to Serial GC, JNI checks and

@@ -34,10 +34,12 @@ classify `aarch64-none-horizon` as Horizon/newlib (not POSIX/Linux) and select
 devkitA64 GCC. The real upstream configure completed with Zero and the libffi
 fallback linker using the actual W^X libffi archive. Horizon JNI/conf inputs,
 compiler headers, default flags, AArch64 atomic/order primitives, actual `os::`
-time functions and a libnx counting semaphore adapter are now tracked.
-The latest full static build stops at missing `mutex_horizon.hpp` in the
-HotSpot precompiled header. See `docs/evidence/openjdk25-configure-final.log`,
-`docs/evidence/openjdk25-build-final.log` and the earlier numbered logs.
+time functions, counting semaphores, mutexes/condition monitors, event permits,
+Parker transitions, native-thread primitives, library TLS and narrow SafeFetch
+fault islands are tracked. The full build passes the precompiled header and
+compiles genuine shared/Zero VM sources; it is still an incomplete port.
+See the latest evidence logs, `docs/OPENJDK25_SYNC.md` and
+`docs/OPENJDK25_FAULTS.md` for the current exact barrier and validation boundaries.
 No `libjvm.a` or usable
 Horizon Java 25 runtime has been produced.
 
@@ -61,10 +63,13 @@ the generated configuration and compiler diagnostics are under
 `build/openjdk25-horizon/`. The build target is `hotspot-zero-static-libs`.
 Linux build tools are never included as Switch runtime artifacts.
 
-`zero-services-test.nro` genuinely links the port's time/semaphore components
-and tests HotSpot atomic operations. It has no VM entry point. Device execution
-is NOT TESTED; host clock conversion/error tests and a four-thread Atomic test
-are separate evidence. The full source archive accompanies this GPL component
+`zero-services-test.nro` A links time/synchronization/event components and tests
+HotSpot Atomics. X checks native ID/stack, compiler and library TLS isolation,
+and 64 permit exchanges with checked join/close. Y is an experimental SafeFetch
+fault-recovery test and may abort or stall. There is no VM entry point. Device
+execution is NOT TESTED. Host clock/monitor/permit/TLS/failure tests and actual
+ARM64 instruction tests with a mocked kernel are separate evidence.
+The full source archive accompanies this GPL component
 diagnostic. `java25-hello.jar` contains a minimal classfile-69 Hello World and
 manifest; it can only be run on the host reference JDK at present.
 

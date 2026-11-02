@@ -1,13 +1,13 @@
 {
-  "port_digest": "f5f5ca878b50305dfd4cbe86f8587475a4d18f2d684078b450842d2c29e9f636",
+  "port_digest": "f776b826497ffeb9c093ac428d85c4404caea3cf4ff19e79461e0a0b6b7bbd95",
   "java_vm_linked": false,
   "inputs": {
     "src/zero_services_test.c": "545e03002467c05d493506ff73de06189d9e3c63803f448e4fe24adef647bb7e",
     "src/platform.c": "f269c268d62ccf20895485ef8f27795eb4f60c613fa9c1e8620d5a5d7ffba9c5",
     "tests/openjdk25_services_probe.cpp": "497120fcddf11ff10ce82202521c9261923545d5207bb86b7ceb5baaf23ace80",
-    "tests/openjdk25_thread_probe.cpp": "39ac9b3f6ad42028b308610e25976d5579f5360e18587e549c3067c536b55fe3",
-    "scripts/openjdk25.py": "b37fcb2d7f65341d24bbc1df9314ce579d520b3b0a8414d9c0137f28869f8e83"
+    "tests/openjdk25_thread_probe.cpp": "4c891db26b82afefbdc22d7c4a571b93cef0675c6bafc410756e6f73818321fb",
+    "scripts/openjdk25.py": "7d5fc5b0cb98880dc2ef6e731f34f61c3a02a0214efdee9f3ddfbed8c5d6ab6d"
   },
-  "elf_sha256": "66fb9fecb5393cec556057e1ad693bc4c914629962fb48c2b8d4efb2b7c4daf4",
-  "nro_sha256": "891f684e833649312cd088be326d82f178b2d76ebfc9a4e69512e746d878f948"
+  "elf_sha256": "9dc55727f5564300b8f369d3b7721993ada8524865f2967bb8e12d00c4d6248a",
+  "nro_sha256": "71945b366ce5d8bd29b6b5c047d668b13c9e061a5232f5c176b9e87bd46b19a8"
 }

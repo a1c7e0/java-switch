@@ -1,0 +1,49 @@
+--- a/src/hotspot/share/runtime/javaThread.cpp
++++ b/src/hotspot/share/runtime/javaThread.cpp
+@@ -1584,7 +1584,8 @@
+   st->print(" [");
+   st->print("%s", _get_thread_state_name(_thread_state));
+   if (osthread()) {
+-    st->print(", id=%d", osthread()->thread_id());
++    // Modified 2026-11-02: preserve full-width native IDs (including Horizon).
++    st->print(", id=%" PRIuPTR, osthread()->thread_id_for_printing());
+   }
+   // Use raw field members for stack base/size as this could be
+   // called before a thread has run enough to initialize them.
+--- a/src/hotspot/share/runtime/thread.cpp
++++ b/src/hotspot/share/runtime/thread.cpp
+@@ -142,8 +142,9 @@
+ address Thread::stack_base() const {
+   // Note: can't report Thread::name() here as that can require a ResourceMark which we
+   // can't use because this gets called too early in the thread initialization.
+-  assert(_stack_base != nullptr, "Stack base not yet set for thread id:%d (0 if not set)",
+-         osthread() != nullptr ? osthread()->thread_id() : 0);
++  // Modified 2026-11-02: print IDs through the platform-width accessor.
++  assert(_stack_base != nullptr, "Stack base not yet set for thread id:%" PRIuPTR " (0 if not set)",
++         osthread() != nullptr ? osthread()->thread_id_for_printing() : uintx(0));
+   return _stack_base;
+ }
+ #endif
+@@ -518,8 +519,8 @@
+     if (os_thr->get_state() != ZOMBIE) {
+       // Use raw field members for stack base/size as this could be
+       // called before a thread has run enough to initialize them.
+-      st->print(" [id=%d, stack(" PTR_FORMAT "," PTR_FORMAT ") (" PROPERFMT ")]",
+-                osthread()->thread_id(), p2i(_stack_base - _stack_size), p2i(_stack_base),
++      st->print(" [id=%" PRIuPTR ", stack(" PTR_FORMAT "," PTR_FORMAT ") (" PROPERFMT ")]",
++                osthread()->thread_id_for_printing(), p2i(_stack_base - _stack_size), p2i(_stack_base),
+                 PROPERFMTARGS(_stack_size));
+     } else {
+       st->print(" terminated");
+--- a/src/hotspot/share/utilities/vmError.cpp
++++ b/src/hotspot/share/utilities/vmError.cpp
+@@ -993,7 +993,8 @@
+     Thread* thread = ((NamedThread *)_thread)->processed_thread();
+     if (thread != nullptr && thread->is_Java_thread()) {
+       JavaThread* jt = JavaThread::cast(thread);
+-      st->print_cr("JavaThread " PTR_FORMAT " (nid = %d) was being processed", p2i(jt), jt->osthread()->thread_id());
++      // Modified 2026-11-02: keep the complete platform native thread ID.
++      st->print_cr("JavaThread " PTR_FORMAT " (nid = %" PRIuPTR ") was being processed", p2i(jt), jt->osthread()->thread_id_for_printing());
+       print_stack_trace(st, jt, buf, sizeof(buf), true);
+     }
+ 

@@ -139,6 +139,7 @@ def work():
                    'src/hotspot/os/horizon/mutex_horizon.cpp',
                    'src/hotspot/os/horizon/park_horizon.cpp',
                    'src/hotspot/os/horizon/parker_horizon.cpp',
+                   'src/hotspot/os/horizon/threadLocalStorage_horizon.cpp',
                    'src/hotspot/share/utilities/stringUtils.cpp']
         with (ROOT / 'build/openjdk25-components.log').open('w') as log:
             for source in sources:
@@ -174,13 +175,14 @@ def work():
                                 str(PORT / 'src/hotspot/os/horizon' / name),
                                 '-o', str(output / (pathlib.Path(name).stem + '.o'))], env=env,
                                stdout=log, stderr=subprocess.STDOUT, check=True)
-            log.write('CROSS-BUILT: time, synchronization, parking, thread bridge, SafeFetch/fatal entry and string utilities; no VM linked or executed.\n')
+            log.write('CROSS-BUILT: time, synchronization, parking, native thread/TLS, SafeFetch/fatal entry and string utilities; no VM linked or executed.\n')
         metadata = {'compiler': original[0], 'flags': flags,
                     'port_digest': (PORT / '.javaswitch-patches').read_text(),
                     'objects': {name: hashlib.sha256((output / name).read_bytes()).hexdigest()
                                 for name in ['os_horizon_time.o', 'semaphore_horizon.o', 'mutex_horizon.o',
                                              'park_horizon.o', 'horizon_thread_bridge.o',
                                              'parker_horizon.o',
+                                             'threadLocalStorage_horizon.o',
                                              'safefetch_horizon.o', 'exception_fallback_horizon.o', 'horizon_fault_abi.o',
                                              'stringUtils.o', 'horizon_bridge.o']}}
         (output / 'metadata.json').write_text(json.dumps(metadata, indent=2) + '\n')
@@ -252,6 +254,18 @@ def work():
                             str(thread_tests / 'test_thread_bridge.c'), '-o', str(binary)], check=True)
             with (ROOT / 'build/openjdk25-thread-host.log').open('w') as log:
                 subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True, timeout=10)
+            binary = output / 'tls-host'
+            subprocess.run(['g++', *flags, str(bridge_dir / 'threadLocalStorage_horizon.cpp'),
+                            str(ROOT / 'tests/openjdk25_tls_host.cpp'), *mock_objects,
+                            '-pthread', '-Wl,--wrap=malloc', '-o', str(binary)], check=True)
+            with (ROOT / 'build/openjdk25-tls-host.log').open('w') as log:
+                subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True, timeout=10)
+                for mode in ['allocation-failure', 'uninitialized', 'double-init']:
+                    result = subprocess.run([str(binary), mode], capture_output=True, text=True, timeout=10)
+                    if result.returncode >= 0 or 'guarantee(' not in result.stderr:
+                        raise RuntimeError('Expected fatal TLS contract failure: ' + mode)
+                    log.write(f'{mode}: rejected (signal {-result.returncode}); {result.stderr}\n')
+            print('Horizon ThreadLocalStorage/compiler TLS: HOST-PASSED, libnx TLS mocked')
             return 0
         flags = metadata['flags']
         cc = metadata['compiler']
@@ -270,6 +284,7 @@ def work():
         objects = [output / name for name in ['os_horizon_time.o', 'semaphore_horizon.o',
                    'mutex_horizon.o',
                    'park_horizon.o', 'horizon_thread_bridge.o',
+                   'threadLocalStorage_horizon.o',
                    'thread_probe.o',
                    'safefetch_horizon.o', 'exception_fallback_horizon.o', 'horizon_fault_abi.o',
                    'horizon_bridge.o', 'platform.o', 'services_probe.o', 'services_runner.o']]
@@ -285,6 +300,8 @@ def work():
                        'SafeFetchN_impl', '__libnx_exception_entry', 'js_horizon_unhandled_exception_entry']:
             if symbol not in symbols:
                 raise RuntimeError('Missing real service symbol: ' + symbol)
+        if not any(line.split()[-2:] == ['T', '__aarch64_read_tp'] for line in symbols.splitlines()):
+            raise RuntimeError('Native compiler TLS accessor is not linked from libnx')
         data = elf.read_bytes()
         if data[:6] != b'\x7fELF\x02\x01' or struct.unpack_from('<HH', data, 16) != (3, 183):
             raise RuntimeError('Probe is not an AArch64 Horizon PIE')

@@ -4,37 +4,45 @@ Modified/created on 2026-11-02. These files are copied into the patched upstream
 tree by `scripts/openjdk25.py`; never maintain edits only in `.deps/`.
 The source revision and archive hash remain in `dependencies.lock.json`.
 
-New HotSpot port files are GPL-2.0-only as stated in their SPDX headers.
+New HotSpot port files are GPL-2.0-only as stated in their SPDX headers, except
+the preserved libnx fatal-entry assembly which retains its ISC notice.
 Upstream-derived files retain their copyright and license notices.
 `licenses/openjdk25-LICENSE.txt` contains the upstream GPL/Classpath text; the
 Classpath exception applies only to files designated by upstream, not to all
 HotSpot code. The root project's MIT license does not replace these notices.
 
 The overlay currently implements actual HotSpot wall/monotonic time functions,
-a libnx counting semaphore adapter, and AArch64 Zero ordering/atomic primitives.
+a libnx counting semaphore, mutex/monitor and binary event permits, a real Parker
+transition, native-thread primitives, library TLS, narrow SafeFetch fault islands
+and AArch64 Zero ordering/atomic primitives.
 The globals headers select initial stack/default flags; they do not initialize
 a VM. `horizon_bridge.c` is compiled as C because HotSpot and libnx have
 incompatible global `u8`, `s8`, `Handle` and `Mutex` type names. The bridge
 exports standard-width types and opaque pointers. It makes no POSIX signal or
-dynamic-loading claims.
+dynamic-loading claims. See `docs/OPENJDK25_SYNC.md` and
+`docs/OPENJDK25_FAULTS.md` for contracts, exact build barriers and test limits.
 
 Reproduce, after the ordinary baseline build:
 
 ```sh
 python3 scripts/bootstrap-openjdk-tools.py
 python3 scripts/openjdk25.py configure
-python3 scripts/openjdk25.py build       # expected failure: mutex_horizon.hpp
+python3 scripts/openjdk25.py build       # incomplete OS port; retain exact failure
 python3 scripts/openjdk25.py components  # deliberately separate object build
-python3 scripts/openjdk25.py test-host   # clocks mocked; host atomic execution
+python3 scripts/openjdk25.py test-host   # clock/sync/thread/TLS mocks
 python3 scripts/openjdk25.py probe       # native services NRO, NOT a Java VM
+python3 scripts/bootstrap-openjdk-emulator.py # optional Linux x86_64 tool
+python3 scripts/test-openjdk25-faults.py # actual ARM64 code; mocked kernel
 ```
 
 The component build reuses the real upstream compiler command recorded by the
 failed static build, removes the precompiled-header invocation, and compiles
-time, semaphore, and upstream string utilities as AArch64 relocatable objects.
-It also compiles the libnx C bridge. Only time, semaphore and the bridge are
-linked into the diagnostic; the atomic header is exercised by the diagnostic's
-C++ translation unit. None of these objects constitutes `libjvm.a`.
+the actual port services and upstream string utilities as AArch64 relocatable
+objects. It also compiles the libnx C bridges and fault-entry assembly. The
+diagnostic links time/synchronization/permit/native-thread/TLS/fault objects;
+Parker is separately compiled because its JavaThread transitions need a real VM.
+The atomic header is exercised by the diagnostic's C++ translation unit. None
+of these objects constitutes a usable `libjvm.a`.
 
 The standalone diagnostic defines a fatal error sink that logs and aborts. This
 is not the VM's exception dispatcher. It does not define `JNI_CreateJavaVM` and

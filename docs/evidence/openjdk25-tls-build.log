@@ -1,0 +1,63 @@
+$ make JOBS=2 hotspot-zero-static-libs
+Building target 'hotspot-zero-static-libs' in configuration '/workspace/java-switch/build/openjdk25-horizon'
+Creating hotspot/variant-zero/libjvm/objs/static/libjvm.a from 14 file(s)
+cc1: warning: command-line option '-Woverloaded-virtual=2' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wreorder' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wno-delete-non-virtual-dtor' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-std=c++14' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-fno-rtti' is valid for C++/D/ObjC++ but not for C
+In file included from /workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/arm/counter.h:8,
+                 from /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/horizon_bridge.c:3:
+/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/arm/../types.h:89:5: warning: '__cplusplus' is not defined, evaluates to '0' [-Wundef]
+   89 | #if __cplusplus >= 201402L
+      |     ^~~~~~~~~~~
+cc1: warning: command-line option '-Woverloaded-virtual=2' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wreorder' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wno-delete-non-virtual-dtor' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-std=c++14' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-fno-rtti' is valid for C++/D/ObjC++ but not for C
+In file included from /workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/arm/thread_context.h:9,
+                 from /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/horizon_fault_abi.c:4:
+/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/arm/../types.h:89:5: warning: '__cplusplus' is not defined, evaluates to '0' [-Wundef]
+   89 | #if __cplusplus >= 201402L
+      |     ^~~~~~~~~~~
+cc1: warning: command-line option '-Woverloaded-virtual=2' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wreorder' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-Wno-delete-non-virtual-dtor' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-std=c++14' is valid for C++/ObjC++ but not for C
+cc1: warning: command-line option '-fno-rtti' is valid for C++/D/ObjC++ but not for C
+In file included from /workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/kernel/svc.h:7,
+                 from /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/horizon_thread_bridge.c:4:
+/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/kernel/../types.h:89:5: warning: '__cplusplus' is not defined, evaluates to '0' [-Wundef]
+   89 | #if __cplusplus >= 201402L
+      |     ^~~~~~~~~~~
+/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/nmt/memReporter.cpp: In function 'ssize_t counter_diff(size_t, size_t)':
+/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/nmt/memReporter.cpp:47:12: error: 'SSIZE_MAX' was not declared in this scope; did you mean 'SIZE_MAX'?
+   47 |   if (c1 > SSIZE_MAX || c2 > SSIZE_MAX) {
+      |            ^~~~~~~~~
+      |            SIZE_MAX
+gmake[3]: *** [lib/CompileJvm.gmk:180: /workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/memReporter.o] Error 1
+gmake[3]: *** Waiting for unfinished jobs....
+gmake[2]: *** [make/Main.gmk:250: hotspot-zero-static-libs] Error 2
+
+ERROR: Build failed for target 'hotspot-zero-static-libs' in configuration '/workspace/java-switch/build/openjdk25-horizon' (exit code 2)
+
+=== Output from failing command(s) repeated here ===
+* For target hotspot_variant-zero_libjvm_objs_static_memReporter.o:
+/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/nmt/memReporter.cpp: In function 'ssize_t counter_diff(size_t, size_t)':
+/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/nmt/memReporter.cpp:47:12: error: 'SSIZE_MAX' was not declared in this scope; did you mean 'SIZE_MAX'?
+   47 |   if (c1 > SSIZE_MAX || c2 > SSIZE_MAX) {
+      |            ^~~~~~~~~
+      |            SIZE_MAX
+
+* All command lines available in /workspace/java-switch/build/openjdk25-horizon/make-support/failure-logs.
+=== End of repeated output ===
+
+No indication of failed target found.
+HELP: Try searching the build log for '] Error'.
+HELP: Run 'make doctor' to diagnose build problems.
+
+make[1]: *** [/workspace/java-switch/.deps/openjdk25-horizon/make/Init.gmk:151: main] Error 2
+make: *** [/workspace/java-switch/.deps/openjdk25-horizon/make/PreInit.gmk:159: hotspot-zero-static-libs] Error 2
+
+Exit status: 2

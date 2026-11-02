@@ -4,8 +4,8 @@
 #include "runtime/os.hpp"
 #include "horizon_bridge.h"
 
-// Conservative capability declarations: no recoverable Horizon fault handler
-// exists yet. Do not enable implicit null traps or advertise stack guards.
+// Conservative capability declarations: the narrow SafeFetch islands do not
+// implement Java null/stack traps. Do not advertise those capabilities.
 inline bool os::zero_page_read_protected() { return false; }
 inline bool os::uses_stack_guard_pages() { return false; }
 inline bool os::must_commit_stack_guard_pages() { return false; }

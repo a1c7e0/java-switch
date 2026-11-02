@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /* Host synchronization substitute for the C bridge, never a Horizon provider. */
 #include <switch/kernel/semaphore.h>
+#include <switch/kernel/thread.h>
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -9,6 +10,25 @@
 _Atomic unsigned js_mock_malloc_fail, js_mock_force_timeout, js_mock_wait_error;
 _Atomic uint64_t js_mock_timeout;
 static _Atomic unsigned spurious_wakes;
+static unsigned tls_allocated;
+static _Atomic unsigned tls_fail;
+static _Thread_local void *tls_values[16];
+static void (*tls_destructors[16])(void *);
+int threadTlsAlloc(void (*destructor)(void *)) {
+    if (atomic_load(&tls_fail) || tls_allocated == 16) return -1;
+    unsigned slot = tls_allocated++;
+    tls_destructors[slot] = destructor; tls_values[slot] = NULL;
+    return (int)slot;
+}
+void *threadTlsGet(int slot) { assert(slot >= 0 && (unsigned)slot < tls_allocated); return tls_values[slot]; }
+void threadTlsSet(int slot, void *value) { assert(slot >= 0 && (unsigned)slot < tls_allocated); tls_values[slot] = value; }
+/* Model libnx's one-pass clear-before-callback exit order. */
+void js_mock_tls_exit(void) {
+    for (unsigned slot = 0; slot < tls_allocated; slot++) {
+        void *value = tls_values[slot]; tls_values[slot] = NULL;
+        if (value && tls_destructors[slot]) tls_destructors[slot](value);
+    }
+}
 void *__real_malloc(size_t);
 void *__wrap_malloc(size_t size) {
     return atomic_exchange(&js_mock_malloc_fail, 0) ? NULL : __real_malloc(size);
@@ -62,5 +82,6 @@ void js_mock_set(unsigned mode, unsigned value) {
     if (mode == 1) atomic_store(&js_mock_force_timeout, value);
     if (mode == 2) atomic_store(&js_mock_wait_error, value);
     if (mode == 3) atomic_store(&spurious_wakes, value);
+    if (mode == 4) atomic_store(&tls_fail, value);
 }
 uint64_t js_mock_last_timeout(void) { return atomic_load(&js_mock_timeout); }

@@ -8,6 +8,11 @@ extern "C" {
 /* Keep libnx u8/s8/Handle/Mutex out of HotSpot's global C++ namespace. */
 uint64_t js_horizon_clock_ticks(void);
 uint64_t js_horizon_clock_frequency(void);
+/* Process-lifetime libnx TLS slot. -1 means allocation failure. Get/set require
+ * a slot returned by create; the callback follows libnx's native exit order. */
+int js_horizon_tls_create(void (*destructor)(void *));
+void *js_horizon_tls_get(int slot);
+void js_horizon_tls_set(int slot, void *value);
 typedef struct js_horizon_semaphore js_horizon_semaphore;
 js_horizon_semaphore *js_horizon_semaphore_create(unsigned value);
 void js_horizon_semaphore_destroy(js_horizon_semaphore *);

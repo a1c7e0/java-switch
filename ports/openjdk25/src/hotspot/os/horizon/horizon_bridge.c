@@ -3,9 +3,13 @@
 #include <switch/arm/counter.h>
 #include <switch/kernel/semaphore.h>
 #include <switch/kernel/condvar.h>
+#include <switch/kernel/thread.h>
 #include <stdlib.h>
 uint64_t js_horizon_clock_ticks(void) { return armGetSystemTick(); }
 uint64_t js_horizon_clock_frequency(void) { return armGetSystemTickFreq(); }
+int js_horizon_tls_create(void (*destructor)(void *)) { return threadTlsAlloc(destructor); }
+void *js_horizon_tls_get(int slot) { return threadTlsGet(slot); }
+void js_horizon_tls_set(int slot, void *value) { threadTlsSet(slot, value); }
 struct js_horizon_semaphore { Semaphore native; };
 js_horizon_semaphore *js_horizon_semaphore_create(unsigned value) {
     js_horizon_semaphore *s = malloc(sizeof(*s));
