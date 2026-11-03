@@ -1,0 +1,25 @@
+Pinned JDK: /workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8
+JAVA_VERSION=25.0.5
+$ /workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/bin/javac -version
+javac 25.0.5
+[exit 0]
+$ /workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/bin/java -version
+openjdk version "25.0.5" 2026-10-20 LTS
+OpenJDK Runtime Environment Temurin-25.0.5+8 (build 25.0.5+8-LTS)
+OpenJDK 64-Bit Server VM Temurin-25.0.5+8 (build 25.0.5+8-LTS, mixed mode, sharing)
+[exit 0]
+$ /workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/bin/javac --release 25 -d /workspace/java-switch/build/openjdk25-agent-host/agent-classes /workspace/java-switch/tests/java25/AgentSmokeAgent.java
+[exit 0]
+$ /workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/bin/javac --release 25 -d /workspace/java-switch/build/openjdk25-agent-host/app-classes /workspace/java-switch/tests/java25/AgentSmoke.java
+[exit 0]
+$ /workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/bin/java -javaagent:/workspace/java-switch/build/java25-agent-smoke-agent.jar=premain-argument-forwarded -Dagent.smoke.property=property-forwarded -cp /workspace/java-switch/build/java25-agent-smoke-app.jar AgentSmoke main-argument-forwarded
+instrumentation.redefine=false
+instrumentation.retransform=false
+instrumentation.nativePrefix=false
+JAVA25_AGENT_SMOKE_PASS
+[exit 0]
+$ /workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/bin/java -Dagent.smoke.property=property-forwarded -cp /workspace/java-switch/build/java25-agent-smoke-app.jar AgentSmoke main-argument-forwarded
+Exception in thread "main" java.lang.AssertionError: ClassFile API transformation did not affect the initial definition
+	at AgentSmoke.require(AgentSmoke.java:33)
+	at AgentSmoke.main(AgentSmoke.java:9)
+[exit 1]
