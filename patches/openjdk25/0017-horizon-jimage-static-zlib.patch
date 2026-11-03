@@ -1,0 +1,80 @@
+--- a/src/java.base/share/native/libjimage/imageDecompressor.cpp
++++ b/src/java.base/share/native/libjimage/imageDecompressor.cpp
+@@ -30,12 +30,19 @@
+  */
+ 
+ #include "jni.h"
+-#include "jvm.h"
+ #include "imageDecompressor.hpp"
+ #include "endian.hpp"
++#ifdef __SWITCH__
++/* Use the exact ZIP_InflateFully declaration exported by the linked libzip. */
++extern "C" {
++#include "../libzip/zip_util.h"
++}
++#else
++#include "jvm.h"
++#endif
+ #ifdef WIN32
+ #include <windows.h>
+-#else
++#elif !defined(__SWITCH__)
+ #include <dlfcn.h>
+ #endif
+ 
+@@ -43,7 +50,7 @@
+                                       void *outBuf, jlong outLen, char **pmsg);
+ static ZipInflateFully_t ZipInflateFully        = NULL;
+ 
+-#ifndef WIN32
++#if !defined(WIN32) && !defined(__SWITCH__)
+     #define JNI_LIB_PREFIX "lib"
+     #ifdef __APPLE__
+         #define JNI_LIB_SUFFIX ".dylib"
+@@ -57,6 +64,7 @@
+  * @param name - the name of the entry point
+  * @return the address of the entry point or NULL
+  */
++#ifndef __SWITCH__
+ static void* findEntry(const char* name) {
+     void *addr = JVM_LoadZipLibrary();
+     if (addr == NULL) {
+@@ -68,6 +76,7 @@
+     return dlsym(addr, name);
+ #endif
+ }
++#endif  // !__SWITCH__
+ 
+ /*
+  * Initialize the array of decompressors.
+@@ -76,7 +85,12 @@
+ ImageDecompressor** ImageDecompressor::_decompressors = NULL;
+ void ImageDecompressor::image_decompressor_init() {
+     if (_decompressors == NULL) {
++#ifdef __SWITCH__
++        // This is the real static libzip implementation, not a success stub.
++        ZipInflateFully = &ZIP_InflateFully;
++#else
+         ZipInflateFully = (ZipInflateFully_t) findEntry("ZIP_InflateFully");
++#endif
+      assert(ZipInflateFully != NULL && "ZIP decompressor not found.");
+         _decompressors_num = 2;
+         _decompressors = new ImageDecompressor*[_decompressors_num];
+--- a/make/modules/java.base/lib/CoreLibraries.gmk
++++ b/make/modules/java.base/lib/CoreLibraries.gmk
+@@ -106,6 +106,7 @@
+ ## Build libjimage
+ ################################################################################
+ 
++# Modified 2026-11-02: Horizon directly binds the static libzip decompressor.
+ $(eval $(call SetupJdkLibrary, BUILD_LIBJIMAGE, \
+     NAME := jimage, \
+     LINK_TYPE := C++, \
+@@ -120,6 +121,7 @@
+         unused-variable, \
+     LDFLAGS := $(LDFLAGS_CXX_JDK), \
+     JDK_LIBS := libjvm, \
++    JDK_LIBS_horizon := libzip, \
+     LIBS_unix := $(LIBDL), \
+ ))
+ 

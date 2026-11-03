@@ -1,0 +1,65 @@
+--- a/make/common/JdkNativeCompilation.gmk
++++ b/make/common/JdkNativeCompilation.gmk
+@@ -34,6 +34,8 @@
+   $(call uniq, $(wildcard \
+       $(TOPDIR)/src/$(strip $1)/$(OPENJDK_TARGET_OS)/native/$(strip $2) \
+       $(TOPDIR)/src/$(strip $1)/$(OPENJDK_TARGET_OS_TYPE)/native/$(strip $2) \
++      $(if $(and $(filter horizon,$(OPENJDK_TARGET_OS)),$(filter java.base,$(strip $1))), \
++        $(TOPDIR)/src/$(strip $1)/unix/native/$(strip $2)) \
+       $(TOPDIR)/src/$(strip $1)/share/native/$(strip $2)))
+ 
+ # Find a library. Used for declaring dependencies on libraries in different
+@@ -355,6 +357,25 @@
+     $1_SRC += $$(foreach dir, $$($1_EXTRA_SRC), $$(call ProcessSrcDir, $$(dir)))
+   endif
+ 
++  # Modified 2026-11-02: Horizon shares individual Unix class-library sources,
++  # without adopting a Unix OS family. Prefer explicit Horizon replacements.
++  ifeq ($$(OPENJDK_TARGET_OS), horizon)
++    ifeq ($$(MODULE), java.base)
++      $1_HORIZON_NATIVE_NAMES := $$(notdir $$(call FindFiles, $$(filter \
++          $$(TOPDIR)/src/java.base/horizon/native/%, $$($1_SRC))))
++      $1_EXCLUDE_FILES += $$(foreach file, $$(call FindFiles, $$(filter \
++          $$(TOPDIR)/src/java.base/unix/native/%, $$($1_SRC))), \
++          $$(if $$(filter $$(notdir $$(file)), $$($1_HORIZON_NATIVE_NAMES)), $$(file)))
++      ifeq ($$($1_NAME), jimage)
++        $1_EXCLUDE_FILES += osSupport_unix.cpp
++      endif
++      $1_EXTRA_HEADER_DIRS += $$(TOPDIR)/src/hotspot/os/horizon
++      # Process creation is rejected by the Horizon Java implementation.
++      # Do not compile Unix fork/exec or process inspection implementations.
++      $1_EXCLUDE_FILES += ProcessImpl_md.c ProcessHandleImpl_unix.c ProcessHandleImpl.c childproc.c
++    endif
++  endif
++
+   ifneq ($$($1_EXCLUDE_SRC_PATTERNS), )
+     $1_SRC_WITHOUT_WORKSPACE_ROOT := $$(patsubst $$(WORKSPACE_ROOT)/%, %, $$($1_SRC))
+     $1_EXCLUDE_SRC := $$(addprefix %, $$(call containing, $$($1_EXCLUDE_SRC_PATTERNS), \
+--- a/make/modules/java.base/lib/CoreLibraries.gmk
++++ b/make/modules/java.base/lib/CoreLibraries.gmk
+@@ -92,6 +92,7 @@
+     EXCLUDES := $(LIBZIP_EXCLUDES), \
+     CFLAGS := $(LIBZ_CFLAGS), \
+     CFLAGS_unix := $(BUILD_LIBZIP_MMAP) -UDEBUG, \
++    CFLAGS_horizon := -DHAVE_UNISTD_H -UDEBUG, \
+     DISABLED_WARNINGS_gcc_zip_util.c := unused-function, \
+     DISABLED_WARNINGS_clang := deprecated-non-prototype, \
+     DISABLED_WARNINGS_clang_gzwrite.c := format-nonliteral, \
+@@ -177,6 +178,9 @@
+   LIBJLI_STATIC_EXCLUDE_OBJS += java_md_aix.o
+ endif
+ 
++# Modified 2026-11-02: Horizon uses the SDK JNI Invocation launcher, not libjli's
++# unported Unix dynamic-loader/fork launcher. Do not export a dummy libjli.
++ifneq ($(OPENJDK_TARGET_OS), horizon)
+ $(eval $(call SetupJdkLibrary, BUILD_LIBJLI, \
+     NAME := jli, \
+     TYPE := $(BUILD_LIBJLI_TYPE), \
+@@ -200,6 +204,7 @@
+ ))
+ 
+ TARGETS += $(BUILD_LIBJLI)
++endif
+ 
+ ################################################################################
+ 

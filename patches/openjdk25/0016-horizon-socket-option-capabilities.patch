@@ -1,0 +1,46 @@
+--- a/src/java.base/share/classes/sun/nio/ch/SocketOptionRegistry.java.template
++++ b/src/java.base/share/classes/sun/nio/ch/SocketOptionRegistry.java.template
+@@ -125,8 +125,11 @@
+ 
+ #ifdef AF_INET6
+             // IPPROTO_IPV6 is 41
++// Modified 2026-11-02: libnx does not declare this option. Do not invent its ABI.
++#if !defined(HORIZON) || defined(IPV6_TCLASS)
+             map.put(new RegistryKey(StandardSocketOptions.PREFIX_IP_TOS,
+                 StandardProtocolFamily.INET6), new OptionKey(41, IPV6_TCLASS));
++#endif
+             map.put(new RegistryKey(StandardSocketOptions.PREFIX_IP_MULTICAST_IF,
+                 StandardProtocolFamily.INET6), new OptionKey(41, IPV6_MULTICAST_IF));
+             map.put(new RegistryKey(StandardSocketOptions.PREFIX_IP_MULTICAST_TTL,
+--- a/src/java.base/share/classes/sun/nio/ch/Net.java
++++ b/src/java.base/share/classes/sun/nio/ch/Net.java
+@@ -388,8 +388,13 @@
+ 
+         // map option name to platform level/name
+         OptionKey key = SocketOptionRegistry.findOption(name, family);
+-        if (key == null)
++        if (key == null) {
++            // Modified 2026-11-02: absent Horizon socket options are unavailable.
++            if (jdk.internal.util.OperatingSystem.current()
++                    == jdk.internal.util.OperatingSystem.HORIZON)
++                throw new UnsupportedOperationException("Horizon socket option unavailable: " + name);
+             throw new AssertionError("Option not found");
++        }
+ 
+         int arg;
+         if (type == Integer.class) {
+@@ -442,8 +447,13 @@
+ 
+         // map option name to platform level/name
+         OptionKey key = SocketOptionRegistry.findOption(name, family);
+-        if (key == null)
++        if (key == null) {
++            // Modified 2026-11-02: absent Horizon socket options are unavailable.
++            if (jdk.internal.util.OperatingSystem.current()
++                    == jdk.internal.util.OperatingSystem.HORIZON)
++                throw new UnsupportedOperationException("Horizon socket option unavailable: " + name);
+             throw new AssertionError("Option not found");
++        }
+ 
+         boolean mayNeedConversion = (family == UNSPEC);
+         int value = getIntOption0(fd, mayNeedConversion, key.level(), key.name());

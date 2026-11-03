@@ -1,0 +1,38 @@
+--- a/src/java.base/share/native/libjimage/osSupport.hpp
++++ b/src/java.base/share/native/libjimage/osSupport.hpp
+@@ -34,7 +34,7 @@
+ 
+ #ifdef WIN32
+ #include <Windows.h>
+-#else
++#elif !defined(__SWITCH__)
+ #include <pthread.h>
+ #endif
+ 
+@@ -88,6 +88,8 @@
+ private:
+ #ifdef WIN32
+     CRITICAL_SECTION critical_section;
++#elif defined(__SWITCH__)
++    void* horizon_monitor;
+ #else
+     pthread_mutex_t mutex;
+ #endif // WIN32
+--- a/src/java.base/share/native/libjimage/imageFile.cpp
++++ b/src/java.base/share/native/libjimage/imageFile.cpp
+@@ -40,8 +40,14 @@
+ #include "jni.h"
+ #include "osSupport.hpp"
+ 
+-// Map the full jimage, only with 64 bit addressing.
++// Modified 2026-11-02: Horizon has no file mmap and uses a private read-only
++// snapshot for the index. Read resource payloads through osSupport::read
++// instead of retaining a second full-image copy in Horizon memory.
++#ifdef __SWITCH__
++bool ImageFileReader::memory_map_image = false;
++#else
+ bool ImageFileReader::memory_map_image = sizeof(void *) == 8;
++#endif
+ 
+ #ifdef WIN32
+ const char FileSeparator = '\\';

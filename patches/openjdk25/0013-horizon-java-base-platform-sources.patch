@@ -1,0 +1,492 @@
+--- a/make/common/Modules.gmk
++++ b/make/common/Modules.gmk
+@@ -82,6 +82,10 @@
+ SRC_SUBDIRS += $(OPENJDK_TARGET_OS)/classes
+ ifneq ($(OPENJDK_TARGET_OS), $(OPENJDK_TARGET_OS_TYPE))
+   SRC_SUBDIRS += $(OPENJDK_TARGET_OS_TYPE)/classes
++endif
++# Modified 2026-11-02: Horizon reuses common Unix Java classes where applicable.
++ifeq ($(OPENJDK_TARGET_OS), horizon)
++  SRC_SUBDIRS += unix/classes
+ endif
+ SRC_SUBDIRS += share/classes
+ 
+--- a/make/modules/java.base/Java.gmk
++++ b/make/modules/java.base/Java.gmk
+@@ -24,6 +24,12 @@
+ #
+ 
+ ################################################################################
++
++# Modified 2026-11-02: Horizon process creation fails explicitly instead of using
++# the Unix fork/exec implementation.
++ifeq ($(OPENJDK_TARGET_OS), horizon)
++  EXCLUDE_FILES += $(TOPDIR)/src/java.base/unix/classes/java/lang/ProcessImpl.java
++endif
+ 
+ # The base module should be built with all warnings enabled. When a
+ # new warning is added to javac, it can be temporarily added to the
+--- a/src/java.base/share/classes/jdk/internal/util/OperatingSystem.java
++++ b/src/java.base/share/classes/jdk/internal/util/OperatingSystem.java
+@@ -81,6 +81,10 @@
+      * The AIX Operating system.
+      */
+     AIX,
++    /**
++     * Modified 2026-11-02: The Horizon operating system.
++     */
++    HORIZON,
+     ;
+ 
+     // The current OperatingSystem
+--- a/src/java.base/unix/classes/java/io/UnixFileSystem.java
++++ b/src/java.base/unix/classes/java/io/UnixFileSystem.java
+@@ -27,8 +27,19 @@
+ 
+ import java.util.Properties;
+ import jdk.internal.util.StaticProperty;
++import jdk.internal.util.OperatingSystem;
+ 
+ final class UnixFileSystem extends FileSystem {
++    // Modified 2026-11-02: Preserve the Horizon SD card device root in java.io.File.
++    private static final String HORIZON_ROOT = "sdmc:/";
++
++    private static boolean isHorizon() {
++        return OperatingSystem.current() == OperatingSystem.HORIZON;
++    }
++
++    private static boolean isHorizonRooted(String path) {
++        return isHorizon() && path.startsWith(HORIZON_ROOT);
++    }
+     private final char slash;
+     private final char colon;
+     private final String userDir;
+@@ -76,7 +87,7 @@
+ 
+         StringBuilder sb = new StringBuilder(n);
+         if (off > 0) sb.append(pathname, 0, off);
+-        char prevChar = 0;
++        char prevChar = off > 0 ? pathname.charAt(off - 1) : 0;
+         for (int i = off; i < n; i++) {
+             char c = pathname.charAt(i);
+             if ((prevChar == '/') && (c == '/')) continue;
+@@ -93,16 +104,21 @@
+     public String normalize(String pathname) {
+         int doubleSlash = pathname.indexOf("//");
+         if (doubleSlash >= 0) {
+-            return normalize(pathname, doubleSlash);
++            return normalize(pathname, isHorizonRooted(pathname)
++                    ? Math.max(doubleSlash, HORIZON_ROOT.length()) : doubleSlash);
+         }
+         if (pathname.endsWith("/")) {
+-            return normalize(pathname, pathname.length() - 1);
++            return normalize(pathname, isHorizonRooted(pathname)
++                    ? HORIZON_ROOT.length() : pathname.length() - 1);
+         }
+         return pathname;
+     }
+ 
+     @Override
+     public int prefixLength(String pathname) {
++        if (isHorizonRooted(pathname)) {
++            return HORIZON_ROOT.length();
++        }
+         return pathname.startsWith("/") ? 1 : 0;
+     }
+ 
+@@ -117,6 +133,10 @@
+     @Override
+     public String resolve(String parent, String child) {
+         if (child.isEmpty()) return parent;
++        if (isHorizonRooted(child)) return child;
++        if (isHorizon() && parent.startsWith(HORIZON_ROOT) && child.charAt(0) == '/') {
++            return "sdmc:" + child;
++        }
+         if (child.charAt(0) == '/') {
+             if (parent.equals("/")) return child;
+             return trimSeparator(parent + child);
+@@ -127,7 +147,7 @@
+ 
+     @Override
+     public String getDefaultParent() {
+-        return "/";
++        return isHorizon() ? HORIZON_ROOT : "/";
+     }
+ 
+     @Override
+@@ -260,7 +280,8 @@
+ 
+     @Override
+     public File[] listRoots() {
+-        return new File[] { new File("/") };
++        return isHorizon() ? new File[] { new File(HORIZON_ROOT) }
++                           : new File[] { new File("/") };
+     }
+ 
+     /* -- Disk usage -- */
+--- a/src/java.base/unix/classes/sun/net/PortConfig.java
++++ b/src/java.base/unix/classes/sun/net/PortConfig.java
+@@ -52,6 +52,11 @@
+                 defaultLower = 49152;
+                 defaultUpper = 65535;
+                 break;
++            case HORIZON:
++                // Modified 2026-11-02: use the IANA dynamic/private range for Horizon.
++                defaultLower = 49152;
++                defaultUpper = 65535;
++                break;
+             case AIX:
+                 // The ephemeral port is OS version dependent on AIX:
+                 // https://www.ibm.com/support/pages/node/886227
+--- a/src/java.base/unix/classes/sun/nio/fs/UnixFileSystem.java
++++ b/src/java.base/unix/classes/sun/nio/fs/UnixFileSystem.java
+@@ -53,6 +53,7 @@
+ import java.util.regex.Pattern;
+ import sun.nio.ch.DirectBuffer;
+ import sun.nio.ch.IOStatus;
++import jdk.internal.util.OperatingSystem;
+ import static sun.nio.fs.UnixConstants.*;
+ import static sun.nio.fs.UnixNativeDispatcher.*;
+ 
+@@ -63,6 +64,9 @@
+ abstract class UnixFileSystem
+     extends FileSystem
+ {
++    private static final boolean HORIZON =
++            OperatingSystem.current() == OperatingSystem.HORIZON;
++
+     // minimum size of a temporary direct buffer
+     private static final int MIN_BUFFER_SIZE = 16384;
+ 
+@@ -78,7 +82,7 @@
+     UnixFileSystem(UnixFileSystemProvider provider, String dir) {
+         this.provider = provider;
+         this.defaultDirectory = Util.toBytes(UnixPath.normalizeAndCheck(dir));
+-        if (this.defaultDirectory[0] != '/') {
++        if (!UnixPath.isAbsolutePath(this.defaultDirectory)) {
+             throw new RuntimeException("default directory must be absolute");
+         }
+ 
+@@ -104,7 +108,7 @@
+         }
+ 
+         // the root directory
+-        this.rootDirectory = new UnixPath(this, "/");
++        this.rootDirectory = new UnixPath(this, HORIZON ? "sdmc:/" : "/");
+     }
+ 
+     // package-private
+--- a/src/java.base/unix/classes/sun/nio/fs/UnixPath.java
++++ b/src/java.base/unix/classes/sun/nio/fs/UnixPath.java
+@@ -42,6 +42,7 @@
+ import jdk.internal.access.JavaLangAccess;
+ import jdk.internal.access.SharedSecrets;
+ import jdk.internal.util.ArraysSupport;
++import jdk.internal.util.OperatingSystem;
+ 
+ import static sun.nio.fs.UnixConstants.*;
+ import static sun.nio.fs.UnixNativeDispatcher.*;
+@@ -51,6 +52,44 @@
+  */
+ class UnixPath implements Path {
+ 
++    // Modified 2026-11-02: preserve the Horizon device root as a path root.
++    private static final byte[] HORIZON_ROOT = {
++        (byte)'s', (byte)'d', (byte)'m', (byte)'c', (byte)':', (byte)'/'
++    };
++    private static final boolean HORIZON =
++            OperatingSystem.current() == OperatingSystem.HORIZON;
++
++    static boolean isHorizon() {
++        return HORIZON;
++    }
++
++    static boolean isHorizonDevicePath(byte[] path) {
++        if (!HORIZON || path.length < HORIZON_ROOT.length) {
++            return false;
++        }
++        for (int i = 0; i < HORIZON_ROOT.length; i++) {
++            if (path[i] != HORIZON_ROOT[i]) {
++                return false;
++            }
++        }
++        return true;
++    }
++
++    private static boolean isHorizonDeviceRoot(byte[] path) {
++        return isHorizonDevicePath(path) && path.length == HORIZON_ROOT.length;
++    }
++
++    private static int rootLength(byte[] path) {
++        if (isHorizonDevicePath(path)) {
++            return HORIZON_ROOT.length;
++        }
++        return path.length > 0 && path[0] == '/' ? 1 : 0;
++    }
++
++    static boolean isAbsolutePath(byte[] path) {
++        return rootLength(path) != 0;
++    }
++
+     private static final JavaLangAccess JLA = SharedSecrets.getJavaLangAccess();
+ 
+     private final UnixFileSystem fs;
+@@ -80,17 +119,24 @@
+     // package-private
+     // removes redundant slashes and check input for invalid characters
+     static String normalizeAndCheck(String input) {
++        if (HORIZON && input.startsWith("/")) {
++            input = "sdmc:" + input;
++        }
+         int n = input.length();
++        int rootLength = HORIZON && input.startsWith("sdmc:/") ? HORIZON_ROOT.length : 0;
+         char prevChar = 0;
+         for (int i=0; i < n; i++) {
+             char c = input.charAt(i);
+             if ((c == '/') && (prevChar == '/'))
+-                return normalize(input, n, i - 1);
++                return normalize(input, n, Math.max(rootLength, i - 1));
+             checkNotNul(input, c);
+             prevChar = c;
+         }
+         if (prevChar == '/' && n > 1) {
+-            return input.substring(0, n - 1);
++            if (rootLength != 0 && n == rootLength) {
++                return input;
++            }
++            return input.substring(0, Math.max(rootLength, n - 1));
+         }
+         return input;
+     }
+@@ -110,7 +156,7 @@
+         StringBuilder sb = new StringBuilder(input.length());
+         if (off > 0)
+             sb.append(input, 0, off);
+-        char prevChar = 0;
++        char prevChar = off > 0 ? input.charAt(off - 1) : 0;
+         for (int i=off; i < n; i++) {
+             char c = input.charAt(i);
+             if ((c == '/') && (prevChar == '/'))
+@@ -190,6 +236,7 @@
+                 // empty path has one name
+                 count = 1;
+             } else {
++                index = rootLength(path);
+                 while (index < path.length) {
+                     byte c = path[index++];
+                     if (c != '/') {
+@@ -203,7 +250,7 @@
+             // populate offsets
+             int[] result = new int[count];
+             count = 0;
+-            index = 0;
++            index = rootLength(path);
+             while (index < path.length) {
+                 byte c = path[index];
+                 if (c == '/') {
+@@ -253,11 +300,14 @@
+ 
+     @Override
+     public UnixPath getRoot() {
++        if (isHorizonDevicePath(path)) {
++            return getFileSystem().rootDirectory();
++        }
+         if (path.length > 0 && path[0] == '/') {
+-            return getFileSystem().rootDirectory();
+-        } else {
+-            return null;
+-        }
++            return HORIZON ? new UnixPath(getFileSystem(), "/")
++                           : getFileSystem().rootDirectory();
++        }
++        return null;
+     }
+ 
+     @Override
+@@ -271,7 +321,7 @@
+             return null;
+ 
+         // one name element and no root component
+-        if (count == 1 && path.length > 0 && path[0] != '/')
++        if (count == 1 && !isAbsolute())
+             return this;
+ 
+         int lastOffset = offsets[count-1];
+@@ -290,8 +340,11 @@
+             // no elements so no parent
+             return null;
+         }
++        if (isAbsolute() && count == 1) {
++            return getRoot();
++        }
+         int len = offsets[count-1] - 1;
+-        if (len <= 0) {
++        if (len < rootLength(path)) {
+             // parent is root only (may be null)
+             return getRoot();
+         }
+@@ -359,7 +412,7 @@
+ 
+     @Override
+     public boolean isAbsolute() {
+-        return (path.length > 0 && path[0] == '/');
++        return isAbsolutePath(path);
+     }
+ 
+     // Resolve child against given base
+@@ -368,13 +421,17 @@
+         int childLength = child.length;
+         if (childLength == 0)
+             return base;
+-        if (baseLength == 0 || child[0] == '/')
++        if (baseLength == 0 || isAbsolutePath(child))
+             return child;
+         byte[] result;
+         if (baseLength == 1 && base[0] == '/') {
+             result = new byte[childLength + 1];
+             result[0] = '/';
+             System.arraycopy(child, 0, result, 1, childLength);
++        } else if (isHorizonDeviceRoot(base)) {
++            result = new byte[baseLength + childLength];
++            System.arraycopy(base, 0, result, 0, baseLength);
++            System.arraycopy(child, 0, result, baseLength, childLength);
+         } else {
+             result = new byte[baseLength + 1 + childLength];
+             System.arraycopy(base, 0, result, 0, baseLength);
+@@ -387,7 +444,7 @@
+     @Override
+     public UnixPath resolve(Path obj) {
+         byte[] other = toUnixPath(obj).path;
+-        if (other.length > 0 && other[0] == '/')
++        if (isAbsolutePath(other))
+             return ((UnixPath)obj);
+         byte[] result = resolve(path, other);
+         return new UnixPath(getFileSystem(), result);
+@@ -410,7 +467,7 @@
+            for (int i = 0; i < count; i++) {
+                byte[] b = children[i];
+                if (b.length > 0) {
+-                   if (b[0] == '/') {
++                   if (isAbsolutePath(b)) {
+                        start = i + 1;
+                        resultLength = b.length;
+                    } else {
+@@ -426,7 +483,8 @@
+        // absolute path, then if at least one child is non-empty and
+        // the base consists only of a '/', then decrement resultLength to
+        // account for an extra '/' added in the resultLength computation.
+-       if (start == 0 && resultLength > base.length && base.length == 1 && base[0] == '/')
++       if (start == 0 && resultLength > base.length &&
++               (base.length == 1 && base[0] == '/' || isHorizonDeviceRoot(base)))
+            resultLength--;
+ 
+        // Allocate the result array and return if empty.
+@@ -483,6 +541,8 @@
+         // can only relativize paths of the same type
+         if (this.isAbsolute() != child.isAbsolute())
+             throw new IllegalArgumentException("'other' is different type of Path");
++        if (this.isAbsolute() && !this.getRoot().equals(child.getRoot()))
++            throw new IllegalArgumentException("Paths have different roots");
+ 
+         // this path is the empty path
+         if (this.isEmpty())
+@@ -661,9 +721,8 @@
+         }
+ 
+         // compute length of result
+-        int len = remaining - 1;
+-        if (isAbsolute)
+-            len++;
++        int pathRootLength = rootLength(path);
++        int len = remaining - 1 + pathRootLength;
+ 
+         for (int i=0; i<count; i++) {
+             if (!ignore[i])
+@@ -673,8 +732,12 @@
+ 
+         // copy names into result
+         int pos = 0;
+-        if (isAbsolute)
++        if (isHorizonDevicePath(path)) {
++            System.arraycopy(HORIZON_ROOT, 0, result, 0, HORIZON_ROOT.length);
++            pos = HORIZON_ROOT.length;
++        } else if (isAbsolute) {
+             result[pos++] = '/';
++        }
+         for (int i=0; i<count; i++) {
+             if (!ignore[i]) {
+                 System.arraycopy(path, offsets[i], result, pos, size[i]);
+@@ -693,6 +756,11 @@
+             return false;
+         UnixPath that = (UnixPath)other;
+ 
++        if (that.isAbsolute() &&
++                (!this.isAbsolute() || !this.getRoot().equals(that.getRoot()))) {
++            return false;
++        }
++
+         // other path is longer
+         if (that.path.length > path.length)
+             return false;
+@@ -757,6 +825,8 @@
+ 
+         // other path is absolute so this path must be absolute
+         if (that.isAbsolute() && !this.isAbsolute())
++            return false;
++        if (that.isAbsolute() && !this.getRoot().equals(that.getRoot()))
+             return false;
+ 
+         int thisOffsetCount = getNameCount();
+@@ -772,7 +842,7 @@
+                     return true;
+                 int expectedLen = thisLen;
+                 if (this.isAbsolute() && !that.isAbsolute())
+-                    expectedLen--;
++                    expectedLen -= rootLength(path);
+                 if (thatLen != expectedLen)
+                     return false;
+             } else {
+--- a/src/java.base/unix/classes/sun/nio/fs/UnixUriUtils.java
++++ b/src/java.base/unix/classes/sun/nio/fs/UnixUriUtils.java
+@@ -64,15 +64,25 @@
+         // transformation use raw path
+         String p = uri.getRawPath();
+         int len = p.length();
++        boolean deviceRooted = UnixPath.isHorizon() && p.startsWith("/sdmc:/");
++        boolean addDeviceRoot = UnixPath.isHorizon() && p.startsWith("/") && !deviceRooted;
++        int pathOffset = deviceRooted ? 1 : 0;
+         if (len == 0)
+             throw new IllegalArgumentException("URI path component is empty");
+ 
+         // transform escaped octets and unescaped characters to bytes
+-        if (p.endsWith("/") && len > 1)
++        if (p.endsWith("/") && len > pathOffset + (deviceRooted ? 6 : 1))
+             len--;
+-        byte[] result = new byte[len];
++        byte[] result = new byte[len - pathOffset + (addDeviceRoot ? 5 : 0)];
+         int rlen = 0;
+-        int pos = 0;
++        if (addDeviceRoot) {
++            result[rlen++] = 's';
++            result[rlen++] = 'd';
++            result[rlen++] = 'm';
++            result[rlen++] = 'c';
++            result[rlen++] = ':';
++        }
++        int pos = pathOffset;
+         while (pos < len) {
+             char c = p.charAt(pos++);
+             byte b;
+@@ -106,9 +116,10 @@
+     static URI toUri(UnixPath up) {
+         byte[] path = up.toAbsolutePath().asByteArray();
+         StringBuilder sb = new StringBuilder("file:///");
+-        assert path[0] == '/';
++        int pathOffset = UnixPath.isHorizonDevicePath(path) ? 0 : 1;
++        assert pathOffset == 0 || path[0] == '/';
+         HexFormat hex = HexFormat.of().withUpperCase();
+-        for (int i=1; i<path.length; i++) {
++        for (int i=pathOffset; i<path.length; i++) {
+             char c = (char)(path[i] & 0xff);
+             if (match(c, L_PATH, H_PATH)) {
+                 sb.append(c);

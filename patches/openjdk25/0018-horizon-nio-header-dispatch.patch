@@ -1,0 +1,20 @@
+--- a/src/java.base/unix/native/libnio/ch/nio_util.h
++++ b/src/java.base/unix/native/libnio/ch/nio_util.h
+@@ -23,6 +23,11 @@
+  * questions.
+  */
+ 
++// Modified 2026-11-02: quoted includes in reused Unix sources otherwise bind
++// their own Unix header before the target's -I paths can select Horizon.
++#ifdef HORIZON
++#include <horizon_nio_util.h>
++#else
+ #include "jni.h"
+ #include "jni_util.h"
+ #include "jvm.h"
+@@ -75,3 +80,5 @@
+                                 struct sockaddr_un *sa,
+                                 int *len);
+ 
++
++#endif // HORIZON

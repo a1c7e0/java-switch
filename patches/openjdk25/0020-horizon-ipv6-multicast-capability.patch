@@ -1,0 +1,24 @@
+--- a/src/java.base/unix/native/libnio/ch/Net.c
++++ b/src/java.base/unix/native/libnio/ch/Net.c
+@@ -733,6 +733,13 @@
+ Java_sun_nio_ch_Net_joinOrDrop6(JNIEnv *env, jobject this, jboolean join, jobject fdo,
+                                 jbyteArray group, jint index, jbyteArray source)
+ {
++#ifdef HORIZON
++    // Modified 2026-11-03: libnx exposes no ipv6_mreq ABI. Report the JNI
++    // unsupported sentinel; DatagramChannel translates it to an exception.
++    (void)env; (void)this; (void)join; (void)fdo;
++    (void)group; (void)index; (void)source;
++    return IOS_UNAVAILABLE;
++#else
+     struct ipv6_mreq mreq6;
+     struct group_source_req req;
+     int opt, n, optlen;
+@@ -770,6 +777,7 @@
+         handleSocketErrorWithMessage(env, errno, "setsockopt failed");
+     }
+     return 0;
++#endif // HORIZON
+ }
+ 
+ JNIEXPORT jint JNICALL

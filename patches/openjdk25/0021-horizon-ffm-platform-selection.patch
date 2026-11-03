@@ -1,0 +1,16 @@
+--- a/src/java.base/share/classes/jdk/internal/foreign/CABI.java
++++ b/src/java.base/share/classes/jdk/internal/foreign/CABI.java
+@@ -55,6 +55,13 @@
+             return CABI.valueOf(abi);
+         }
+ 
++        if (OperatingSystem.current() == OperatingSystem.HORIZON) {
++            if (!StaticProperty.osArch().equals("aarch64") || ADDRESS.byteSize() != 8) {
++                return UNSUPPORTED;
++            }
++            return FallbackLinker.isSupported() ? FALLBACK : UNSUPPORTED;
++        }
++
+         if (ForeignLinkerSupport.isSupported()) {
+             // figure out the ABI based on the platform
+             String arch = StaticProperty.osArch();
