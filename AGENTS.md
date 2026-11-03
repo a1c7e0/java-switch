@@ -143,8 +143,11 @@ suite pass. A detached worktree at /tmp/java-switch-clean-issues completed the
 entire --with-instrument workflow with no initial build/ and a symlinked JDK25
 cache. Its package/source verifier passes; evidence is in
 `docs/evidence/issues-1-2-clean-instrument.json`. No hardware execution occurred.
-Both fixes are pushed and issue comments contain the candidate pin. Issues stay
-open pending final base-profile validation. Next run: preserve instrument proofs,
-remove only that isolated worktree's build/openjdk25-horizon directory, assert it
-is absent, and run scripts/build-openjdk25-runtime.sh without --with-instrument.
-Do not remove or modify the main workspace's existing VM artifacts.
+Both fixes are pushed. The same isolated checkout then completed the full base
+workflow after removing only its native VM output directory and asserting it was
+absent. Both workflows passed all 17 tests, class-library tests, real VM/NRO
+links and complete package/source verification. Base remains jni-check/serialgc/
+zero (553 members); instrument remains JVMTI/services (577 members). See the
+paired clean-base and clean-instrument reports in docs/evidence/. Issue comments
+contain the tested immutable pin; #2 is closed and #1 is ready for completion.
+The main workspace retains its instrument-enabled artifacts.
