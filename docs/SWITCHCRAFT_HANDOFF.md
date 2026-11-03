@@ -1,8 +1,9 @@
 # Switchcraft runtime handoff
 
-Repository: `a1c7e0/java-switch`, branch `main`. The published implementation
-pin is recorded after the milestone commit; `dist/manifest.json` records
-the exact full package source revision. Pin an immutable SHA downstream.
+Repository: `a1c7e0/java-switch`, branch `main`. The native VM implementation pin is
+`1427f6d05080ce0280373006ac04b99c8061c246`; `dist/manifest.json` records
+the exact full package source revision, including later documentation/verifier fixes.
+Pin an immutable SHA downstream.
 No Switchcraft source or dependency lock was edited.
 
 ## Verified build and remaining runtime evidence

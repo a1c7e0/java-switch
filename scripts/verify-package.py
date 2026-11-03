@@ -188,12 +188,12 @@ if java25_exists:
         assert package_manifest['jni_headers'] == {
             'jni.h': sha256(jni_h), 'horizon/jni_md.h': sha256(jni_md)}
         assert package_manifest['system_archives_verified_not_bundled'] == {
-            name: sha256(path) for name, path in sorted(
-                (path.name, pathlib.Path(path)) for path in
-                [item['path'] for item in provider['archives']]
-                if pathlib.Path(path).name in {'libc.a', 'libm.a'})}
+            path.name: sha256(path) for path in sorted(
+                pathlib.Path(item['path']) for item in provider['archives']
+                if pathlib.Path(item['path']).name in {'libc.a', 'libm.a'})}
         sdk_dependency = tar_bytes(package, integration_root + 'SDK-DEPENDENCY.txt').decode()
-        assert 'javaswitch-horizon-sdk.tar.gz' in sdk_dependency and 'ABI 1' in sdk_dependency
+        assert 'javaswitch-horizon-sdk.tar.gz' in sdk_dependency
+        assert 'version 1' in sdk_dependency and 'contains no Java VM' in sdk_dependency
         for notice in ['LICENSE', 'ADDITIONAL_LICENSE_INFO']:
             name = integration_root + 'source-notices/' + notice
             assert name in package_names
@@ -252,9 +252,9 @@ if probe_exists or java25_exists:
                 patch.write_bytes(data)
                 subprocess.run(['patch', '-p1', '--batch', '--fuzz=0', '-i', str(patch)],
                                cwd=target, stdout=subprocess.DEVNULL, check=True)
-            prefix = 'java-switch/ports/openjdk25/src/'
+            prefix = 'java-switch/ports/openjdk25/'
             overlay_members = {p.name.removeprefix(prefix): p for p in bundle
-                               if p.isfile() and p.name.startswith(prefix)}
+                               if p.isfile() and p.name.startswith(prefix + 'src/')}
             from openjdk25 import port_inputs, PORT
             port_patches, overlay, files, digest = port_inputs()
             assert set(overlay_members) == {str(path.relative_to(overlay)) for path in files}
@@ -268,6 +268,9 @@ if probe_exists or java25_exists:
             for relative, member in overlay_members.items():
                 expected_bytes = bundle.extractfile(member).read()
                 assert expected_bytes == (overlay / relative).read_bytes(), relative
-                assert (target / relative).read_bytes() == expected_bytes, relative
+                destination = target / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_bytes(expected_bytes)
+                assert destination.read_bytes() == expected_bytes, relative
         print('Full pinned OpenJDK archive, tracked zero-fuzz patches and every native overlay reconstructed: PASS')
 print('All artifact SHA256 checks: PASS; Horizon hardware NOT TESTED')

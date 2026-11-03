@@ -1,13 +1,19 @@
 {
-  "port_digest": "8a7cd958c13028b3c72366cd34c406c4a494928a8b8bb5e0454c2facd61df6f1",
+  "port_digest": "f4572555046aa211db0d1fa1e89bedf5cda02bbd566f772941dbd113746a8b41",
   "java_vm_linked": false,
   "inputs": {
-    "src/zero_services_test.c": "545e03002467c05d493506ff73de06189d9e3c63803f448e4fe24adef647bb7e",
-    "src/platform.c": "f269c268d62ccf20895485ef8f27795eb4f60c613fa9c1e8620d5a5d7ffba9c5",
+    "src/zero_services_test.c": "2de13cb45641328901c4269441d5b105cc5df0e3dbc9c6e1b3fb17a8bfdeeabb",
+    "src/platform.c": "e2401bcc1634967f4d884bd25ae6942cf73193577a76f68016abc2b6c73d03e4",
     "tests/openjdk25_services_probe.cpp": "497120fcddf11ff10ce82202521c9261923545d5207bb86b7ceb5baaf23ace80",
     "tests/openjdk25_thread_probe.cpp": "4c891db26b82afefbdc22d7c4a571b93cef0675c6bafc410756e6f73818321fb",
-    "scripts/openjdk25.py": "7d5fc5b0cb98880dc2ef6e731f34f61c3a02a0214efdee9f3ddfbed8c5d6ab6d"
+    "tests/openjdk25_reaper_probe.cpp": "b1c221b5551ac7c1e8e4a08fde91d0ed871b3574dcc3b87b55817c1f395ddf24",
+    "tests/openjdk25_memory_probe.c": "b6bbf0b43ae634a873d0b5f6b1f0dfd1980a944e2cb9e3dd66906e1e85715d9a",
+    "src/horizon_alias.c": "e84b53633832a7ba61d98972bb11625b295ebda28ae3932ea45865a7dc062c06",
+    "src/vmem_horizon.c": "d46ddefc1f2ba0b227cd153283f5e3289c03824d8d6e7d5d8758c33bf1be12a5",
+    "include/javaswitch/detail/horizon_alias.h": "912fda62ff2023989d15eaa1730a397ab29206e8aebdd50be91bc785b5b8f0fc",
+    "include/javaswitch/vmem.h": "504243018b03ec91e8997bd31e65d34d7ccc7e2de35a29b321d5a55ea84e6a60",
+    "scripts/openjdk25.py": "0146cd95b90ee4a1b94541afbdb2c768311588928d08fcc01b16a611bfb0ff9b"
   },
-  "elf_sha256": "9dc55727f5564300b8f369d3b7721993ada8524865f2967bb8e12d00c4d6248a",
-  "nro_sha256": "71945b366ce5d8bd29b6b5c047d668b13c9e061a5232f5c176b9e87bd46b19a8"
+  "elf_sha256": "98fc10d912240aa794705436ff9287453b900fe03ff0e52c0408a6c4bdc24a0a",
+  "nro_sha256": "25061d17f56545efda7a242e5a56e187d815517fa4910d82fcdd8f7bf56c15df"
 }
