@@ -6,13 +6,19 @@ if [[ ! -f "$SOURCE/src/java.base/share/classes/jdk/internal/foreign/CABI.java" 
   echo "Pinned OpenJDK 25 source is required; run scripts/openjdk25.py prepare first" >&2
   exit 1
 fi
-HOST_JAVAC="$(find "$ROOT/.deps/host-jdk25" -type f -path '*/bin/javac' -print -quit)"
+HOST_JDK_ROOT="$ROOT/.deps/host-jdk25"
+if [[ ! -d "$HOST_JDK_ROOT" ]]; then
+  echo "OpenJDK 25 host javac is required under .deps/host-jdk25" >&2
+  exit 1
+fi
+HOST_JAVAC="$(find -L "$HOST_JDK_ROOT" -type f -path '*/bin/javac' -print -quit)"
 if [[ -z "$HOST_JAVAC" ]]; then
   echo "OpenJDK 25 host javac is required" >&2
   exit 1
 fi
 HOST_JAVA="${HOST_JAVAC%/javac}/java"
 TEMP_DIR="$(mktemp -d)"
+trap 'rm -rf "$TEMP_DIR"' EXIT
 SRC="$TEMP_DIR/src"
 OUT="$TEMP_DIR/classes"
 WORK="$TEMP_DIR/work"
