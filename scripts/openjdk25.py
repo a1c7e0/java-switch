@@ -669,7 +669,7 @@ def work():
     # Use the actual W^X libffi archive and allocator, not the generic ELF
     # malloc closure allocator from libffi's intermediate build directory.
     ffi = BUILD / 'horizon-libffi'
-    ffi.mkdir(exist_ok=True)
+    ffi.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(ROOT / 'build/libffi-horizon.a', ffi / 'libffi.a')
     subprocess.run([str(prefix) + 'ar', 'r', str(ffi / 'libffi.a'),
                     str(ROOT / 'build/sdk/ffi_horizon.o')], check=True)
