@@ -4,6 +4,7 @@
 #include "runtime/thread.hpp"
 #include "utilities/ostream.hpp"
 #include "jvm_io.h"
+#include "jvm.h"
 #include "horizon_thread_bridge.h"
 #include <errno.h>
 #include <stdio.h>
@@ -51,4 +52,15 @@ void os::run_periodic_checks(outputStream* stream) {
   js_horizon_thread_reaper_status(&raw, &pending);
   if (raw != 0 && stream != nullptr)
     stream->print_cr("Horizon native reaper: pending=%u last Result=0x%x", pending, raw);
+}
+
+// Signal.java treats these error results as unsupported registration/raising.
+// No handler is installed and no process signal is reported as delivered.
+extern "C" JNIEXPORT void* JNICALL JVM_RegisterSignal(jint, void*) {
+  errno = ENOTSUP;
+  return reinterpret_cast<void*>(intptr_t(-1));
+}
+extern "C" JNIEXPORT jboolean JNICALL JVM_RaiseSignal(jint) {
+  errno = ENOTSUP;
+  return JNI_FALSE;
 }

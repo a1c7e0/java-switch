@@ -14,4 +14,5 @@ enum { InfoType_CoreMask = 0, InfoType_TotalMemorySize = 6,
 Result svcGetInfo(u64* out, uint32_t id, Handle handle, u64 sub_id);
 Result svcGetProcessId(u64* out, Handle handle);
 void svcSleepThread(s64 nanoseconds);
+void svcExitProcess(void) __attribute__((noreturn));
 #endif

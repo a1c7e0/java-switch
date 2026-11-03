@@ -1,0 +1,125 @@
+$ make JOBS=2 java.base-java
+Building target 'java.base-java' in configuration '/workspace/java-switch/build/openjdk25-horizon'
+Compiling up to 3353 files for java.base
+/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/classes/java/lang/ProcessEnvironment.java:59: error: cannot find symbol
+import static java.lang.ProcessImpl.JNU_CHARSET;
+^
+  symbol:   static JNU_CHARSET
+  location: class ProcessImpl
+/workspace/java-switch/build/openjdk25-horizon/support/gensrc/java.base/sun/nio/ch/SocketOptionRegistry.java:87: error: cannot find symbol
+                StandardProtocolFamily.INET), new OptionKey(0, IP_TOS));
+                                                               ^
+  symbol:   variable IP_TOS
+  location: class LazyInitialization
+/workspace/java-switch/build/openjdk25-horizon/support/gensrc/java.base/sun/nio/ch/SocketOptionRegistry.java:89: error: cannot find symbol
+                StandardProtocolFamily.INET), new OptionKey(0, IP_MULTICAST_IF));
+                                                               ^
+  symbol:   variable IP_MULTICAST_IF
+  location: class LazyInitialization
+/workspace/java-switch/build/openjdk25-horizon/support/gensrc/java.base/sun/nio/ch/SocketOptionRegistry.java:91: error: cannot find symbol
+                StandardProtocolFamily.INET), new OptionKey(0, IP_MULTICAST_TTL));
+                                                               ^
+  symbol:   variable IP_MULTICAST_TTL
+  location: class LazyInitialization
+/workspace/java-switch/build/openjdk25-horizon/support/gensrc/java.base/sun/nio/ch/SocketOptionRegistry.java:93: error: cannot find symbol
+                StandardProtocolFamily.INET), new OptionKey(0, IP_MULTICAST_LOOP));
+                                                               ^
+  symbol:   variable IP_MULTICAST_LOOP
+  location: class LazyInitialization
+/workspace/java-switch/build/openjdk25-horizon/support/gensrc/java.base/sun/nio/ch/SocketOptionRegistry.java:98: error: cannot find symbol
+                StandardProtocolFamily.INET6), new OptionKey(41, IPV6_TCLASS));
+                                                                 ^
+  symbol:   variable IPV6_TCLASS
+  location: class LazyInitialization
+/workspace/java-switch/build/openjdk25-horizon/support/gensrc/java.base/sun/nio/ch/SocketOptionRegistry.java:100: error: cannot find symbol
+                StandardProtocolFamily.INET6), new OptionKey(41, IPV6_MULTICAST_IF));
+                                                                 ^
+  symbol:   variable IPV6_MULTICAST_IF
+  location: class LazyInitialization
+/workspace/java-switch/build/openjdk25-horizon/support/gensrc/java.base/sun/nio/ch/SocketOptionRegistry.java:102: error: cannot find symbol
+                StandardProtocolFamily.INET6), new OptionKey(41, IPV6_MULTICAST_HOPS));
+                                                                 ^
+  symbol:   variable IPV6_MULTICAST_HOPS
+  location: class LazyInitialization
+/workspace/java-switch/build/openjdk25-horizon/support/gensrc/java.base/sun/nio/ch/SocketOptionRegistry.java:104: error: cannot find symbol
+                StandardProtocolFamily.INET6), new OptionKey(41, IPV6_MULTICAST_LOOP));
+                                                                 ^
+  symbol:   variable IPV6_MULTICAST_LOOP
+  location: class LazyInitialization
+/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/classes/java/lang/ProcessEnvironment.java:167: error: cannot find symbol
+            return new Variable(str, str.getBytes(JNU_CHARSET));
+                                                  ^
+  symbol:   variable JNU_CHARSET
+  location: class Variable
+/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/classes/java/lang/ProcessEnvironment.java:176: error: cannot find symbol
+            return new Variable(new String(bytes, JNU_CHARSET), bytes);
+                                                  ^
+  symbol:   variable JNU_CHARSET
+  location: class Variable
+/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/classes/java/lang/ProcessEnvironment.java:200: error: cannot find symbol
+            return new Value(str, str.getBytes(JNU_CHARSET));
+                                               ^
+  symbol:   variable JNU_CHARSET
+  location: class Value
+/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/classes/java/lang/ProcessEnvironment.java:209: error: cannot find symbol
+            return new Value(new String(bytes, JNU_CHARSET), bytes);
+                                               ^
+  symbol:   variable JNU_CHARSET
+  location: class Value
+/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/classes/sun/nio/ch/PollSelectorImpl.java:210: error: cannot find symbol
+        FileDispatcherImpl.closeIntFD(fd0);
+        ^
+  symbol:   variable FileDispatcherImpl
+  location: class PollSelectorImpl
+/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/classes/sun/nio/ch/PollSelectorImpl.java:211: error: cannot find symbol
+        FileDispatcherImpl.closeIntFD(fd1);
+        ^
+  symbol:   variable FileDispatcherImpl
+  location: class PollSelectorImpl
+/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/classes/sun/nio/ch/FileChannelImpl.java:75: error: cannot find symbol
+    private static final FileDispatcher nd = new FileDispatcherImpl();
+                                                 ^
+  symbol:   class FileDispatcherImpl
+  location: class FileChannelImpl
+/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/classes/sun/nio/ch/SimpleAsynchronousFileChannelImpl.java:51: error: cannot find symbol
+    private static final FileDispatcher nd = new FileDispatcherImpl();
+                                                 ^
+  symbol:   class FileDispatcherImpl
+  location: class SimpleAsynchronousFileChannelImpl
+17 errors
+gmake[3]: *** [CompileJavaModules.gmk:102: /workspace/java-switch/build/openjdk25-horizon/jdk/modules/java.base/_the.java.base_batch] Error 1
+gmake[2]: *** [make/Main.gmk:182: java.base-java] Error 2
+
+ERROR: Build failed for target 'java.base-java' in configuration '/workspace/java-switch/build/openjdk25-horizon' (exit code 2)
+Stopping javac server
+
+=== Output from failing command(s) repeated here ===
+* For target jdk_modules_java.base__the.java.base_batch:
+/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/classes/java/lang/ProcessEnvironment.java:59: error: cannot find symbol
+import static java.lang.ProcessImpl.JNU_CHARSET;
+^
+  symbol:   static JNU_CHARSET
+  location: class ProcessImpl
+/workspace/java-switch/build/openjdk25-horizon/support/gensrc/java.base/sun/nio/ch/SocketOptionRegistry.java:87: error: cannot find symbol
+                StandardProtocolFamily.INET), new OptionKey(0, IP_TOS));
+                                                               ^
+  symbol:   variable IP_TOS
+  location: class LazyInitialization
+/workspace/java-switch/build/openjdk25-horizon/support/gensrc/java.base/sun/nio/ch/SocketOptionRegistry.java:89: error: cannot find symbol
+                StandardProtocolFamily.INET), new OptionKey(0, IP_MULTICAST_IF));
+                                                               ^
+  symbol:   variable IP_MULTICAST_IF
+  location: class LazyInitialization
+   ... (rest of output omitted)
+
+* All command lines available in /workspace/java-switch/build/openjdk25-horizon/make-support/failure-logs.
+=== End of repeated output ===
+
+No indication of failed target found.
+HELP: Try searching the build log for '] Error'.
+HELP: Run 'make doctor' to diagnose build problems.
+
+make[1]: *** [/workspace/java-switch/.deps/openjdk25-horizon/make/Init.gmk:151: main] Error 2
+make: *** [/workspace/java-switch/.deps/openjdk25-horizon/make/PreInit.gmk:159: java.base-java] Error 2
+
+Exit status: 2

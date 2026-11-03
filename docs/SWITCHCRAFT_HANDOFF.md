@@ -1,205 +1,143 @@
 # Switchcraft runtime handoff
 
-Published runtime/SDK source pin on `a1c7e0/java-switch`, branch `main`:
-**`26e8387e1a78a78ed7d5bd5f8b50886de70d4275`**.
-Later documentation/example commits may accompany the package; use the full
-`source_revision` in `dist/manifest.json` for exact package reproduction. The
-final packaging run is performed from a clean committed tree. Never pin a
-moving branch in the downstream lock. No Switchcraft source or lock was edited.
+Repository: `a1c7e0/java-switch`, branch `main`. The published implementation
+pin is recorded after the milestone commit; `dist/manifest.json` records
+the exact full package source revision. Pin an immutable SHA downstream.
+No Switchcraft source or dependency lock was edited.
 
-## Availability and ABI contract
+## Verified build and remaining runtime evidence
 
-`include/javaswitch/runtime.h` remains byte-for-byte unchanged from the incoming
-baseline. **JS_ABI_VERSION = 1**. Existing structures, entry points and codes
-remain: `js_runtime_query`, `js_runtime_launch`,
-`js_runtime_launch_with_options`, `JsRuntimeInfo`, `JsLaunchRequest`,
-`JsLaunchResult`, JS_OK (0), JS_UNAVAILABLE (-100), JS_INCOMPATIBLE (-101),
-JS_BAD_ARGUMENT (-102), and JS_JAVA_EXCEPTION (-103).
+A real OpenJDK25 Zero archive (553 ARM64 objects), eight native java.base
+archives, a static native resolver and a Horizon PIE/NRO now build. The minimal
+java.base image contains target-built classfile-69 classes and generated data.
+`java25-test.nro` A attempts Hello; X attempts actual JNI registration, threads,
+NIO, FFM downcall and upcall. **Switch VM startup, Java execution and every
+hardware workload are NOT TESTED. Minecraft/title execution is not established.**
 
-| Backend | Reported Java major | Availability / JNI |
+The normal SDK remains VM-free. `include/javaswitch/runtime.h` is byte-identical
+to the incoming ABI 1 header: all existing structures, entry points and status
+codes remain. `native_resolver.h` is an additive, separately versioned extension;
+see `docs/NATIVE_RESOLVER.md`.
+
+| Link contents | openjdk25 query | Launch behavior |
 | --- | --- | --- |
-| `minijvm8` | 8 | Available Java8 diagnostic; custom native registry, not standard JNI Invocation |
-| `openjdk25` | 25 | Unavailable in the supplied Horizon SDK; no genuine VM symbol is linked |
+| Baseline libjavaswitch.a alone | Java major 25, available=0, standard_jni=0 | JS_UNAVAILABLE / runtime-not-linked |
+| Actual VM archive forced into executable | available=1, standard_jni=1 | Attempts genuine JNI_CreateJavaVM; actual initialization/version/errors decide success |
+| minijvm8 | Java major 8 diagnostic | Rejects Java25 requests; actual loader rejects classfile69 |
 
-`query("openjdk25")` returns JS_OK to describe the backend with `available=0`
-and `standard_jni=0`. Launch returns JS_UNAVAILABLE with
-`stage="runtime-not-linked"`. A Java25 request against miniJVM returns
-JS_INCOMPATIBLE; there is no Java8 fallback or classfile-version spoofing.
-The loader itself now rejects versions above 52.0, including direct JAR/native
-defineClass routes. Parser rejection is logged and propagated through the
-existing NoClassDefFoundError path with safe cleanup, rather than promising
-exact UnsupportedClassVersionError compatibility.
+Query availability is symbol presence, not proof of startup. The SDK checks the
+real `java.specification.version` after successful creation and supports one
+successful VM per process. DestroyJavaVM does not make NRO code safe to unload;
+terminate the Horizon application process after a VM session. Native provider callbacks, context and function
+addresses must remain resident. Installing/sealing the provider does not execute
+Java or imply that an optional native module exists.
 
-Registration strategy: `src/runtime_openjdk.c` has a **weak** standard
-`JNI_CreateJavaVM` import. A future real static VM must supply that symbol;
-when linking an archive the consumer must force extraction, for example
-`-Wl,-u,JNI_CreateJavaVM` plus the genuine VM archive. Weak references alone do
-not extract archive members. No dummy provider is supplied. Symbol presence
-makes query report available; launch then checks actual VM initialization and
-the real `java.specification.version` (exactly 25). Availability is a linkage
-observation, not proof that a VM initialized or ran bytecode.
+## Artifacts and static integration
 
-The additive `include/javaswitch/vmem.h` extension preserves previous enum values
-and whole-region calls. It adds aligned reservation, size query, page-range
-commit/uncommit, NONE/R/RW protection and an explicit UNSUPPORTED result for
-executable protection. These experiments are not advertised as complete mmap or
-HotSpot memory services; partial reservation release remains absent.
-
-## Artifacts and linking
-
-| Path | Actual contents |
+| Path | Contents |
 | --- | --- |
-| `dist/java-test.nro` | Preserved Java8 miniJVM diagnostic |
-| `dist/ffi-test.nro` | AAPCS64 integer/FP downcalls and closures; whole/partial VM probes |
-| `dist/zero-services-test.nro` | Real OpenJDK25 time/sync/native-thread/TLS/SafeFetch probes; **no Java VM** |
-| `dist/javaswitch-horizon-sdk.tar.gz` | `include/javaswitch/{runtime,vmem}.h`, ffi headers, `lib/libjavaswitch.a`, runtime contract and notices |
-| `build/sdk/libjavaswitch.a` | AArch64 SDK, miniJVM C, libffi and native memory/closure helpers; no OpenJDK VM |
-| `build/openjdk25-horizon/components/*.o` | Experimental HotSpot service/utility objects only; not included as a VM in the SDK |
-| `dist/java-switch-source.tar.gz` | Corresponding repository, miniJVM/libffi source and complete pinned OpenJDK archive |
-| `dist/COPY_TO_SD/`, `dist/java-switch-test-package.zip` | Installable diagnostics, JAR tests, source and notices |
-| `dist/manifest.json`, `dist/SHA256SUMS` | Source revision, truthful verification status and complete SHA256 values |
+| dist/java-test.nro | Preserved Java8 diagnostic |
+| dist/ffi-test.nro | Native integer/FP downcalls, W^X closures, public memory probes |
+| dist/zero-services-test.nro | Actual HotSpot service probes, no VM; A/X/Y/B/L actions |
+| dist/java25-test.nro | Genuine experimental Zero VM and native providers; startup/execution unverified |
+| dist/javaswitch-horizon-sdk.tar.gz | Baseline SDK ABI 1, public headers and libffi, no VM |
+| dist/openjdk25-horizon-runtime.tar.gz | Actual libjvm.a, eight native archives, generated resolver, JNI headers, image and notices |
+| dist/java-switch-source.tar.gz | Complete tracked source and full pinned OpenJDK archive plus miniJVM/libffi source |
+| dist/COPY_TO_SD and test-package ZIP | Complete safely installable diagnostics/image/JAR/source tree |
+| dist/manifest.json and SHA256SUMS | Exact source revision and generated artifact hashes |
 
-Raw SDK archive SHA256:
-`ccfaee3eeff02df2906bb8dd1cc1dc2214acb6b7f79eed4ce20777447da3108d`.
-The final NRO/package hashes are recorded in `dist/SHA256SUMS`; the probe's
-input/ELF/NRO hashes are also retained in `docs/evidence/openjdk25-probe.json`.
-There is **no** `java25-test.nro`, usable `libjvm.a`, or Java25 runtime image.
-
-Use devkitA64 GCC 15.2.0 with the locked devkitPro image. Extract the SDK and
-compile with its `include/` directory plus libnx headers. Baseline flags:
+The runtime integration archive depends on the baseline SDK. Compile
+`native/native_resolver.c` with the provided headers. Its immutable exported
+`const JsNativeResolver js_openjdk25_native_resolver` is generated from actual
+archive definitions, never a JNI success stub. Include its object before libs.
+Use the real devkitA64/libnx flags:
 
 ```sh
--march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE -D__SWITCH__
+-march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE
 -specs=$DEVKITPRO/libnx/switch.specs -L$DEVKITPRO/libnx/lib
--L/path/to/sdk/lib -Wl,--start-group -ljavaswitch -lnx -lm -Wl,--end-group
+-Wl,--gc-sections -Wl,-u,JNI_CreateJavaVM
+-Wl,--start-group libjava.a libzip.a libjimage.a libverify.a libnet.a libnio.a \
+  libfallbackLinker.a libsyslookup.a libjvm.a libjavaswitch.a -lnx -lc -lm \
+-Wl,--end-group
 ```
 
-Keep objects before libraries. The SDK is C; a C++ launcher may use the C++
-driver. The experimental HotSpot component build additionally uses
-`-mno-outline-atomics`; it uses upstream JDK25 headers, not host Linux VM code.
-`scripts/openjdk25.py` stages the actual libnx W^X libffi archive/allocator for
-configure. Do not link libffi's intermediate generic ELF closure allocator or
-label Linux Temurin's `libjvm.so` as a Horizon provider.
-
-## Minimal consumer example
-
-The complete compile-checked C example is `examples/sdk_java25.c`. Its core is:
+Use the C++ driver. Keep libnx before libc to retain libnx's actual fcntl.
+The exact tested invocation and all archive hashes are recorded in
+`build/openjdk25-runtime-link.log/json` and the integration manifest. No host VM
+or dynamic native library belongs in this image. JNI header paths are
+`include/` and `include/horizon/`.
 
 ```c
-JsRuntimeInfo info;
-js_runtime_query("openjdk25", &info); /* available == 0 in this SDK */
-JsLaunchRequest q = {
-    .abi_version = JS_ABI_VERSION, .required_java_major = 25,
-    .backend = "openjdk25", .heap_mib = 256,
-    .classpath = "sdmc:/switch/mc-runtime/tests/java25-hello.jar",
-    .main_class = "HelloHorizon25"
-};
-JsLaunchResult r;
-int code = js_runtime_launch(&q, &r); /* JS_UNAVAILABLE, runtime-not-linked */
+#include <javaswitch/runtime.h>
+#include <javaswitch/native_resolver.h>
+extern const JsNativeResolver js_openjdk25_native_resolver;
+
+int launch_java25(void) {
+    int status = js_native_resolver_install(&js_openjdk25_native_resolver);
+    if (status != JS_OK) return status;
+    JsLaunchRequest request = {
+        .abi_version = JS_ABI_VERSION, .required_java_major = 25,
+        .backend = "openjdk25", .heap_mib = 128,
+        .classpath = "sdmc:/switch/mc-runtime/tests/java25-hello.jar",
+        .main_class = "HelloHorizon25"
+    };
+    JsLaunchResult result = {0};
+    return js_runtime_launch(&request, &result);
+}
 ```
 
-The example process returns success only when its expected unavailable result
-was observed; it never reports that Java executed. The JAR is a real classfile69
-Hello World with a manifest, compiled by pinned host Java25. Its text was run
-only on the Linux reference VM. The SDK requires an explicit slash-separated
-main-class name and does not implement JAR manifest discovery.
+Call from a sufficiently sized real native stack; the diagnostic uses a checked
+4 MiB libnx worker. Native libnx heap reservation must leave physical budget for
+Alias mappings: its zero default normally commits almost all available memory.
+The diagnostic uses `__nx_heap_size=256 MiB`; a loader heap override wins. This
+is a smoke setting, not a Minecraft memory recommendation. Log process memory,
+heap override and raw Results before diagnosing a VM allocation failure.
 
-## Runtime image, options and native methods
+## SD layout and platform services
 
-No Java25 image or implicit image-path resolver is implemented. Reserve the
-future SD location `sdmc:/switch/mc-runtime/runtimes/openjdk25/` only after a real
-VM/class library defines its layout; the SDK does not create or interpret that
-directory today. miniJVM continues to use
-`sdmc:/switch/mc-runtime/runtimes/minijvm/minijvm_rt.jar`. Test JARs/logs remain
-under the shared `switch/mc-runtime/{tests,logs}` root.
+Default JAVA_HOME is `sdmc:/switch/mc-runtime/runtimes/openjdk25`; TMPDIR defaults
+to `sdmc:/switch/mc-runtime/tmp`. Explicit environment values are respected.
+The image's lib/modules, configuration, generated data and legal files must all
+be copied. Classpath separation is `;` so device colons remain intact. Java
+reports Horizon, AArch64 and UTF-8. Java and native path handling retain sdmc:/.
 
-The contract specifies `;` as Horizon's classpath separator to avoid the `sdmc:`
-device-prefix colon. miniJVM consumes this; the adapter forwards the string
-unchanged. A future Java25 class library must implement matching properties and
-path parsing before multiple SD classpath entries are supported. Host tests use
-their Linux paths. `boot_classpath` is used by miniJVM; the Java25 adapter does
-not currently apply it as an image/boot override.
+The SDK ready hook supports real RegisterNatives. The static module keys are
+java, zip, jimage, verify, net, nio, fallbackLinker and syslookup. The syslookup
+catalogue contains only selected real target libc/libm exports; missing symbols
+return unavailable. Horizon uses the configured libffi fallback and its actual
+AAPCS64/native sizes. The test image does not have java.instrument yet;
+JVMTI, standard -javaagent and retransformation integration remain work.
 
-The adapter supplies `-Djava.class.path=...`, `-Xmx<heap_mib>M` and
-`--enable-native-access=ALL-UNNAMED`, then forwards up to 128 extra `-` options
-through `JavaVMOption` with `ignoreUnrecognized=JNI_FALSE`. Accepted `-X` options
-are determined by the actual linked VM, not emulated by the SDK. The heap field
-is validated at 32..1024 MiB; it is not a guarantee that process memory exists.
-Java heap, VM metadata, native stacks, FFI backing and page-state metadata must
-fit the application's real memory budget, which hardware logs must establish.
+Unsupported operations fail explicitly: fork/exec, dynamic ELF loading, Unix
+domain sockets, file mappings/locks, unavailable filesystem attributes, process
+signals and native I/O signaling. Socket/interface enumeration and reachability
+also remain incomplete. Normal file I/O, IPv4 BSD sockets/DNS and selector wakeup
+have native code and host tests; hardware behavior is unverified. See
+`docs/OPENJDK25_CLASSLIB.md` and `docs/HORIZON_SERVICES.md`.
 
-For statically linked custom natives, use `on_vm_ready` and the actual `JNIEnv`
-to call `RegisterNatives` on real Java methods, as in `tests/jni_host.c`. Those
-function addresses must remain live through VM execution. There is no automatic
-Java25 built-in native library/symbol registry or general Horizon dlopen/dlsym
-implementation yet. `JNI_OnLoad_*`, java.base's built-ins and fallbackLinker
-static lookup still require integration. No LWJGL symbols are silently supplied.
+The private memory bridge implements partial release and real Alias selection.
+It shares reservation ownership with the public SDK and never returns an
+executable mapping. libffi closures use the distinct libnx JIT allocator.
+SafeFetch recovery remains restricted to two exact load PCs; unmatched faults
+retain the original fatal path. Hardware kernel return/permissions are unknown.
 
-After successful VM creation, exceptions and failures reach `DestroyJavaVM`.
-One successfully created VM is allowed per process; relaunching in the same
-process returns `JVM-reinitialization-unsupported`, including after destroy.
-Callers must serialize invocation/lifetime; concurrent launches are not an SDK
-guarantee. Unknown native thread/safepoint cleanup is not hidden by a success
-return. No VM was created on Horizon in this delivery.
+## Validation and downstream requests
 
-## Tests and next source work
+Run the ordinary build, then the experimental commands in
+`ports/openjdk25/README.md`. Evidence separates host JNI tests, mocked Horizon
+services, ARM64 emulation, genuine cross-linking and physical execution.
+`docs/HARDWARE_TEST_MATRIX.md` gives exact buttons and SD log names. Full VM
+stdout/stderr and the status log are required; retain any Atmosphere crash report,
+firmware, application/applet mode and the last action when startup stalls.
 
-`bash scripts/build-all.sh` passes cross-build, six host tests, NRO architecture
-and container checks. Additional commands:
-
-```sh
-python3 scripts/openjdk25.py configure   # PASS: horizon-aarch64/newlib/Zero
-python3 scripts/openjdk25.py build       # incomplete OS platform; retain exact log
-python3 scripts/openjdk25.py components  # CROSS-BUILT genuine components
-python3 scripts/openjdk25.py test-host   # HOST-PASSED clock/sync/thread/TLS mocks
-python3 scripts/openjdk25.py probe       # CROSS-BUILT service NRO, no VM
-python3 scripts/bootstrap-openjdk-emulator.py # optional hash-pinned Linux tool
-python3 scripts/test-openjdk25-faults.py # EMULATOR-PASSED; kernel is mocked
-python3 scripts/verify-package.py        # bytes/headers/notices/source reconstruction
-```
-
-See `docs/evidence/`, `docs/PRIOR_ART_AUDIT.md`, `docs/HORIZON_SERVICES.md` and
-`docs/HARDWARE_TEST_MATRIX.md`. Physical Switch execution is **NOT TESTED** for
-all NROs. Host Java25 JNI and FFM down/upcalls pass; JNI/FFM **on Horizon remain
-BLOCKED**, as do classfile69 execution, JVMTI/instrumentation/retransformation,
-Java25 NIO/networking and the complete class library.
-
-The PCH, monitor/parking platform, POSIX SafeFetch and permitted-function include
-barriers are crossed. Implemented code lives under
-`ports/openjdk25/src/hotspot/os/horizon/` and `os_cpu/horizon_zero/`; maintained
-shared/build changes live in `patches/openjdk25/`. The exact newest full-build
-failure is recorded in `docs/OPENJDK25_SYNC.md` and its evidence log. No archive
-of incomplete objects is advertised as a functioning VM.
-
-Current source-build blocker: `runtime/mutex.cpp` includes the missing
-`threadCrashProtection_horizon.hpp`, after 330 genuine AArch64 VM objects.
-The NMT SSIZE_MAX and earlier header/format barriers are crossed. Resolve the
-broader crash-protection contract explicitly; SafeFetch covers only two native
-read instructions and cannot stand in for that interface.
-
-Next high-value lifecycle file: `src/hotspot/os/horizon/os_horizon_thread.cpp` in the
-overlay, implementing genuine `os::create_attached_thread`, `create_main_thread`
-and VM-created worker startup/lifetime. Main/attached threads must not close
-libnx-owned handles/stacks. Created workers need an INITIALIZED/start gate and
-deferred reaping: JavaThread::post_run can delete its OSThread before libnx's
-threadExit finishes on that same stack. Transfer native ownership before
-destruction and join/close it from a surviving thread. See
-`docs/OPENJDK25_SYNC.md`; native primitives and TLS alone do not implement this.
-
-Follow with safepoints, real virtual-memory binding, general stack/Java fault
-handling and java.base native/image initialization. The new early exception
-entry resumes only exact SafeFetch load PCs; the ordinary callback still breaks
-the process. It preserves debugger policy and the original fatal path, with
-actual HOS transfer/resume NOT TESTED. The private port owns a strong libnx entry;
-other custom exception entries require explicit integration. See
-`docs/OPENJDK25_FAULTS.md`. These private objects are not added to the public SDK.
-
-Hardware plan: application-mode hbmenu, Java8 A and FFI A/X/Y/B; then native
-services A, X (ID/stack/TLS/64 handoffs), experimental Y (SafeFetch32/N fallbacks),
-and X again if Y returns. Relaunch and repeat, retaining complete logs/crash
-reports. Native Y can abort or stall. No physical-device result exists yet.
-
-Downstream request: retain the ABI v1 availability gate and pin this repository's
-full SHA. Defer Java25/LWJGL execution until an actual VM/image arrives. Identify
-required LWJGL FFM symbols and owning static libraries, then supply an explicit
-native-symbol contract; SDL3/graphics/launcher work remains in Switchcraft.
+Switchcraft should consume the pinned runtime package and compose its existing
+SDL/Vulkan/native bindings with the generated JDK resolver before sealing it.
+Preserve exact module keys and lifetime. Unknown LWJGL functions must stay
+unavailable. Required additional native families include SDL/Vulkan and the
+remaining VMA/shaderc/SPIRV-Cross/FreeType/OpenAL/STB/jemalloc/LWJGL bindings.
+The strict Vulkan host trace also loads lwjgl_opengl incidentally; audit those
+initialization bindings before omitting them. These native modules are owned by
+the graphics/launcher task. Keep Horizon platform detection
+truthful, install the complete image, and retain the ABI/version availability
+gate. The next runtime tasks are JVMTI/java.instrument, actual hardware startup
+and JNI/FFM logs, then the pinned Minecraft title workload through Switchcraft.

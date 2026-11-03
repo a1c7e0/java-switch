@@ -1,0 +1,169 @@
+{
+  "port_digest": "f4572555046aa211db0d1fa1e89bedf5cda02bbd566f772941dbd113746a8b41",
+  "archives": {
+    "java": {
+      "sha256": "28ffa6f12baad729e3b2dec4f173948d125ee9e472a168a33bf66a3085db4a7b",
+      "members": [
+        "Array.o",
+        "BootLoader.o",
+        "CDS.o",
+        "Class.o",
+        "ClassLoader.o",
+        "Console_md.o",
+        "ConstantPool.o",
+        "Continuation.o",
+        "ContinuationSupport.o",
+        "Double.o",
+        "Executable.o",
+        "Field.o",
+        "FileDescriptor_md.o",
+        "FileInputStream.o",
+        "FileOutputStream.o",
+        "Finalizer.o",
+        "Float.o",
+        "ForeignLinkerSupport.o",
+        "JdkConsoleImpl_md.o",
+        "LambdaProxyClassArchive.o",
+        "Module.o",
+        "NativeAccessors.o",
+        "NativeLibraries.o",
+        "NullPointerException.o",
+        "Object.o",
+        "ObjectStreamClass.o",
+        "PhantomReference.o",
+        "PreviewFeatures.o",
+        "ProcessEnvironment_md.o",
+        "RandomAccessFile.o",
+        "RawNativeLibraries.o",
+        "Reference.o",
+        "Reflection.o",
+        "Runtime.o",
+        "SeedGenerator.o",
+        "Shutdown.o",
+        "Signal.o",
+        "StackFrameInfo.o",
+        "StackStreamFactory.o",
+        "StackTraceElement.o",
+        "String.o",
+        "System.o",
+        "Thread.o",
+        "ThreadSnapshot.o",
+        "Throwable.o",
+        "TimeZone.o",
+        "TimeZone_md.o",
+        "UnixFileSystem_md.o",
+        "VM.o",
+        "VMSupport.o",
+        "VM_md.o",
+        "VirtualThread.o",
+        "canonicalize_md.o",
+        "check_classname.o",
+        "check_version.o",
+        "horizon_file_cursor.o",
+        "io_util.o",
+        "io_util_md.o",
+        "java_props_md.o",
+        "jio.o",
+        "jni_util.o",
+        "jni_util_md.o",
+        "path_util.o"
+      ]
+    },
+    "zip": {
+      "sha256": "e80dd72dd2219c6b250ce94e429601b751af2948cfd663a4dc162c8336db5190",
+      "members": [
+        "Adler32.o",
+        "CRC32.o",
+        "Deflater.o",
+        "Inflater.o",
+        "compress.o",
+        "deflate.o",
+        "gzclose.o",
+        "gzlib.o",
+        "gzread.o",
+        "gzwrite.o",
+        "infback.o",
+        "inffast.o",
+        "inflate.o",
+        "inftrees.o",
+        "trees.o",
+        "uncompr.o",
+        "zadler32.o",
+        "zcrc32.o",
+        "zip_util.o",
+        "zutil.o"
+      ]
+    },
+    "jimage": {
+      "sha256": "92af2b1af724d7f23d3a20cca4445d23ce8853b2bb92ae04256edaa2cb558505",
+      "members": [
+        "NativeImageBuffer.o",
+        "endian.o",
+        "imageDecompressor.o",
+        "imageFile.o",
+        "jimage.o",
+        "osSupport_horizon.o"
+      ]
+    },
+    "verify": {
+      "sha256": "aa8f546c784cd1ef57ab1a37a75e91e08d8fc6c3db14afb6484f8818fc39dbb5",
+      "members": [
+        "check_code.o"
+      ]
+    },
+    "net": {
+      "sha256": "876982cbca1be080a8d6d1b49ccb59e4ad71316077a594389ee6092a9fcb2e51",
+      "members": [
+        "DefaultProxySelector.o",
+        "Inet4Address.o",
+        "Inet4AddressImpl.o",
+        "Inet6Address.o",
+        "Inet6AddressImpl.o",
+        "InetAddress.o",
+        "NetworkInterface.o",
+        "ResolverConfigurationImpl.o",
+        "SdpSupport.o",
+        "net_util.o",
+        "net_util_md.o",
+        "portconfig.o",
+        "proxy_util.o"
+      ]
+    },
+    "nio": {
+      "sha256": "cd03f77024a63550cdd4bdc858ca5695c22f696f9dd404c60ee64022d310bef8",
+      "members": [
+        "DatagramChannelImpl.o",
+        "DatagramDispatcher.o",
+        "FileKey.o",
+        "IOUtil.o",
+        "InheritedChannel.o",
+        "MappedMemoryUtils.o",
+        "NativeSocketAddress.o",
+        "NativeThread.o",
+        "Net.o",
+        "PollSelectorImpl.o",
+        "SocketDispatcher.o",
+        "UnixAsynchronousSocketChannelImpl.o",
+        "UnixDispatcher.o",
+        "UnixDomainSockets.o",
+        "UnixFileDispatcherImpl.o",
+        "UnixFileSystem.o",
+        "UnixNativeDispatcher.o",
+        "nio_util.o"
+      ]
+    },
+    "fallbackLinker": {
+      "sha256": "06c29039da3aae16b9a28ecb7e2e106d615717533f95979c28edb2b03e5475e4",
+      "members": [
+        "fallbackLinker.o"
+      ]
+    },
+    "syslookup": {
+      "sha256": "0737c035fa7393057b73771cc62eaf8d133114b9564961fa51e252a94a30b8c8",
+      "members": [
+        "syslookup.o"
+      ]
+    }
+  },
+  "horizon_execution": "NOT TESTED"
+}

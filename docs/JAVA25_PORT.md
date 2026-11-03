@@ -40,11 +40,12 @@ fault islands are tracked. The full build passes the precompiled header and
 compiles genuine shared/Zero VM sources; it is still an incomplete port.
 See the latest evidence logs, `docs/OPENJDK25_SYNC.md` and
 `docs/OPENJDK25_FAULTS.md` for the current exact barrier and validation boundaries.
-The latest full target generates 330 AArch64 objects, then fails at missing
-`threadCrashProtection_horizon.hpp` in `runtime/mutex.cpp`; broader crash
-protection remains unimplemented. Evidence: `openjdk25-native-build.log`.
-No `libjvm.a` or usable
-Horizon Java 25 runtime has been produced.
+The complete upstream static target now produces **553 AArch64 objects and a
+real libjvm.a**. The JNI VM links with eight real java.base native archives and
+an archive-derived static resolver into a Horizon PIE and `java25-test.nro`.
+Target-built classfile-69 classes and generated data form the minimal java.base
+image. See `docs/OPENJDK25_CLASSLIB.md` and the latest build/link evidence.
+**VM startup and Java execution on Switch remain NOT TESTED.**
 
 Reproduce the experimental build separately from the preserved diagnostics:
 
@@ -53,6 +54,10 @@ bash scripts/build-all.sh
 python3 scripts/bootstrap-openjdk-tools.py # optional if system autoconf/m4 exist
 python3 scripts/openjdk25.py configure
 python3 scripts/openjdk25.py build
+python3 scripts/openjdk25.py java-base
+python3 scripts/openjdk25.py native-base
+python3 scripts/build-openjdk25-image.py
+python3 scripts/openjdk25.py link-runtime
 python3 scripts/openjdk25.py components
 python3 scripts/openjdk25.py test-host
 python3 scripts/openjdk25.py probe
@@ -72,14 +77,16 @@ and 64 permit exchanges with checked join/close. Y is an experimental SafeFetch
 fault-recovery test and may abort or stall. There is no VM entry point. Device
 execution is NOT TESTED. Host clock/monitor/permit/TLS/failure tests and actual
 ARM64 instruction tests with a mocked kernel are separate evidence.
-The full source archive accompanies this GPL component
-diagnostic. `java25-hello.jar` contains a minimal classfile-69 Hello World and
-manifest; it can only be run on the host reference JDK at present.
+The full source archive accompanies the GPL diagnostics and VM. Native services
+B checks deferred thread reaping and L checks private Alias memory/splitting.
+`java25-test.nro` A now attempts the real classfile-69 Hello JAR; X attempts JNI,
+threads, NIO and FFM on the same genuine VM. Both need physical-device logs.
 
-J0 baseline/audit and J1 configure are complete. J2 has cross-built native
-components and page-mapping probes, but no complete OS platform. J3.1 through
-J3.6 remain BLOCKED: no VM startup, classfile-69 execution, JNI, FFM,
-instrumentation or retransformation on Horizon has been established.
+J0/J1 are complete. J2 has a cross-built Zero OS backend and explicit failures
+for unavailable services. J3.1 has a genuine linked Horizon VM NRO and minimal
+image. J3.2-J3.5 have runnable diagnostic workloads but physical execution is
+NOT TESTED. J3.6 instrumentation/retransformation and Minecraft integration
+remain source work; no title screen has been demonstrated.
 
 ### Original observed barrier
 
@@ -95,9 +102,8 @@ checking target system type... aarch64-none-elf
 configure: error: unsupported operating system elf
 ```
 
-This was the original barrier; the tracked port now passes it. No Java 25
-`libjvm.a`, runtime image, Java 25 NRO or Horizon title screen exists. See the
-complete log in `docs/evidence/openjdk25-configure-horizon.log`.
+This was the original barrier; the tracked port now passes it and builds the
+VM/archive/image/NRO described above. The original failure log is retained in `docs/evidence/openjdk25-configure-horizon.log`.
 
 Zero's `src/hotspot/cpu/zero/foreignGlobals_zero.cpp` disables the assembly
 foreign linker. However, `make/autoconf/jdk-options.m4` enables a **libffi-based

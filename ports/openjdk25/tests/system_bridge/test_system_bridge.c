@@ -5,6 +5,8 @@
 #include <switch/runtime/env.h>
 #include <assert.h>
 #include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
 
 static uint32_t fail_info_id = UINT32_MAX;
 static Result info_failure = -9;
@@ -37,7 +39,10 @@ void svcSleepThread(s64 nanoseconds) { last_sleep = nanoseconds; sleep_calls++; 
 Handle threadGetCurHandle(void) { return current_handle; }
 Handle envGetMainThreadHandle(void) { return main_handle; }
 
-int main(void) {
+void svcExitProcess(void) { _Exit(83); } /* Host-only kernel termination sentinel. */
+
+int main(int argc, char **argv) {
+    if (argc > 1) js_horizon_system_exit_process(37, strcmp(argv[1], "quick") != 0);
     uint64_t mask = 99, total = 99, used = 99, pid = 99;
     uint32_t raw = 99, primordial = 99;
     assert(js_horizon_system_core_mask(&mask, &raw) == JS_HORIZON_SYSTEM_OK);

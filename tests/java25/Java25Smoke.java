@@ -2,6 +2,8 @@ package org.javaswitch.test;
 import java.lang.foreign.*;
 import java.lang.invoke.*;
 import java.nio.file.*;
+import java.net.*;
+import java.nio.channels.Selector;
 public final class Java25Smoke {
     private static native int nativeAdd(int a,int b);
     public record Point(int x,int y) {}
@@ -15,6 +17,22 @@ public final class Java25Smoke {
         int[] state={0};Thread t=Thread.ofPlatform().start(()->state[0]=42);t.join();check(state[0]==42,"thread / lambda / synchronization");
         Path file=Files.createTempFile(Path.of(args[0]),"java25-",".txt");
         try{Files.writeString(file,"Horizon Java 25");check(Files.readString(file).equals("Horizon Java 25"),"NIO file roundtrip");}finally{Files.delete(file);}
+        InetAddress loopback=InetAddress.getByAddress(new byte[]{127,0,0,1});
+        try(ServerSocket server=new ServerSocket()){
+            server.setSoTimeout(2000);server.bind(new InetSocketAddress(loopback,0));
+            try(Socket client=new Socket()){
+                client.connect(server.getLocalSocketAddress(),2000);
+                try(Socket peer=server.accept()){
+                    peer.setSoTimeout(2000);client.getOutputStream().write(42);
+                    check(peer.getInputStream().read()==42,"TCP loopback roundtrip");
+                }
+            }
+        }
+        try(Selector selector=Selector.open()){
+            long before=System.nanoTime();selector.wakeup();
+            check(selector.select(10000)==0&&System.nanoTime()-before<5_000_000_000L,
+                  "NIO selector wakeup");
+        }
         Linker linker=Linker.nativeLinker();
         try(Arena arena=Arena.ofConfined()){
             MemorySegment text=arena.allocateFrom("javaswitch");

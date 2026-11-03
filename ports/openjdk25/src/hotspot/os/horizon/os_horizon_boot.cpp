@@ -97,8 +97,8 @@ void os::os_exception_wrapper(java_call_t function, JavaValue* result,
   function(result, method, args, thread);
 }
 
-void os::exit(int code) { permit_forbidden_function::exit(code); }
-void os::_exit(int code) { permit_forbidden_function::_exit(code); }
+void os::exit(int code) { js_horizon_system_exit_process(code, 1); }
+void os::_exit(int code) { js_horizon_system_exit_process(code, 0); }
 void os::shutdown() {
   perfMemory_exit();
   ostream_abort();
@@ -109,7 +109,7 @@ void os::abort(bool dump_core, const void*, const void*) {
   shutdown();
   os::_exit(1);
 }
-void os::die() { permit_forbidden_function::_exit(1); }
+void os::die() { js_horizon_system_exit_process(1, 0); }
 void os::breakpoint() { __builtin_trap(); }
 void os::check_core_dump_prerequisites(char* buffer, size_t size, bool check_only) {
   os::snprintf(buffer, size, "Horizon does not generate POSIX core files; preserve SD/crash logs");

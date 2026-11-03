@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 import shlex
 import shutil
 import struct
@@ -25,13 +26,18 @@ PORT = DEPS / 'openjdk25-horizon'
 BUILD = ROOT / 'build/openjdk25-horizon'
 
 
-def port_inputs():
+def port_snapshot():
     patches = sorted((ROOT / 'patches/openjdk25').glob('*.patch'))
     overlay = ROOT / 'ports/openjdk25'
     files = sorted(p for p in (overlay / 'src').rglob('*') if p.is_file())
-    digest = hashlib.sha256(b''.join(p.read_bytes() for p in patches) + b''.join(
-        str(p.relative_to(overlay)).encode() + b'\0' + p.read_bytes() for p in files)).hexdigest()
-    return patches, overlay, files, digest
+    contents = {path: path.read_bytes() for path in patches + files}
+    digest = hashlib.sha256(b''.join(contents[p] for p in patches) + b''.join(
+        str(p.relative_to(overlay)).encode() + b'\0' + contents[p] for p in files)).hexdigest()
+    return patches, overlay, files, digest, contents
+
+
+def port_inputs():
+    return port_snapshot()[:4]
 
 
 def prepare():
@@ -49,30 +55,49 @@ def prepare():
                 member.name = member.name.split('/', 1)[-1]
                 if member.name:
                     source.extract(member, SOURCE, filter='data')
-    patches, overlay, files, digest = port_inputs()
+    patches, overlay, files, digest, contents = port_snapshot()
     stamp = PORT / '.javaswitch-patches'
     patch_stamp = PORT / '.javaswitch-source-patches'
     overlay_stamp = PORT / '.javaswitch-overlay-files.json'
-    patch_digest = hashlib.sha256(b''.join(p.name.encode() + b'\0' + p.read_bytes() for p in patches)).hexdigest()
+    patch_digest = hashlib.sha256(b''.join(p.name.encode() + b'\0' + contents[p] for p in patches)).hexdigest()
     names = [str(p.relative_to(overlay)) for p in files]
     # Source patch changes or removed overlays require a clean reconstruction.
     # Updating a native overlay alone must not rewrite all upstream headers and
     # force configure/PCH/full rebuild on every small porting iteration.
     rebuild = (not patch_stamp.exists() or patch_stamp.read_text() != patch_digest or
                not overlay_stamp.exists() or bool(set(json.loads(overlay_stamp.read_text())) - set(names)))
+    unchanged_times = {}
     if rebuild:
+        # Retain timestamps only when rebuilt bytes are identical. Otherwise
+        # every patch edit rewrites all overlay headers and invalidates the
+        # full VM PCH even when only Java code changed.
+        candidates = set(names)
+        for patch in patches:
+            candidates.update(re.findall(r'^\+\+\+ b/(.+)$', contents[patch].decode(), re.M))
+        for name in candidates:
+            old = PORT / name
+            if old.is_file():
+                info = old.stat()
+                unchanged_times[name] = (hashlib.sha256(old.read_bytes()).digest(),
+                                         info.st_atime_ns, info.st_mtime_ns)
         if PORT.exists():
             shutil.rmtree(PORT)
         shutil.copytree(SOURCE, PORT)
         for patch in patches:
-            subprocess.run(['patch', '-p1', '--batch', '--fuzz=0', '-i', str(patch)],
-                           cwd=PORT, check=True)
-        patch_stamp.write_text(patch_digest)
+            subprocess.run(['patch', '-p1', '--batch', '--fuzz=0'],
+                           input=contents[patch], cwd=PORT, check=True)
     for source in files:
         target = PORT / source.relative_to(overlay)
-        if not target.exists() or target.read_bytes() != source.read_bytes():
+        if not target.exists() or target.read_bytes() != contents[source]:
             target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(source, target)
+            target.write_bytes(contents[source])
+    for name, (old_hash, atime, mtime) in unchanged_times.items():
+        target = PORT / name
+        if target.is_file() and hashlib.sha256(target.read_bytes()).digest() == old_hash:
+            os.utime(target, ns=(atime, mtime))
+    # Use the captured bytes throughout: another agent's later source edit may
+    # require a subsequent rebuild, but cannot corrupt this build's digest.
+    patch_stamp.write_text(patch_digest)
     if not stamp.exists() or stamp.read_text() != digest:
         stamp.write_text(digest)
     overlay_stamp.write_text(json.dumps(names))
@@ -93,11 +118,126 @@ def run(command, env, log):
     return process.returncode
 
 
+def link_vm(dk, env, native=False):
+    # Never replace missing services with stubs or turn an unresolved ELF into
+    # an NRO. This action intentionally stops at a real native link failure.
+    archive = BUILD / 'hotspot/variant-zero/libjvm/objs/static/libjvm.a'
+    archive_hash = hashlib.sha256(archive.read_bytes()).hexdigest()
+    proof = json.loads((ROOT / 'build/openjdk25-archive.json').read_text())
+    if not proof['full_upstream_archive_target'] or proof['archive_sha256'] != archive_hash:
+        raise RuntimeError('Build the genuine upstream archive before linking')
+    output = BUILD / ('runtime-link' if native else 'vm-link')
+    output.mkdir(exist_ok=True)
+    arch = ['-march=armv8-a+crc+crypto', '-mtune=cortex-a57', '-mno-outline-atomics', '-mtp=soft', '-fPIE']
+    elf = output / 'java25-test.elf'
+    evidence_prefix = 'openjdk25-runtime-link' if native else 'openjdk25-link'
+    log_path = ROOT / 'build' / (evidence_prefix + '.log')
+    libraries = []
+    with log_path.open('w') as log:
+        log.write('Real upstream Zero archive SHA256 ' + hashlib.sha256(archive.read_bytes()).hexdigest() + '\n')
+        if native:
+            for module in ['java', 'zip', 'jimage', 'verify', 'net', 'nio', 'fallbackLinker', 'syslookup']:
+                path = BUILD / 'support/native/java.base' / ('lib' + module) / 'static' / ('lib' + module + '.a')
+                if not path.is_file():
+                    raise RuntimeError('Build real native class library first: ' + str(path))
+                libraries.append((module, path))
+            generator = [sys.executable, str(ROOT / 'scripts/generate-openjdk25-native-resolver.py'),
+                         '--nm', str(dk / 'devkitA64/bin/aarch64-none-elf-nm'),
+                         '--output', str(output / 'native_resolver.c'),
+                         '--manifest', str(output / 'native_resolver.json')]
+            # FFM system lookup needs a deliberately bounded catalogue of real
+            # C/libm exports. Do not reference every newlib syscall wrapper.
+            c_exports = ['strlen', 'strcmp', 'strncmp', 'strcpy', 'strncpy', 'strcat', 'strncat',
+                         'strchr', 'strrchr', 'strstr', 'strspn', 'strcspn', 'strpbrk',
+                         'memcpy', 'memmove', 'memcmp', 'memset', 'memchr',
+                         'malloc', 'calloc', 'realloc', 'free', 'abort',
+                         'printf', 'snprintf', 'sprintf', 'puts', 'putchar',
+                         'fopen', 'fclose', 'fread', 'fwrite', 'fflush', 'fseek', 'ftell']
+            math_exports = ['sin', 'cos', 'tan', 'atan2', 'pow', 'sqrt', 'ceil', 'floor',
+                            'fabs', 'fmod', 'exp', 'log']
+            for name in ['libc.a', 'libm.a']:
+                path = pathlib.Path(subprocess.check_output(
+                    [str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'), *arch,
+                     '-print-file-name=' + name], env=env, text=True).strip()).resolve()
+                if not path.is_file():
+                    raise RuntimeError('Missing target system archive: ' + name)
+                libraries.append(('syslookup', path))
+            for module, path in libraries:
+                generator += ['--library', module + '=' + str(path)]
+            generator += ['--symbols', 'syslookup=' + ','.join(
+                ['JNI_OnLoad_syslookup', 'syslookup', *c_exports, *math_exports])]
+            log.write('$ ' + shlex.join(generator) + '\n'); log.flush()
+            subprocess.run(generator, stdout=log, stderr=subprocess.STDOUT, check=True)
+            command = [str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'), *arch,
+                       '-I' + str(ROOT / 'include'), '-c', str(output / 'native_resolver.c'),
+                       '-o', str(output / 'native_resolver.o')]
+            log.write('$ ' + shlex.join(command) + '\n'); log.flush()
+            subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=True)
+        for name in ['java25_vm_test', 'platform']:
+            command = [str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'), *arch,
+                       *(['-DJS_OPENJDK25_STATIC_PROVIDER'] if native else []),
+                       '-D__SWITCH__', '-I' + str(dk / 'libnx/include'),
+                       '-I' + str(ROOT / 'include'), '-I' + str(ROOT / 'src'),
+                       '-I' + str(PORT / 'src/java.base/share/native/include'),
+                       '-I' + str(PORT / 'src/java.base/horizon/native/include'),
+                       '-c', str(ROOT / 'src' / (name + '.c')), '-o', str(output / (name + '.o'))]
+            log.write('$ ' + shlex.join(command) + '\n'); log.flush()
+            subprocess.run(command, env=env, stdout=log, stderr=subprocess.STDOUT, check=True)
+        command = [str(dk / 'devkitA64/bin/aarch64-none-elf-g++'), *arch,
+                   '-specs=' + str(dk / 'libnx/switch.specs'), '-L' + str(dk / 'libnx/lib'),
+                   '-Wl,--gc-sections', '-Wl,-u,JNI_CreateJavaVM',
+                   str(output / 'java25_vm_test.o'), str(output / 'platform.o'),
+                   *([str(output / 'native_resolver.o')] if native else []),
+                   '-Wl,--start-group', *[str(path) for _, path in libraries if path.name not in ('libc.a', 'libm.a')],
+                   str(archive), str(ROOT / 'build/sdk/libjavaswitch.a'), '-lnx',
+                   *[str(path) for _, path in libraries if path.name in ('libc.a', 'libm.a')], '-lm', '-Wl,--end-group', '-o', str(elf)]
+        log.write('$ ' + shlex.join(command) + '\n'); log.flush()
+        result = subprocess.run(command, env=env, stdout=log, stderr=subprocess.STDOUT)
+        log.write(f'\nELF link exit status: {result.returncode}; NRO conversion has not run yet\n')
+    missing = sorted(set(re.findall(r"undefined reference to [`‘'](.*?)[’']", log_path.read_text())))
+    (ROOT / 'build/openjdk25-missing-symbols.txt').write_text('\n'.join(missing) + '\n')
+    evidence = {'archive_port_digest': proof['port_digest'], 'archive_sha256': archive_hash,
+                'sdk_sha256': hashlib.sha256((ROOT / 'build/sdk/libjavaswitch.a').read_bytes()).hexdigest(),
+                'link_exit_status': result.returncode, 'missing_symbols': missing,
+                'java_execution': 'NOT TESTED', 'horizon_execution': 'NOT TESTED'}
+    if result.returncode == 0:
+        data = elf.read_bytes()
+        if data[:6] != b'\x7fELF\x02\x01' or struct.unpack_from('<HH', data, 16) != (3, 183):
+            raise RuntimeError('VM link is not an AArch64 Horizon PIE')
+        symbols = subprocess.check_output([str(dk / 'devkitA64/bin/aarch64-none-elf-nm'), str(elf)], text=True)
+        if not re.search(r'^[0-9a-f]+ T JNI_CreateJavaVM$', symbols, re.M):
+            raise RuntimeError('Genuine VM entry was not linked')
+        evidence['elf_sha256'] = hashlib.sha256(data).hexdigest()
+    if native:
+        evidence['class_library_provider'] = json.loads((output / 'native_resolver.json').read_text())
+        evidence['launcher_sha256'] = hashlib.sha256((ROOT / 'src/java25_vm_test.c').read_bytes()).hexdigest()
+        if result.returncode == 0:
+            for symbol in ['JNI_OnLoad_java', 'JIMAGE_Open', 'js_openjdk25_native_resolver']:
+                if not re.search(r'^[0-9a-f]+ [A-Za-z] ' + symbol + '$', symbols, re.M):
+                    raise RuntimeError('Missing real runtime provider symbol: ' + symbol)
+            nacp = output / 'java25-test.nacp'
+            subprocess.run([str(dk / 'tools/bin/nacptool'), '--create', 'java25-test',
+                            'JavaSwitch', '0.2.0', str(nacp)], check=True)
+            nro = ROOT / 'dist/java25-test.nro'
+            subprocess.run([str(dk / 'tools/bin/elf2nro'), str(elf), str(nro),
+                            '--nacp=' + str(nacp), '--icon=' + str(dk / 'libnx/default_icon.jpg')], check=True)
+            if nro.read_bytes()[16:20] != b'NRO0':
+                raise RuntimeError('Invalid native VM NRO')
+            evidence['nro_sha256'] = hashlib.sha256(nro.read_bytes()).hexdigest()
+    (ROOT / 'build' / (evidence_prefix + '.json')).write_text(json.dumps(evidence, indent=2) + '\n')
+    artifact = 'native NRO cross-built; execution NOT TESTED' if native and result.returncode == 0 else 'no NRO created'
+    print(f'Genuine JNI VM ELF link: exit {result.returncode}; {len(missing)} unique missing symbols; {artifact}')
+    return result.returncode
+
+
 def work():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['prepare', 'configure', 'build', 'components', 'probe', 'test-host'])
+    parser.add_argument('action', choices=['prepare', 'configure', 'build', 'java-base', 'native-base', 'link-vm', 'link-runtime', 'components', 'probe', 'test-host'])
     args = parser.parse_args()
-    prepare()
+    # ELF linking consumes an already verified archive, independent of source
+    # preparation. Its metadata records that archive's exact source digest.
+    if args.action not in ('link-vm', 'link-runtime'):
+        prepare()
     if args.action == 'prepare':
         return 0
     env = dict(os.environ)
@@ -115,10 +255,24 @@ def work():
                    AUTOM4TE=str(tools / 'bin/autom4te'),
                    AUTOCONF=str(tools / 'bin/autoconf'), M4=str(tools / 'bin/m4'))
     env['PATH'] = str(dk / 'devkitA64/bin') + os.pathsep + env['PATH']
+    if args.action in ('link-vm', 'link-runtime'):
+        return link_vm(dk, env, native=args.action == 'link-runtime')
     if args.action == 'components':
         # Reuse the real upstream compiler command, not host-JDK headers or a
         # substitute VM. Run the normal build first to generate this command.
-        commands = sorted((BUILD / 'make-support/failure-logs').glob('*.cmdline'))
+        recorded = BUILD / 'hotspot/variant-zero/libjvm/objs/static/os_horizon_thread.o.cmdline'
+        commands = ([recorded] if recorded.exists() else
+                    sorted((BUILD / 'make-support/failure-logs').glob('*.cmdline')))
+        # A Java class-library failure may be the most recent build error.
+        # Its javac command cannot be reused to compile HotSpot components.
+        commands = [path for path in commands
+                    if 'aarch64-none-elf-g++' in path.read_text() and
+                       '-DTARGET_ARCH_zero' in path.read_text()]
+        if not commands:
+            # A successful full archive build clears failure logs. Reuse its
+            # actual ordinary C++ command rather than requiring a new failure.
+            commands = [BUILD / 'hotspot/variant-zero/libjvm/objs/static/os_horizon_thread.o.cmdline']
+            commands = [path for path in commands if path.exists()]
         if not commands:
             raise RuntimeError('Run the upstream build first to record its compile command')
         original = shlex.split(commands[0].read_text())
@@ -140,6 +294,17 @@ def work():
                    'src/hotspot/os/horizon/park_horizon.cpp',
                    'src/hotspot/os/horizon/parker_horizon.cpp',
                    'src/hotspot/os/horizon/threadLocalStorage_horizon.cpp',
+                   'src/hotspot/os/horizon/os_horizon_thread.cpp',
+                   'src/hotspot/os/horizon/os_horizon_memory.cpp',
+                   'src/hotspot/os/horizon/os_horizon_system.cpp',
+                   'src/hotspot/os/horizon/os_horizon_libc.cpp',
+                   'src/hotspot/os/horizon/os_horizon_boot.cpp',
+                   'src/hotspot/os/horizon/os_horizon_library.cpp',
+                   'src/hotspot/os/horizon/perfMemory_horizon.cpp',
+                   'src/hotspot/os/horizon/os_horizon_optional.cpp',
+                   'src/hotspot/os/horizon/os_horizon_diagnostics.cpp',
+                   'src/hotspot/os/horizon/vmError_horizon.cpp',
+                   'src/hotspot/os_cpu/horizon_zero/os_horizon_zero.cpp',
                    'src/hotspot/share/utilities/stringUtils.cpp']
         with (ROOT / 'build/openjdk25-components.log').open('w') as log:
             for source in sources:
@@ -168,10 +333,11 @@ def work():
                             str(PORT / 'src/hotspot/os/horizon/horizon_thread_bridge.c'),
                             '-o', str(output / 'horizon_thread_bridge.o')], env=env,
                            stdout=log, stderr=subprocess.STDOUT, check=True)
-            for name in ['safefetch_horizon.S', 'exception_fallback_horizon.S', 'horizon_fault_abi.c']:
+            for name in ['safefetch_horizon.S', 'exception_fallback_horizon.S', 'horizon_fault_abi.c',
+                         'horizon_memory_bridge.c', 'horizon_system_bridge.c']:
                 subprocess.run([str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'),
                                 '-march=armv8-a+crc+crypto', '-fPIE',
-                                '-I' + str(dk / 'libnx/include'), '-c',
+                                '-I' + str(dk / 'libnx/include'), '-I' + str(ROOT / 'include'), '-c',
                                 str(PORT / 'src/hotspot/os/horizon' / name),
                                 '-o', str(output / (pathlib.Path(name).stem + '.o'))], env=env,
                                stdout=log, stderr=subprocess.STDOUT, check=True)
@@ -183,6 +349,11 @@ def work():
                                              'park_horizon.o', 'horizon_thread_bridge.o',
                                              'parker_horizon.o',
                                              'threadLocalStorage_horizon.o',
+                                             'os_horizon_thread.o',
+                                             'os_horizon_memory.o', 'os_horizon_system.o',
+                                             'os_horizon_libc.o', 'os_horizon_boot.o', 'os_horizon_library.o',
+                                             'perfMemory_horizon.o', 'os_horizon_zero.o',
+                                             'horizon_memory_bridge.o', 'horizon_system_bridge.o',
                                              'safefetch_horizon.o', 'exception_fallback_horizon.o', 'horizon_fault_abi.o',
                                              'stringUtils.o', 'horizon_bridge.o']}}
         (output / 'metadata.json').write_text(json.dumps(metadata, indent=2) + '\n')
@@ -254,6 +425,53 @@ def work():
                             str(thread_tests / 'test_thread_bridge.c'), '-o', str(binary)], check=True)
             with (ROOT / 'build/openjdk25-thread-host.log').open('w') as log:
                 subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True, timeout=10)
+            binary = output / 'reaper-host'
+            subprocess.run(['gcc', '-std=c11', '-Wall', '-Wextra', '-Werror',
+                            '-DJS_HORIZON_THREAD_TESTING',
+                            '-I' + str(thread_tests / 'mocks'), '-I' + str(bridge_dir),
+                            str(bridge_dir / 'horizon_thread_bridge.c'),
+                            str(thread_tests / 'test_reaper.c'), '-o', str(binary)], check=True)
+            with (ROOT / 'build/openjdk25-reaper-host.log').open('w') as log:
+                subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True, timeout=10)
+            binary = output / 'thread-start-host'
+            subprocess.run(['g++', *flags, str(bridge_dir / 'mutex_horizon.cpp'),
+                            str(ROOT / 'tests/openjdk25_thread_start_host.cpp'), *mock_objects,
+                            '-pthread', '-Wl,--wrap=malloc', '-o', str(binary)], check=True)
+            with (ROOT / 'build/openjdk25-thread-start-host.log').open('w') as log:
+                subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True, timeout=15)
+                for mode in ['early-start', 'double-start', 'double-report']:
+                    result = subprocess.run([str(binary), mode], capture_output=True, text=True, timeout=10)
+                    if result.returncode >= 0 or 'guarantee(' not in result.stderr:
+                        raise RuntimeError('Expected fatal startup-gate contract failure: ' + mode)
+                    log.write(f'{mode}: rejected (signal {-result.returncode}); {result.stderr}\n')
+            binary = output / 'timezone-host'
+            subprocess.run(['g++', '-std=c++14', '-Wall', '-Wextra', '-Werror',
+                            str(ROOT / 'tests/openjdk25_timezone_host.cpp'), '-o', str(binary)], check=True)
+            with (ROOT / 'build/openjdk25-timezone-host.log').open('w') as log:
+                subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True, timeout=10)
+            for name in ['memory', 'system']:
+                test_dir = ROOT / 'ports/openjdk25/tests' / (name + '_bridge')
+                binary = output / (name + '-bridge-host')
+                command = ['gcc', '-std=gnu11', '-Wall', '-Wextra', '-Werror',
+                           '-I' + str(test_dir / 'mocks'), '-I' + str(bridge_dir),
+                           str(bridge_dir / ('horizon_' + name + '_bridge.c')),
+                           str(test_dir / ('test_' + name + '_bridge.c')),
+                           '-pthread', '-o', str(binary)]
+                if name == 'memory':
+                    command += ['-I' + str(ROOT / 'include'),
+                                str(ROOT / 'src/horizon_alias.c'), str(ROOT / 'src/vmem_horizon.c'),
+                                '-Wl,--wrap=calloc']
+                subprocess.run(command, check=True)
+                with (ROOT / 'build' / ('openjdk25-' + name + '-bridge-host.log')).open('w') as log:
+                    subprocess.run([str(binary)], stdout=log, stderr=subprocess.STDOUT, check=True, timeout=15)
+                    if name == 'system':
+                        for mode in ['exit', 'quick']:
+                            result = subprocess.run([str(binary), mode], capture_output=True, text=True, timeout=10)
+                            if result.returncode != 83 or (mode == 'exit' and 'status 37' not in result.stderr):
+                                raise RuntimeError('Horizon process exit did not reach the mocked kernel termination')
+                            if mode == 'quick' and result.stderr:
+                                raise RuntimeError('Emergency termination unexpectedly used stdio')
+                            log.write(f'{mode}: kernel exit sentinel reached; {result.stderr}\n')
             binary = output / 'tls-host'
             subprocess.run(['g++', *flags, str(bridge_dir / 'threadLocalStorage_horizon.cpp'),
                             str(ROOT / 'tests/openjdk25_tls_host.cpp'), *mock_objects,
@@ -275,9 +493,18 @@ def work():
                         '-o', str(probe)], env=env, check=True)
         subprocess.run([cc, *flags, '-c', str(ROOT / 'tests/openjdk25_thread_probe.cpp'),
                         '-o', str(output / 'thread_probe.o')], env=env, check=True)
+        subprocess.run([cc, *flags, '-c', str(ROOT / 'tests/openjdk25_reaper_probe.cpp'),
+                        '-o', str(output / 'reaper_probe.o')], env=env, check=True)
         arch = ['-march=armv8-a+crc+crypto', '-mtune=cortex-a57', '-mtp=soft', '-fPIE']
         for source, obj in [('src/zero_services_test.c', runner), ('src/platform.c', output / 'platform.o')]:
             subprocess.run([str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'), *arch, '-D__SWITCH__', '-I' + str(dk / 'libnx/include'),
+                            '-I' + str(ROOT / 'src'), '-c', str(ROOT / source), '-o', str(obj)],
+                           env=env, check=True)
+        for source in ['tests/openjdk25_memory_probe.c', 'src/horizon_alias.c', 'src/vmem_horizon.c']:
+            obj = output / (pathlib.Path(source).stem + '.o')
+            subprocess.run([str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'), *arch,
+                            '-mno-outline-atomics', '-D__SWITCH__', '-D_DEFAULT_SOURCE',
+                            '-I' + str(dk / 'libnx/include'), '-I' + str(ROOT / 'include'),
                             '-I' + str(ROOT / 'src'), '-c', str(ROOT / source), '-o', str(obj)],
                            env=env, check=True)
         elf = output / 'zero-services-test.elf'
@@ -286,6 +513,8 @@ def work():
                    'park_horizon.o', 'horizon_thread_bridge.o',
                    'threadLocalStorage_horizon.o',
                    'thread_probe.o',
+                   'reaper_probe.o', 'openjdk25_memory_probe.o',
+                   'horizon_memory_bridge.o', 'horizon_alias.o', 'vmem_horizon.o',
                    'safefetch_horizon.o', 'exception_fallback_horizon.o', 'horizon_fault_abi.o',
                    'horizon_bridge.o', 'platform.o', 'services_probe.o', 'services_runner.o']]
         subprocess.run([str(dk / 'devkitA64/bin/aarch64-none-elf-g++'), *arch,
@@ -315,15 +544,57 @@ def work():
                     'inputs': {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
                                for name in ['src/zero_services_test.c', 'src/platform.c',
                                             'tests/openjdk25_services_probe.cpp',
-                                            'tests/openjdk25_thread_probe.cpp', 'scripts/openjdk25.py']},
+                                            'tests/openjdk25_thread_probe.cpp',
+                                            'tests/openjdk25_reaper_probe.cpp',
+                                            'tests/openjdk25_memory_probe.c',
+                                            'src/horizon_alias.c', 'src/vmem_horizon.c',
+                                            'include/javaswitch/detail/horizon_alias.h',
+                                            'include/javaswitch/vmem.h', 'scripts/openjdk25.py']},
                     'elf_sha256': hashlib.sha256(elf.read_bytes()).hexdigest(),
                     'nro_sha256': hashlib.sha256(nro.read_bytes()).hexdigest()}
         (ROOT / 'build/openjdk25-probe.json').write_text(json.dumps(evidence, indent=2) + '\n')
         print('zero-services-test.nro: CROSS-BUILT; Java VM unavailable; hardware NOT TESTED')
         return 0
+    if args.action in ('java-base', 'native-base'):
+        target = 'java.base-java' if args.action == 'java-base' else 'java.base-static-libs'
+        targets = [target, 'java.base-copy', 'java.base-gendata'] if args.action == 'java-base' else [target]
+        result = run(['make', 'CONF_CHECK=auto', 'JOBS=2', *(['-k'] if args.action == 'native-base' else []), *targets], env, args.action + '.log')
+        if result == 0 and args.action == 'native-base':
+            records = {}
+            for module in ['java', 'zip', 'jimage', 'verify', 'net', 'nio', 'fallbackLinker', 'syslookup']:
+                path = BUILD / 'support/native/java.base' / ('lib' + module) / 'static' / ('lib' + module + '.a')
+                members = subprocess.check_output([str(dk / 'devkitA64/bin/aarch64-none-elf-ar'),
+                                                   't', str(path)], text=True).splitlines()
+                records[module] = {'sha256': hashlib.sha256(path.read_bytes()).hexdigest(), 'members': members}
+            if 'childproc.o' in records['java']['members'] or 'osSupport_unix.o' in records['jimage']['members']:
+                raise RuntimeError('A stale excluded Unix member survived the Horizon archive rebuild')
+            proof = {'port_digest': (PORT / '.javaswitch-patches').read_text(),
+                     'archives': records, 'horizon_execution': 'NOT TESTED'}
+            (ROOT / 'build/openjdk25-native-base.json').write_text(json.dumps(proof, indent=2) + '\n')
+        if result == 0 and args.action == 'java-base':
+            module = BUILD / 'jdk/modules/java.base'
+            inventory = {str(path.relative_to(module)): hashlib.sha256(path.read_bytes()).hexdigest()
+                         for path in sorted(module.rglob('*')) if path.is_file() and not path.name.startswith('_the.')}
+            for path in module.rglob('*.class'):
+                data = path.read_bytes()
+                if data[:4] != b'\xca\xfe\xba\xbe' or struct.unpack_from('>H', data, 6)[0] != 69:
+                    raise RuntimeError('java.base contains a non-Java25 class: ' + str(path))
+            proof = {'port_digest': (PORT / '.javaswitch-patches').read_text(),
+                     'classfile_major': 69, 'files': inventory, 'horizon_execution': 'NOT TESTED'}
+            (ROOT / 'build/openjdk25-java-base.json').write_text(json.dumps(proof, indent=2) + '\n')
+        return result
     if args.action == 'build':
-        return run(['make', 'JOBS=2',
-                    'hotspot-zero-static-libs'], env, 'build.log')
+        result = run(['make', 'CONF_CHECK=auto', 'JOBS=2', 'hotspot-zero-static-libs'], env, 'build.log')
+        if result == 0:
+            archive = BUILD / 'hotspot/variant-zero/libjvm/objs/static/libjvm.a'
+            members = subprocess.check_output([str(dk / 'devkitA64/bin/aarch64-none-elf-ar'),
+                                               't', str(archive)], text=True).splitlines()
+            proof = {'port_digest': (PORT / '.javaswitch-patches').read_text(),
+                     'archive_sha256': hashlib.sha256(archive.read_bytes()).hexdigest(),
+                     'members': members, 'full_upstream_archive_target': True,
+                     'vm_linked': False, 'horizon_execution': 'NOT TESTED'}
+            (ROOT / 'build/openjdk25-archive.json').write_text(json.dumps(proof, indent=2) + '\n')
+        return result
     boot = next((DEPS / 'host-jdk25').glob('*/bin/javac')).parent.parent
     prefix = dk / 'devkitA64/bin/aarch64-none-elf-'
     # Use the actual W^X libffi archive and allocator, not the generic ELF
@@ -333,7 +604,7 @@ def work():
     shutil.copyfile(ROOT / 'build/libffi-horizon.a', ffi / 'libffi.a')
     subprocess.run([str(prefix) + 'ar', 'r', str(ffi / 'libffi.a'),
                     str(ROOT / 'build/sdk/ffi_horizon.o')], check=True)
-    arch = f'-march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -I{dk}/libnx/include'
+    arch = f'-march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I{dk}/libnx/include -I{ROOT}/include'
     command = ['bash', str(PORT / 'configure'),
                '--openjdk-target=aarch64-none-horizon', '--with-jvm-variants=zero',
                '--enable-headless-only', '--disable-warnings-as-errors',

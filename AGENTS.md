@@ -37,8 +37,8 @@ SafeFetch selection. Read the latest build evidence for its next exact blocker.
 Latest full build: 553 AArch64 objects and the genuine upstream libjvm.a target
 complete. A real Horizon PIE link containing JNI_CreateJavaVM now passes with
 zero missing symbols (not VM startup). See openjdk25-static-archive.json and
-openjdk25-vm-link.log/json in evidence. Native class libraries and the minimal
-runtime image are being integrated; no classfile69 or Minecraft execution on
+openjdk25-vm-link.log/json in evidence. Eight native java.base archives, the target class/data image and a genuine
+java25-test.nro now build; no classfile69 or Minecraft execution on
 Horizon has been verified.
 HotSpot create/attach/detach/TLS/startup handshake and deferred native cleanup
 are implemented and host-mocked. Safepoint/managed execution remains unverified. Runtime ABI v1 remains unchanged.
@@ -71,3 +71,24 @@ actual target javac and copies resources, while `native-base` continues native
 compilation after errors to expose remaining platform dependencies. Image
 construction uses host jmod/jlink as tools only; never bundle a host VM/native
 library. Keep native JNI symbol registration derived from actual archives.
+
+Current checkpoint has classfile-69 Hello (A) and real JNI/thread/NIO/TCP/selector/
+FFM suite (X) on the genuine VM NRO. These are CROSS-BUILT, not Switch-PASSED.
+Use `scripts/test-openjdk25-classlib-host.py` for maintained class-library tests.
+Property bootstrap must supply non-null user.name/home: '?' denotes unknown
+identity and sdmc:/switch/mc-runtime is the explicit app-home default; actual
+Unix ID getters return their documented unavailable value -1. Horizon IPv6
+transport stays unavailable because SDK IPv6 address declarations are only
+compatibility definitions; do not infer ABI support from a socket probe.
+
+Normal/emergency VM exits use actual svcExitProcess through the C system bridge.
+NRO libc exit can return to hbloader while VM/daemon/reaper threads survive; do
+not unload their code. Native-services and completed VM diagnostics close the
+application process. Reopen application-mode hbmenu for the next test. Emergency
+termination avoids stdio locks. The public SDK still permits one VM per process.
+
+Next confirmed Minecraft requirement is standard startup javaagent:
+java.instrument + HotSpot JVMTI/ClassFileLoadHook. Horizon path/encoding adapter
+sources are prepared under java.instrument but not yet wired/built. Management
+and other game modules need dependency evidence; see the downstream handoff.
+Keep the current base profile reproducible before experimenting with JVMTI.

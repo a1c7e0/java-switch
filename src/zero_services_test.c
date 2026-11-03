@@ -5,6 +5,8 @@
 extern int js_zero_services_probe(void);
 extern void js_zero_thread_probe(void);
 extern void js_zero_fault_probe(void);
+extern void js_zero_reaper_probe(void);
+extern void js_zero_memory_probe(void);
 void __libnx_exception_handler(ThreadExceptionDump *context) {
     sc_log("UNHANDLED Horizon exception: desc=0x%x PC=0x%llx ESR=0x%x FAR=0x%llx\n",
         context->error_desc, (unsigned long long)context->pc.x, context->esr,
@@ -21,10 +23,14 @@ int main(void) {
            "NO Java VM, NO classfile execution; hardware NOT TESTED.\n"
            "A: time/synchronization probe | X: native thread/permit probe | +: exit\n");
     sc_log("Y: experimental fault-island probe; may abort if recovery is unsupported\n");
+    sc_log("B: deferred native thread ownership / join / close probe\n");
+    sc_log("L: private VM Alias memory / split release / SDK ownership probe\n");
     u64 keys;
     while (sc_frame(&keys)) {
         if (keys & HidNpadButton_A) js_zero_services_probe();
         if (keys & HidNpadButton_X) js_zero_thread_probe();
+        if (keys & HidNpadButton_B) js_zero_reaper_probe();
+        if (keys & HidNpadButton_L) js_zero_memory_probe();
         if (keys & HidNpadButton_Y) {
             MemoryInfo info; u32 page_info;
             Result result = svcQueryMemory(&info, &page_info, 0);
@@ -33,6 +39,8 @@ int main(void) {
             else sc_log("Fault probe skipped: target not confirmed unreadable\n");
         }
     }
+    sc_log("Closing this application process; reopen application-mode hbmenu for another native test.\n");
     sc_exit();
-    return 0;
+    /* The reaper/retained probe workers must not outlive this NRO mapping. */
+    svcExitProcess();
 }

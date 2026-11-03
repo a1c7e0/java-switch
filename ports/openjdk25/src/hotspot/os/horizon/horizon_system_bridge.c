@@ -6,6 +6,7 @@
 #include <switch/runtime/env.h>
 
 #include <stddef.h>
+#include <stdio.h>
 
 static void set_raw(uint32_t *raw_result, Result result) {
     if (raw_result != NULL) *raw_result = (uint32_t)result;
@@ -90,4 +91,12 @@ void js_horizon_system_sleep(uint64_t nanoseconds) {
     const int64_t maximum = INT64_MAX;
     svcSleepThread(nanoseconds > (uint64_t)maximum
                        ? maximum : (int64_t)nanoseconds);
+}
+
+void js_horizon_system_exit_process(int status, int flush_logs) {
+    if (flush_logs) {
+        fprintf(stderr, "Horizon JVM requested exit status %d; terminating the process\n", status);
+        fflush(NULL);
+    }
+    svcExitProcess();
 }

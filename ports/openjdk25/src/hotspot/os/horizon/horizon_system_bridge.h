@@ -29,6 +29,10 @@ js_horizon_system_status js_horizon_system_is_primordial(
 /* svcSleepThread is a kernel wait/yield operation. Zero yields; positive
  * values sleep for that many nanoseconds. */
 void js_horizon_system_sleep(uint64_t nanoseconds);
+/* NRO libc exit can return to a loader without terminating the process. VM
+ * native workers require actual process termination before code is unloaded.
+ * Emergency exits skip stdio locks; normal exits record the requested status. */
+void js_horizon_system_exit_process(int status, int flush_logs) __attribute__((noreturn));
 
 #ifdef __cplusplus
 }

@@ -1,0 +1,52 @@
+$ bash /workspace/java-switch/ports/openjdk25/tests/java_io/test-host.sh
+Horizon java.io native host tests: PASS
+$ bash /workspace/java-switch/ports/openjdk25/tests/java_props/test-host.sh
+Horizon java.base property host tests: PASS
+$ bash /workspace/java-switch/ports/openjdk25/tests/java_paths/test-host.sh
+patching file make/common/Modules.gmk
+patching file make/modules/java.base/Java.gmk
+patching file src/java.base/share/classes/jdk/internal/util/OperatingSystem.java
+patching file src/java.base/unix/classes/java/io/UnixFileSystem.java
+patching file src/java.base/unix/classes/sun/net/PortConfig.java
+patching file src/java.base/unix/classes/sun/nio/fs/UnixFileSystem.java
+patching file src/java.base/unix/classes/sun/nio/fs/UnixPath.java
+patching file src/java.base/unix/classes/sun/nio/fs/UnixUriUtils.java
+Horizon UnixPath host test: PASS
+$ bash /workspace/java-switch/ports/openjdk25/tests/ffm_platform/test-host.sh
+patching file src/java.base/share/classes/jdk/internal/foreign/CABI.java
+Horizon C ABI initialization host tests passed
+$ bash /workspace/java-switch/ports/openjdk25/tests/nio_native/test-host.sh
+Horizon native NIO host test: PASS
+Horizon NIO JNI dispatcher host test: PASS
+Horizon IOUtil and NativeThread JNI host test: PASS
+Horizon unavailable NIO service JNI host test: PASS
+Horizon socket/datagram JNI loopback host test: PASS
+$ bash /workspace/java-switch/ports/openjdk25/tests/nio_native/test-inherited-channel-host.sh
+Horizon inherited channel JNI host test: PASS
+$ bash /workspace/java-switch/ports/openjdk25/tests/nio_native/test-wakeup.sh
+Horizon selector wakeup TCP host test: PASS
+$ python3 /workspace/java-switch/scripts/test-openjdk25-jimage-host.py
+Horizon libjimage: snapshot release failed; ownership retained (status=4, Result=0xdeadbeef)
+Horizon libjimage: snapshot rollback failed (status=4, Result=0xdeadbeef)
+Horizon libjimage: monitor allocation failed
+Horizon libjimage host contract checks passed (bridge calls mocked)
+$ python3 /workspace/java-switch/scripts/test-openjdk25-jimage-zlib-host.py
+Horizon jimage direct libzip binding passed with host zlib; not Horizon execution
+$ gcc -std=gnu11 -O2 -Wall -Wextra -Wno-unused-parameter -ffunction-sections -fdata-sections -I/workspace/java-switch/ports/openjdk25/tests/net_util/mocks -I/workspace/java-switch/ports/openjdk25/src/java.base/horizon/native/libnet -I/workspace/java-switch/ports/openjdk25/src/java.base/horizon/native/libjava -I/workspace/java-switch/.deps/openjdk25-source/src/java.base/share/native/libnet -I/workspace/java-switch/.deps/openjdk25-source/src/java.base/share/native/libjava -I/workspace/java-switch/.deps/openjdk25-source/src/java.base/unix/native/libjava -I/workspace/java-switch/build/openjdk25-horizon/support/headers/java.base -I/workspace/java-switch/.deps/openjdk25-source/src/hotspot/share/include -I/workspace/java-switch/ports/openjdk25/src/hotspot/os/horizon/include -I/workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/include -I/workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/include/linux /workspace/java-switch/ports/openjdk25/src/java.base/horizon/native/libnet/net_util_md.c /workspace/java-switch/ports/openjdk25/tests/net_util/test_net_util_init.c -pthread -Wl,--gc-sections -o /workspace/java-switch/build/openjdk25-classlib-host/net-init
+$ /workspace/java-switch/build/openjdk25-classlib-host/net-init
+libnet process-lifetime socket initialization: PASS (initialized)
+$ /workspace/java-switch/build/openjdk25-classlib-host/net-init already
+libnet process-lifetime socket initialization: PASS (already initialized)
+$ /workspace/java-switch/build/openjdk25-classlib-host/net-init failure
+Horizon BSD socket initialization failed: Result=0x00004567
+libnet process-lifetime socket initialization: PASS (failure retained)
+$ gcc -std=gnu11 -O2 -Wall -Wextra -Wno-unused-parameter -ffunction-sections -fdata-sections -I/workspace/java-switch/ports/openjdk25/src/java.base/horizon/native/libnet -I/workspace/java-switch/ports/openjdk25/src/java.base/horizon/native/libjava -I/workspace/java-switch/.deps/openjdk25-source/src/java.base/share/native/libnet -I/workspace/java-switch/.deps/openjdk25-source/src/java.base/share/native/libjava -I/workspace/java-switch/.deps/openjdk25-source/src/java.base/unix/native/libjava -I/workspace/java-switch/build/openjdk25-horizon/support/headers/java.base -I/workspace/java-switch/.deps/openjdk25-source/src/hotspot/share/include -I/workspace/java-switch/ports/openjdk25/src/hotspot/os/horizon/include -I/workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/include -I/workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/include/linux /workspace/java-switch/ports/openjdk25/src/java.base/horizon/native/libnet/DefaultProxySelector.c /workspace/java-switch/ports/openjdk25/src/java.base/horizon/native/libnet/NetworkInterface.c /workspace/java-switch/ports/openjdk25/tests/net_util/test_unsupported_queries.c -Wl,--gc-sections -o /workspace/java-switch/build/openjdk25-classlib-host/net-unsupported
+$ /workspace/java-switch/build/openjdk25-classlib-host/net-unsupported
+Horizon unsupported proxy/interface queries report explicit errors: PASS
+$ gcc -std=gnu11 -O2 -Wall -Wextra -Wno-unused-parameter -ffunction-sections -fdata-sections -I/workspace/java-switch/ports/openjdk25/src/java.base/horizon/native/libnet -I/workspace/java-switch/ports/openjdk25/src/java.base/horizon/native/libjava -I/workspace/java-switch/.deps/openjdk25-source/src/java.base/share/native/libnet -I/workspace/java-switch/.deps/openjdk25-source/src/java.base/share/native/libjava -I/workspace/java-switch/.deps/openjdk25-source/src/java.base/unix/native/libjava -I/workspace/java-switch/build/openjdk25-horizon/support/headers/java.base -I/workspace/java-switch/.deps/openjdk25-source/src/hotspot/share/include -I/workspace/java-switch/ports/openjdk25/src/hotspot/os/horizon/include -I/workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/include -I/workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/include/linux /workspace/java-switch/ports/openjdk25/src/java.base/horizon/native/libnet/ResolverConfigurationImpl.c /workspace/java-switch/ports/openjdk25/tests/net_util/test_resolver_fallback.c -Wl,--wrap=gethostname -Wl,--gc-sections -o /workspace/java-switch/build/openjdk25-classlib-host/resolver-config
+$ /workspace/java-switch/build/openjdk25-classlib-host/resolver-config
+Horizon resolver fallback uses only the reported hostname: PASS
+$ gcc -std=gnu11 -O2 -Wall -Wextra -Wno-unused-parameter -ffunction-sections -fdata-sections -Werror -I/workspace/java-switch/ports/openjdk25/tests/seed_generator/mocks -I/workspace/java-switch/ports/openjdk25/src/java.base/horizon/native/libnet -I/workspace/java-switch/ports/openjdk25/src/java.base/horizon/native/libjava -I/workspace/java-switch/.deps/openjdk25-source/src/java.base/share/native/libnet -I/workspace/java-switch/.deps/openjdk25-source/src/java.base/share/native/libjava -I/workspace/java-switch/.deps/openjdk25-source/src/java.base/unix/native/libjava -I/workspace/java-switch/build/openjdk25-horizon/support/headers/java.base -I/workspace/java-switch/.deps/openjdk25-source/src/hotspot/share/include -I/workspace/java-switch/ports/openjdk25/src/hotspot/os/horizon/include -I/workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/include -I/workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8/include/linux /workspace/java-switch/ports/openjdk25/src/java.base/horizon/native/libjava/SeedGenerator.c /workspace/java-switch/ports/openjdk25/tests/seed_generator/test_seed_generator.c -o /workspace/java-switch/build/openjdk25-classlib-host/seed-generator
+$ /workspace/java-switch/build/openjdk25-classlib-host/seed-generator
+SeedGenerator CSRNG bridge tests passed
+HOST-PASSED: host syscalls and mocked JNI/Horizon services; Switch NOT TESTED

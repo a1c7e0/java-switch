@@ -12,6 +12,8 @@ static FILE *log_file;
 static PadState pad;
 static const char *app_name;
 static bool console_enabled=true;
+static bool console_log_enabled=true;
+void sc_log_console(bool enabled) { console_log_enabled=enabled; }
 void sc_console(bool enabled) {
     if(enabled==console_enabled)return;
     if(enabled)consoleInit(NULL); else consoleExit(NULL);
@@ -28,7 +30,7 @@ void sc_mkdirs(const char *path) {
 }
 void sc_log(const char *format, ...) {
     va_list args;
-    if(console_enabled) {va_start(args,format); vprintf(format,args); va_end(args);}
+    if(console_enabled && console_log_enabled) {va_start(args,format); vprintf(format,args); va_end(args);}
     if (log_file) {
         fprintf(log_file,"[tick=%llu] ",(unsigned long long)armGetSystemTick());
         va_start(args,format); vfprintf(log_file,format,args); va_end(args);

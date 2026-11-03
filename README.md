@@ -10,31 +10,31 @@ and a statically registered native method. Cross-compilation and host tests
 are verified; **Horizon execution is NOT TESTED**. This baseline cannot run
 modern Minecraft and does not implement standard JNI Invocation.
 
-The active runtime target is **Java 25**, required by Minecraft
-`26.4-snapshot-6`. OpenJDK/Zero investigation and exact platform/build blockers
-are recorded in `docs/`. A Linux JDK is not shipped as a Switch runtime.
+The main runtime target is **Java 25**, required by Minecraft
+`26.4-snapshot-6`. A genuine OpenJDK 25 Zero VM and eight native `java.base`
+archives now cross-build and link into `java25-test.nro`. Its runtime image
+contains target-built classfile-69 classes, configuration and data. **VM startup,
+Java execution, JNI and FFM on physical Switch are NOT TESTED.** Minecraft's
+Horizon title screen has not been demonstrated.
 
-The SDK provides a versioned C runtime interface and a standard JNI adapter.
-The adapter passes Java 25 JNI/FFM downcall/upcall tests on the host. Its Horizon
-Java 25 backend reports unavailable until a real VM is linked; the supplied
-miniJVM backend supports Java 8 only. See [JAVA25_PORT.md](docs/JAVA25_PORT.md).
+`java25-test.nro` A attempts the Java25 Hello JAR. X attempts the real JNI,
+thread, NIO and FFM downcall/upcall suite on that VM; relaunch the NRO before
+selecting another mode. It records status, stdout and stderr under
+`switch/mc-runtime/logs/`. Install the complete generated SD tree, including
+`runtimes/openjdk25`; the NRO alone does not contain the class image.
 
-`ffi-test.nro` and the SDK also contain native AAPCS64 libffi support and real
-libnx W^X upcall allocation, prerequisites for Zero's fallback FFM linker. These
-are cross-built CPU/ABI tests; hardware execution is still NOT TESTED.
+The public runtime SDK remains **ABI 1**. Its ordinary SDK archive contains no
+VM, so its Java25 backend reports unavailable until explicitly linked with the
+real VM and native provider. A separate experimental static-runtime package
+contains those integration inputs. The unchanged adapter also passes real
+host Java25 JNI/FFM tests. See [the handoff](docs/SWITCHCRAFT_HANDOFF.md),
+[port status](docs/JAVA25_PORT.md) and [hardware checklist](docs/HARDWARE_TEST_MATRIX.md).
 
-The experimental OpenJDK25 build passes configure as a distinct Horizon target
-and compiles genuine shared/Zero VM sources beyond the precompiled header.
-Monitors, parking permits, native-thread primitives and narrow SafeFetch fault
-islands are implemented; the complete OS layer and VM remain unfinished.
-Tracked patches/overlay and exact logs are in `patches/openjdk25/`,
-`ports/openjdk25/` and `docs/evidence/`. An optional `zero-services-test.nro`
-links actual port synchronization/thread/fault components, but has **no Java VM**.
-Its source bundle includes the full pinned OpenJDK archive and GPL notices.
-See [the port instructions](ports/openjdk25/README.md) and
-[the downstream handoff](docs/SWITCHCRAFT_HANDOFF.md).
-Host mock tests and ARM64 instruction emulation are separate from physical
-Switch evidence. All hardware behavior, including fault recovery, is NOT TESTED.
+`ffi-test.nro` preserves native AAPCS64 and libnx W^X tests. The independent
+`zero-services-test.nro` links actual HotSpot time, synchronization, TLS, thread,
+SafeFetch and Alias-memory services. It has no Java VM. Host mocks, ARM64
+instruction emulation, cross-linking and physical-device results are recorded
+separately. Source packages include the pinned OpenJDK archive and port notices.
 
 ```sh
 bash scripts/build-all.sh
@@ -52,7 +52,8 @@ root remains shared with Switchcraft for compatibility. Logs are at
 `sdmc:/switch/mc-runtime/logs/java-test.log`. A synchronous Java call runs once
 per process and may require HOME/relaunch if a custom program does not return.
 
-Original SDK/diagnostic code is MIT; the OpenJDK port overlay and its component
+Original SDK/diagnostic code is MIT; the shared Alias coordinator retains its
+per-file GPL-2.0-only notice. The OpenJDK port overlay and its component
 tests are GPL-2.0-only or retain their upstream per-file license. miniJVM C is MIT,
 its Java class library retains GPL-2.0
 and per-file exception notices. Complete class-library and modified C source
