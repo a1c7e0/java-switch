@@ -118,3 +118,17 @@ callback/downcall results, host-PASSED; no Horizon execution is established.
 can follow the implementation pin. Keep source bundles and manifests coherent
 by repackaging from the clean final tree. Read the device matrix before testing;
 all A/X/Y VM sessions require a fresh application process.
+
+Build issue fixes (source pin b7c2ac7fd422bc2543e5c698db4e33a01cc0312d):
+#1 creates configure/libffi parent directories before archive preparation;
+#2 follows valid host-JDK cache symlinks, rejects absent/empty caches clearly,
+and cleans test temporary files. The 17-test host suite and full class-library
+suite pass. A detached worktree at /tmp/java-switch-clean-issues completed the
+entire --with-instrument workflow with no initial build/ and a symlinked JDK25
+cache. Its package/source verifier passes; evidence is in
+`docs/evidence/issues-1-2-clean-instrument.json`. No hardware execution occurred.
+Both fixes are pushed and issue comments contain the candidate pin. Issues stay
+open pending final base-profile validation. Next run: preserve instrument proofs,
+remove only that isolated worktree's build/openjdk25-horizon directory, assert it
+is absent, and run scripts/build-openjdk25-runtime.sh without --with-instrument.
+Do not remove or modify the main workspace's existing VM artifacts.

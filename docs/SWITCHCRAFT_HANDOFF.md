@@ -3,6 +3,10 @@
 Repository: `a1c7e0/java-switch`, branch `main`. The native VM implementation pin is
 `db7d32d59968088c1575ccf70b216f9ee5446831`; `dist/manifest.json` records
 the exact full package source revision, including later documentation/verifier fixes.
+For clean rebuilds, use `b7c2ac7fd422bc2543e5c698db4e33a01cc0312d`, which
+fixes missing configure parent directories (#1) and symlinked host-JDK discovery
+(#2). The full instrument workflow and package verification pass independently
+from an initially absent build tree and a symlinked JDK cache.
 Pin an immutable SHA downstream.
 No Switchcraft source or dependency lock was edited.
 

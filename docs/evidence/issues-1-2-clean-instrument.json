@@ -1,0 +1,28 @@
+{
+  "source_revision": "b7c2ac7fd422bc2543e5c698db4e33a01cc0312d",
+  "profile": "instrument",
+  "native_output_directory_absent_at_start": true,
+  "host_jdk_cache_symlink": true,
+  "vm_archive_members": 577,
+  "jvm_features": [
+    "jni-check",
+    "jvmti",
+    "serialgc",
+    "services",
+    "zero"
+  ],
+  "runtime_modules": [
+    "java.base",
+    "java.instrument"
+  ],
+  "class_count": 7336,
+  "link_exit_status": 0,
+  "missing_symbols": [],
+  "nro_sha256": "ace1a9401cf4bf5e1c6ccf0c8b00dd500fff6978048beb1205c26a0cb103635d",
+  "host_test_counts": [
+    17
+  ],
+  "full_workflow": "PASS",
+  "package_verification": "PASS",
+  "horizon_execution": "NOT TESTED"
+}

@@ -19,8 +19,12 @@ a host Linux runtime, streaming, kernel modifications or proprietary SDKs.
 Pin `a1c7e0/java-switch` to this verified package source revision:
 
 ```text
-698a9a62ccd35f803088abace73ad9c6be5aaa75
+b7c2ac7fd422bc2543e5c698db4e33a01cc0312d
 ```
+
+This pin includes the clean-build directory fix (#1) and symlinked host-JDK
+discovery fix (#2), with 17 host regressions. The independent clean instrument
+workflow and full package verification pass using a symlinked JDK cache.
 
 The underlying instrumentation implementation checkpoint is
 `db7d32d59968088c1575ccf70b216f9ee5446831`. Read these files at the package pin:
