@@ -106,3 +106,15 @@ Do not spoof Linux or edit Switchcraft. The handoff contains exact source paths.
 Management and other game modules still need workload evidence. Next priorities:
 actual device startup/A/X/Y logs, genuine JNI/FFM/class-transform failures, and
 composition of the downstream native providers through the immutable SDK API.
+
+Published instrumentation implementation checkpoint:
+`db7d32d59968088c1575ccf70b216f9ee5446831`. Full `bash scripts/build-all.sh`,
+14 host tests, class-library tests, actual JVMTI/native/image/NRO build and the
+complete package verifier pass. The verifier reconstructs the full pinned source
+with zero-fuzz patches and overlays, checks all integration/SD bytes and class69.
+The Java25 X suite now includes real pow and mixed long/double/int/float FFM
+callback/downcall results, host-PASSED; no Horizon execution is established.
+`dist/manifest.json` records the exact package source commit; docs-only commits
+can follow the implementation pin. Keep source bundles and manifests coherent
+by repackaging from the clean final tree. Read the device matrix before testing;
+all A/X/Y VM sessions require a fresh application process.

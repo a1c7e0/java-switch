@@ -1,7 +1,7 @@
 # Switchcraft runtime handoff
 
 Repository: `a1c7e0/java-switch`, branch `main`. The native VM implementation pin is
-`1427f6d05080ce0280373006ac04b99c8061c246`; `dist/manifest.json` records
+`db7d32d59968088c1575ccf70b216f9ee5446831`; `dist/manifest.json` records
 the exact full package source revision, including later documentation/verifier fixes.
 Pin an immutable SHA downstream.
 No Switchcraft source or dependency lock was edited.
