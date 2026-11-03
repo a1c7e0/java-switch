@@ -1,0 +1,67 @@
+--- a/make/modules/java.base/lib/CoreLibraries.gmk
++++ b/make/modules/java.base/lib/CoreLibraries.gmk
+@@ -208,6 +208,34 @@
+ TARGETS += $(BUILD_LIBJLI)
+ endif
+ 
++
++# Horizon does not ship the launcher implementation in libjli. Build the
++# upstream manifest parser as a separate library for java.instrument, which
++# uses JLI_ManifestIterate to read javaagent manifests.
++ifeq ($(OPENJDK_TARGET_OS), horizon)
++ifeq ($(USE_EXTERNAL_LIBZ), false)
++  JLI_MANIFEST_ZLIB_FILE_LIST := inflate.c inftrees.c inffast.c zadler32.c \
++      zcrc32.c zutil.c
++  JLI_MANIFEST_EXTRA_FILES += \
++      $(addprefix $(TOPDIR)/src/java.base/share/native/libzip/zlib/, \
++          $(JLI_MANIFEST_ZLIB_FILE_LIST))
++  JLI_MANIFEST_STATIC_EXCLUDE_OBJS := \
++      $(subst .c,$(OBJ_SUFFIX),$(JLI_MANIFEST_ZLIB_FILE_LIST))
++endif
++
++$(eval $(call SetupJdkLibrary, BUILD_LIBJLI_MANIFEST, \
++    NAME := jli_manifest, \
++    SRC := $(TOPDIR)/src/java.base/share/native/libjli, \
++    INCLUDE_FILES := parse_manifest.c, \
++    EXTRA_FILES := $(JLI_MANIFEST_EXTRA_FILES), \
++    CFLAGS := $(LIBZ_CFLAGS), \
++    LIBS_horizon := $(LIBZ_LIBS), \
++    STATIC_LIB_EXCLUDE_OBJS := $(JLI_MANIFEST_STATIC_EXCLUDE_OBJS), \
++))
++
++TARGETS += $(BUILD_LIBJLI_MANIFEST)
++endif
++
+ ################################################################################
+ 
+ endif # include guard
+--- a/make/modules/java.instrument/Lib.gmk
++++ b/make/modules/java.instrument/Lib.gmk
+@@ -31,16 +31,26 @@
+ ## Build libinstrument
+ ################################################################################
+ 
++# Horizon builds a dedicated upstream manifest parser; libjli itself is not
++# built because its launcher and platform entry points are not supported.
++ifeq ($(OPENJDK_TARGET_OS), horizon)
++  LIBINSTRUMENT_JLI_LIBRARY := java.base:libjli_manifest
++  LIBINSTRUMENT_JLI_HEADERS := java.base:libjli
++else
++  LIBINSTRUMENT_JLI_LIBRARY := java.base:libjli
++endif
++
+ # equivalent of strcasecmp is stricmp on Windows
+ $(eval $(call SetupJdkLibrary, BUILD_LIBINSTRUMENT, \
+     NAME := instrument, \
+     OPTIMIZATION := LOW, \
+     CFLAGS := $(ICONV_CFLAGS), \
++    EXTRA_HEADER_DIRS := $(LIBINSTRUMENT_JLI_HEADERS), \
+     CFLAGS_windows := -Dstrcasecmp=stricmp, \
+     CFLAGS_debug := -DJPLIS_LOGGING, \
+     CFLAGS_release := -DNO_JPLIS_LOGGING, \
+     LDFLAGS := $(ICONV_LDFLAGS), \
+-    JDK_LIBS := java.base:libjava java.base:libjli java.base:libjvm, \
++    JDK_LIBS := java.base:libjava $(LIBINSTRUMENT_JLI_LIBRARY) java.base:libjvm, \
+     LIBS := $(ICONV_LIBS), \
+     LIBS_unix := $(LIBZ_LIBS), \
+     LIBS_linux := $(LIBDL), \

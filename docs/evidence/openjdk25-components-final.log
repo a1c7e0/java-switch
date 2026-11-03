@@ -1,4 +1,4 @@
-$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMTI=0 -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_SERVICES=0 -DINCLUDE_CDS=0 -DINCLUDE_ZGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_time.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/os_horizon_time.o
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_time.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/os_horizon_time.o
 0000000000000000 t _GLOBAL__sub_I__ZN2os13javaTimeNanosEv
                  U report_vm_error(char const*, int, char const*, char const*, ...)
 0000000000000000 T os::javaTimeNanos()
@@ -6,12 +6,14 @@ $ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf
 0000000000000000 T os::javaTimeSystemUTC(long&, long&)
 0000000000000000 t os::javaTimeSystemUTC(long&, long&) [clone .part.0]
 0000000000000000 T os::javaTimeNanos_info(jvmtiTimerInfo*)
+0000000000000000 T os::thread_cpu_time_info(jvmtiTimerInfo*)
+0000000000000000 T os::current_thread_cpu_time_info(jvmtiTimerInfo*)
                  U __errno
                  U __udivti3
                  U gettimeofday
                  U js_horizon_clock_frequency
                  U js_horizon_clock_ticks
-$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMTI=0 -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_SERVICES=0 -DINCLUDE_CDS=0 -DINCLUDE_ZGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/semaphore_horizon.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/semaphore_horizon.o
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/semaphore_horizon.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/semaphore_horizon.o
 0000000000000000 t _GLOBAL__sub_I__ZN16HorizonSemaphoreC2Ej
                  U report_vm_error(char const*, int, char const*, char const*, ...)
 0000000000000000 T HorizonSemaphore::wait()
@@ -26,7 +28,496 @@ $ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf
                  U js_horizon_semaphore_signal
                  U js_horizon_semaphore_trywait
                  U js_horizon_semaphore_wait
-$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMTI=0 -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_SERVICES=0 -DINCLUDE_CDS=0 -DINCLUDE_ZGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/utilities/stringUtils.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/stringUtils.o
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/mutex_horizon.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/mutex_horizon.o
+0000000000000000 t _GLOBAL__sub_I__ZN13PlatformMutexC2Ev
+                 U report_vm_error(char const*, int, char const*, char const*, ...)
+0000000000000000 T PlatformMutex::lock()
+0000000000000000 T PlatformMutex::unlock()
+0000000000000000 T PlatformMutex::try_lock()
+0000000000000000 T PlatformMutex::PlatformMutex()
+0000000000000000 T PlatformMutex::PlatformMutex()
+0000000000000000 T PlatformMutex::~PlatformMutex()
+0000000000000000 T PlatformMutex::~PlatformMutex()
+0000000000000000 T PlatformMonitor::notify_all()
+0000000000000000 T PlatformMonitor::wait_nanos(unsigned long)
+0000000000000000 T PlatformMonitor::wait(unsigned long)
+0000000000000000 T PlatformMonitor::notify()
+                 U js_horizon_monitor_create
+                 U js_horizon_monitor_destroy
+                 U js_horizon_monitor_lock
+                 U js_horizon_monitor_notify
+                 U js_horizon_monitor_trylock
+                 U js_horizon_monitor_unlock
+                 U js_horizon_monitor_wait
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/park_horizon.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/park_horizon.o
+0000000000000000 t _GLOBAL__sub_I__ZN17HorizonParkPermit11try_consumeEv
+                 U report_vm_error(char const*, int, char const*, char const*, ...)
+0000000000000000 T PlatformEvent::park_nanos(long)
+0000000000000000 T PlatformEvent::park(long)
+0000000000000000 T PlatformEvent::park()
+                 U PlatformMutex::lock()
+                 U PlatformMutex::unlock()
+                 U PlatformMonitor::wait_nanos(unsigned long)
+                 U PlatformMonitor::notify()
+0000000000000000 T HorizonParkPermit::try_consume()
+0000000000000000 T HorizonParkPermit::park(unsigned long)
+0000000000000000 T HorizonParkPermit::fired()
+0000000000000000 T HorizonParkPermit::reset()
+0000000000000000 T HorizonParkPermit::unpark()
+                 U os::javaTimeNanos()
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/parker_horizon.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/parker_horizon.o
+0000000000000000 t _GLOBAL__sub_I__ZN6Parker4parkEbl
+0000000000000000 V guard variable for LogTagSetMapping<(LogTag::type)92, (LogTag::type)109, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0>::_tagset
+                 U JavaThread::is_interrupted(bool)
+                 U HandshakeState::has_operation(bool, bool)
+                 U ClassLoaderData::oops_do(OopClosure*, int, bool)
+0000000000000000 W ThreadBlockInVM::emptyOp(JavaThread*)
+0000000000000000 V LogTagSetMapping<(LogTag::type)92, (LogTag::type)109, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0>::_tagset
+                 U HorizonParkPermit::try_consume()
+                 U HorizonParkPermit::park(unsigned long)
+                 U HorizonParkPermit::unpark()
+0000000000000000 W OopIterateClosure::reference_iteration_mode()
+                 U StackWatermarkSet::processing_started(JavaThread*)
+                 U SafepointMechanism::update_poll_values(JavaThread*)
+                 U SafepointMechanism::process(JavaThread*, bool, bool)
+                 U SafepointSynchronize::_state
+                 U os::javaTimeMillis()
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_nmethod(nmethod*)
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_metadata()
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_cld(ClassLoaderData*)
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_klass(Klass*)
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_method(Method*)
+                 U Method::record_gc_epoch()
+0000000000000000 T Parker::park(bool, long)
+0000000000000000 T Parker::unpark()
+                 U Thread::_thr_current
+                 U nmethod::follow_nmethod(OopIterateClosure*)
+0000000000000000 W LogPrefix<(LogTag::type)92, (LogTag::type)109, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0>::prefix(char*, unsigned long)
+                 U LogTagSet::LogTagSet(unsigned long (*)(char*, unsigned long), LogTag::type, LogTag::type, LogTag::type, LogTag::type, LogTag::type)
+0000000000000000 V vtable for ClaimMetadataVisitingOopIterateClosure
+                 U __aarch64_read_tp
+                 w __cxa_pure_virtual
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/threadLocalStorage_horizon.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/threadLocalStorage_horizon.o
+                 U report_vm_error(char const*, int, char const*, char const*, ...)
+0000000000000000 d horizon_thread_slot
+0000000000000000 t restore_thread_pointer(void*)
+0000000000000000 T ThreadLocalStorage::set_thread(Thread*)
+0000000000000000 t ThreadLocalStorage::set_thread(Thread*) [clone .part.0]
+0000000000000000 T ThreadLocalStorage::is_initialized()
+0000000000000000 T ThreadLocalStorage::init()
+0000000000000000 T ThreadLocalStorage::thread()
+                 U js_horizon_tls_create
+                 U js_horizon_tls_get
+                 U js_horizon_tls_set
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_thread.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/os_horizon_thread.o
+                 U CompilerThreadStackSize
+                 U VMThreadStackSize
+0000000000000000 t _GLOBAL__sub_I__ZN2os34_compiler_thread_min_stack_allowedE
+                 U AllocateHeap(unsigned long, MemTag, AllocFailStrategy::AllocFailEnum)
+                 U report_vm_error(char const*, int, char const*, char const*, ...)
+                 U FreeHeap(void*)
+0000000000000000 V guard variable for LogTagSetMapping<(LogTag::type)108, (LogTag::type)161, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0>::_tagset
+0000000000000000 V guard variable for LogTagSetMapping<(LogTag::type)92, (LogTag::type)109, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0>::_tagset
+0000000000000000 t horizon_native_entry(void*)
+                 U JavaThread::_stack_size_at_create
+                 U PlatformMutex::lock()
+                 U PlatformMutex::unlock()
+                 U PlatformMutex::PlatformMutex()
+                 U PlatformMutex::~PlatformMutex()
+                 U ClassLoaderData::oops_do(OopClosure*, int, bool)
+                 U PlatformMonitor::notify_all()
+                 U PlatformMonitor::wait(unsigned long)
+0000000000000000 V LogTagSetMapping<(LogTag::type)108, (LogTag::type)161, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0>::_tagset
+0000000000000000 V LogTagSetMapping<(LogTag::type)92, (LogTag::type)109, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0>::_tagset
+0000000000000000 W OopIterateClosure::reference_iteration_mode()
+                 U ThreadLocalStorage::is_initialized()
+0000000000000000 T os::free_thread(OSThread*)
+0000000000000000 T os::create_thread(Thread*, os::ThreadType, unsigned long)
+0000000000000000 T os::pd_start_thread(Thread*)
+0000000000000000 T os::current_thread_id()
+0000000000000000 T os::create_main_thread(JavaThread*)
+0000000000000000 D os::_os_min_stack_allowed
+0000000000000000 T os::current_stack_pointer()
+0000000000000000 T os::create_attached_thread(JavaThread*)
+0000000000000000 T os::current_stack_base_and_size(unsigned char**, unsigned long*)
+0000000000000000 D os::_java_thread_min_stack_allowed
+0000000000000000 D os::_compiler_thread_min_stack_allowed
+0000000000000000 D os::_vm_internal_thread_min_stack_allowed
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_nmethod(nmethod*)
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_metadata()
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_cld(ClassLoaderData*)
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_klass(Klass*)
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_method(Method*)
+                 U Method::record_gc_epoch()
+                 U Thread::initialize_thread_current()
+                 U Thread::record_stack_base_and_size()
+                 U Thread::call_run()
+0000000000000000 W void LogImpl<(LogTag::type)108, (LogTag::type)161, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0>::write<(LogLevel::type)4>(char const*, ...)
+                 U nmethod::follow_nmethod(OopIterateClosure*)
+0000000000000000 W OSThread::~OSThread()
+0000000000000000 W OSThread::~OSThread()
+0000000000000000 W OSThread::~OSThread()
+0000000000000000 n OSThread::~OSThread()
+0000000000000000 W LogPrefix<(LogTag::type)108, (LogTag::type)161, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0>::prefix(char*, unsigned long)
+0000000000000000 W LogPrefix<(LogTag::type)92, (LogTag::type)109, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0>::prefix(char*, unsigned long)
+                 U LogTagSet::vwrite(LogLevel::type, char const*, std::__va_list)
+                 U LogTagSet::LogTagSet(unsigned long (*)(char*, unsigned long), LogTag::type, LogTag::type, LogTag::type, LogTag::type, LogTag::type)
+0000000000000000 W OSThread::thread_id_for_printing() const
+0000000000000000 V vtable for OSThreadBase
+0000000000000000 V vtable for ClaimMetadataVisitingOopIterateClosure
+0000000000000000 V vtable for OSThread
+                 w __cxa_pure_virtual
+                 U js_horizon_thread_create
+                 U js_horizon_thread_current_id
+                 U js_horizon_thread_current_stack_bounds
+                 U js_horizon_thread_ensure_reaper_started
+                 U js_horizon_thread_join
+                 U js_horizon_thread_retire
+                 U js_horizon_thread_start
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_memory.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/os_horizon_memory.o
+                 U NmtVirtualMemory_lock
+                 U UseLargePages
+0000000000000000 t _GLOBAL__sub_I__ZN2os17pd_reserve_memoryEmb
+                 U report_vm_out_of_memory(char const*, int, unsigned long, VMErrorType, char const*, ...)
+                 U warning(char const*, ...)
+0000000000000000 V guard variable for LogTagSetMapping<(LogTag::type)108, (LogTag::type)79, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0>::_tagset
+                 U MemTracker::_tracking_level
+                 U MemTracker::NmtVirtualMemoryLocker::_safe_to_use
+                 U NativeCallStack::NativeCallStack(int)
+0000000000000000 V LogTagSetMapping<(LogTag::type)108, (LogTag::type)79, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0>::_tagset
+                 U VirtualMemoryTracker::add_reserved_region(unsigned char*, unsigned long, NativeCallStack const&, MemTag)
+0000000000000000 T os::guard_memory(char*, unsigned long)
+0000000000000000 T os::pd_map_memory(int, char const*, unsigned long, char*, unsigned long, bool, bool)
+0000000000000000 T os::protect_memory(char*, unsigned long, os::ProtType, bool)
+0000000000000000 T os::unguard_memory(char*, unsigned long)
+0000000000000000 T os::large_page_init()
+0000000000000000 T os::large_page_size()
+0000000000000000 T os::pd_unmap_memory(char*, unsigned long)
+0000000000000000 T os::pd_commit_memory(char*, unsigned long, bool)
+0000000000000000 T os::pd_commit_memory(char*, unsigned long, unsigned long, bool)
+0000000000000000 T os::trim_native_heap(os::size_change_t*)
+0000000000000000 T os::pd_realign_memory(char*, unsigned long, unsigned long)
+0000000000000000 T os::pd_release_memory(char*, unsigned long)
+0000000000000000 T os::pd_reserve_memory(unsigned long, bool)
+0000000000000000 T os::committed_in_range(unsigned char*, unsigned long, unsigned char*&, unsigned long&)
+0000000000000000 T os::map_memory_to_file(char*, unsigned long, int)
+0000000000000000 T os::pd_disclaim_memory(char*, unsigned long)
+0000000000000000 T os::pd_pretouch_memory(void*, void*, unsigned long)
+0000000000000000 T os::pd_uncommit_memory(char*, unsigned long, bool)
+0000000000000000 T os::can_trim_native_heap()
+0000000000000000 T os::create_file_for_heap(char const*)
+0000000000000000 T os::reserve_memory_aligned(unsigned long, unsigned long, MemTag, bool)
+0000000000000000 T os::pd_commit_memory_or_exit(char*, unsigned long, bool, char const*)
+0000000000000000 T os::pd_commit_memory_or_exit(char*, unsigned long, unsigned long, bool, char const*)
+0000000000000000 T os::pd_release_memory_special(char*, unsigned long)
+0000000000000000 T os::pd_reserve_memory_special(unsigned long, unsigned long, unsigned long, char*, bool)
+0000000000000000 T os::map_memory_to_file_aligned(unsigned long, unsigned long, int, MemTag)
+0000000000000000 T os::pd_create_stack_guard_pages(char*, unsigned long)
+0000000000000000 T os::can_commit_large_page_memory()
+0000000000000000 T os::pd_attempt_reserve_memory_at(char*, unsigned long, bool)
+0000000000000000 T os::pd_attempt_map_memory_to_file_at(char*, unsigned long, int)
+                 U Mutex::lock_without_safepoint_check()
+                 U Mutex::unlock()
+0000000000000000 W void LogImpl<(LogTag::type)108, (LogTag::type)79, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0>::write<(LogLevel::type)4>(char const*, ...)
+0000000000000000 W LogPrefix<(LogTag::type)108, (LogTag::type)79, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0, (LogTag::type)0>::prefix(char*, unsigned long)
+                 U LogTagSet::vwrite(LogLevel::type, char const*, std::__va_list)
+                 U LogTagSet::LogTagSet(unsigned long (*)(char*, unsigned long), LogTag::type, LogTag::type, LogTag::type, LogTag::type, LogTag::type)
+                 U __errno
+                 U js_horizon_memory_commit
+                 U js_horizon_memory_committed_in_range
+                 U js_horizon_memory_protect
+                 U js_horizon_memory_release
+                 U js_horizon_memory_reserve
+                 U js_horizon_memory_uncommit
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_system.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/os_horizon_system.o
+                 U ActiveProcessorCount
+0000000000000000 t _GLOBAL__sub_I_js_horizon_os_elapsed_time_init
+                 U report_vm_error(char const*, int, char const*, char const*, ...)
+0000000000000000 b horizon_elapsed_origin
+0000000000000000 b horizon_elapsed_origin_set
+0000000000000000 T os::elapsedTime()
+0000000000000000 T os::free_memory(unsigned long&)
+0000000000000000 T os::naked_yield()
+                 U os::javaTimeNanos()
+0000000000000000 T os::infinite_sleep()
+0000000000000000 T os::vm_min_address()
+0000000000000000 T os::elapsed_counter()
+0000000000000000 T os::physical_memory()
+0000000000000000 T os::available_memory(unsigned long&)
+0000000000000000 T os::elapsed_frequency()
+0000000000000000 T os::naked_short_sleep(long)
+0000000000000000 T os::current_process_id()
+0000000000000000 T os::get_native_priority(Thread const*, int*)
+0000000000000000 T os::set_native_priority(Thread*, int)
+0000000000000000 T os::is_primordial_thread()
+0000000000000000 T os::naked_short_nanosleep(long)
+0000000000000000 T os::active_processor_count()
+0000000000000000 T os::current_thread_cpu_time()
+0000000000000000 T os::has_allocatable_memory_limit(unsigned long*)
+0000000000000000 T os::is_thread_cpu_time_supported()
+0000000000000000 T os::rss()
+0000000000000000 T js_horizon_os_elapsed_time_init
+                 U js_horizon_system_aslr_base
+                 U js_horizon_system_core_mask
+                 U js_horizon_system_is_primordial
+                 U js_horizon_system_memory
+                 U js_horizon_system_process_id
+                 U js_horizon_system_sleep
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_libc.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/os_horizon_libc.o
+0000000000000000 t _GLOBAL__sub_I__ZN2os4openEPKcii
+                 U outputStream::print_cr(char const*, ...)
+0000000000000000 T os::get_fileno(__sFILE*)
+0000000000000000 T os::funlockfile(__sFILE*)
+0000000000000000 T os::native_path(char*)
+0000000000000000 T os::localtime_pd(long const*, tm*)
+0000000000000000 T os::file_separator()
+0000000000000000 T os::line_separator()
+0000000000000000 T os::path_separator()
+0000000000000000 T os::local_time_string(char*, unsigned long)
+0000000000000000 T os::print_active_locale(outputStream*)
+0000000000000000 T os::get_current_directory(char*, unsigned long)
+0000000000000000 T os::compare_file_modified_times(char const*, char const*)
+0000000000000000 T os::open(char const*, int, int)
+0000000000000000 T os::stat(char const*, stat*)
+0000000000000000 T os::fseek(__sFILE*, long, int)
+0000000000000000 T os::ftell(__sFILE*)
+0000000000000000 T os::fdopen(int, char const*)
+0000000000000000 T os::opendir(char const*)
+0000000000000000 T os::closedir(DIR*)
+0000000000000000 T os::pd_write(int, void const*, unsigned long)
+0000000000000000 T os::flockfile(__sFILE*)
+0000000000000000 T os::ftruncate(int, long)
+0000000000000000 T os::gmtime_pd(long const*, tm*)
+                 U __errno
+                 U closedir
+                 U fdopen
+                 U fileno
+                 U flockfile
+                 U fseeko
+                 U ftello
+                 U ftruncate
+                 U funlockfile
+                 U getcwd
+                 U gmtime_r
+                 U jio_snprintf
+                 U localtime_r
+                 U open
+                 U opendir
+                 U setlocale
+                 U stat
+                 U time
+                 U write
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_boot.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/os_horizon_boot.o
+                 U DisableAttachMechanism
+                 U PerfDisableSharedMem
+                 U ReduceSignalUsage
+                 U StartAttachListener
+                 U UseNUMA
+                 U UseThreadPriorities
+0000000000000000 t _GLOBAL__sub_I__ZN2os4initEv
+                 U ostream_abort()
+                 U perfMemory_exit()
+                 U report_vm_error(char const*, int, char const*, char const*, ...)
+                 U vm_exit_during_initialization(char const*, char const*)
+                 U warning(char const*, ...)
+                 U PathString::set_value(char const*, AllocFailStrategy::AllocFailEnum)
+0000000000000000 T os::breakpoint()
+                 U os::_page_sizes
+0000000000000000 T os::fork_and_exec(char const*)
+0000000000000000 T os::get_host_name(char*, unsigned long)
+                 U os::set_boot_path(char, char)
+                 U os::_processor_count
+                 U os::strdup_check_oom(char const*, MemTag)
+0000000000000000 T os::get_temp_directory()
+0000000000000000 T os::numa_get_groups_num()
+0000000000000000 T os::os_exception_wrapper(void (*)(JavaValue*, methodHandle const&, JavaCallArguments*, JavaThread*), JavaValue*, methodHandle const&, JavaCallArguments*, JavaThread*)
+0000000000000000 T os::set_native_thread_name(char const*)
+0000000000000000 T os::have_special_privileges()
+                 U os::set_minimum_stack_sizes()
+0000000000000000 T os::check_core_dump_prerequisites(char*, unsigned long, bool)
+0000000000000000 T os::init_system_properties_values()
+0000000000000000 T os::die()
+0000000000000000 T os::exit(int)
+0000000000000000 T os::init()
+0000000000000000 T os::_exit(int)
+0000000000000000 T os::abort(bool, void const*, void const*)
+0000000000000000 T os::init_2()
+0000000000000000 T os::loadavg(double*, int)
+0000000000000000 T os::jvm_path(char*, int)
+0000000000000000 T os::shutdown()
+                 U os::snprintf(char*, unsigned long, char const*, ...)
+                 U os::PageSizes::add(unsigned long)
+0000000000000000 T os::setup_fpu()
+                 U OSInfo::_vm_page_size
+                 U OSInfo::_vm_allocation_granularity
+                 U JVMFlag::is_default(JVMFlagsEnum)
+                 U VMError::record_coredump_status(char const*, bool)
+                 U Arguments::_java_home
+                 U Arguments::_abort_hook
+                 U Arguments::_java_library_path
+                 U Arguments::_sun_boot_library_path
+                 U Arguments::_ext_dirs
+                 U __errno
+                 U __getreent
+                 U __stack_chk_fail
+                 U __stack_chk_guard
+                 U __system_argc
+                 U __system_argv
+                 U getenv
+                 U jio_fprintf
+                 U js_horizon_os_elapsed_time_init
+                 U js_horizon_system_core_mask
+                 U js_horizon_system_exit_process
+                 U js_horizon_system_memory
+                 U mkdir
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_library.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/os_horizon_library.o
+0000000000000000 t _GLOBAL__sub_I__ZN2os26get_default_process_handleEv
+0000000000000000 b (anonymous namespace)::process_scope
+                 U outputStream::print_cr(char const*, ...)
+0000000000000000 T os::dll_lookup(void*, char const*)
+0000000000000000 T os::dll_unload(void*)
+0000000000000000 T os::print_dll_info(outputStream*)
+0000000000000000 T os::lookup_function(char const*)
+0000000000000000 T os::prepare_native_symbols()
+0000000000000000 T os::get_default_process_handle()
+0000000000000000 T os::dll_address_to_library_name(unsigned char*, char*, int, int*)
+0000000000000000 T os::dll_address_to_function_name(unsigned char*, char*, int, int*, bool)
+                 U os::free(void*)
+                 U os::malloc(unsigned long, MemTag)
+0000000000000000 T os::dll_load(char const*, char*, int)
+                 U os::jvm_path(char*, int)
+                 U os::snprintf(char*, unsigned long, char const*, ...)
+                 U __errno
+                 U __stack_chk_fail
+                 U __stack_chk_guard
+0000000000000000 T js_horizon_process_handle
+                 U js_native_module_available
+                 U js_native_symbol_lookup
+                 U memcpy
+                 U strcmp
+                 U strlen
+                 U strrchr
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/perfMemory_horizon.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/perfMemory_horizon.o
+0000000000000000 t _GLOBAL__sub_I__ZN10PerfMemory20create_memory_regionEm
+                 U report_vm_error(char const*, int, char const*, char const*, ...)
+                 U Exceptions::_throw_msg(JavaThread*, char const*, int, Symbol*, char const*)
+                 U PerfMemory::_destroyed
+                 U PerfMemory::is_initialized()
+0000000000000000 T PerfMemory::create_memory_region(unsigned long)
+0000000000000000 T PerfMemory::delete_memory_region()
+                 U PerfMemory::_start
+0000000000000000 T PerfMemory::attach(int, char**, unsigned long*, JavaThread*)
+0000000000000000 T PerfMemory::detach(char*, unsigned long)
+                 U PerfMemory::_capacity
+                 U os::commit_memory(char*, unsigned long, bool)
+                 U os::release_memory(char*, unsigned long)
+                 U os::reserve_memory(unsigned long, MemTag, bool)
+                 U os::current_process_id()
+                 U Symbol::_vm_symbols
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_optional.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/os_horizon_optional.o
+0000000000000000 T JVM_RaiseSignal
+0000000000000000 T JVM_RegisterSignal
+0000000000000000 t _GLOBAL__sub_I__ZN2os19java_to_os_priorityE
+                 U report_vm_error(char const*, int, char const*, char const*, ...)
+                 U outputStream::print_cr(char const*, ...)
+0000000000000000 T os::signal_wait()
+0000000000000000 T os::getTimesSecs(double*, double*, double*)
+0000000000000000 T os::sigexitnum_pd()
+0000000000000000 T os::signal_notify(int)
+0000000000000000 T os::signal_thread(Thread*, int, char const*)
+0000000000000000 T os::start_debugging(char*, int)
+0000000000000000 T os::thread_cpu_time(Thread*)
+0000000000000000 T os::thread_cpu_time(Thread*, bool)
+0000000000000000 T os::get_signal_number(char const*)
+0000000000000000 D os::java_to_os_priority
+0000000000000000 T os::run_periodic_checks(outputStream*)
+0000000000000000 T os::signal_sent_by_kill(void const*)
+0000000000000000 T os::wait_for_keypress_at_exit()
+                 U os::snprintf(char*, unsigned long, char const*, ...)
+                 U __errno
+                 U __getreent
+                 U getchar
+                 U jio_fprintf
+                 U js_horizon_thread_reaper_status
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/os_horizon_diagnostics.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/os_horizon_diagnostics.o
+0000000000000000 t _GLOBAL__sub_I__ZN2os16address_is_in_vmEPh
+0000000000000000 T ElfDecoder::demangle(char const*, char*, int)
+                 U outputStream::cr()
+                 U outputStream::print(char const*, ...)
+                 U outputStream::print_cr(char const*, ...)
+0000000000000000 T os::print_context(outputStream*, void const*)
+0000000000000000 T os::print_os_info(outputStream*)
+0000000000000000 T os::print_siginfo(outputStream*, void const*)
+0000000000000000 T os::exception_name(int, char*, unsigned long)
+                 U os::physical_memory()
+0000000000000000 T os::print_user_info(outputStream*)
+0000000000000000 T os::address_is_in_vm(unsigned char*)
+                 U os::available_memory(unsigned long&)
+0000000000000000 T os::get_native_stack(unsigned char**, int, int)
+0000000000000000 T os::pd_print_cpu_info(outputStream*, char*, unsigned long)
+0000000000000000 T os::print_memory_info(outputStream*)
+0000000000000000 T os::get_summary_os_info(char*, unsigned long)
+0000000000000000 T os::print_register_info(outputStream*, void const*, int&)
+0000000000000000 T os::get_summary_cpu_info(char*, unsigned long)
+0000000000000000 T os::print_memory_mappings(char*, unsigned long, outputStream*)
+0000000000000000 T os::print_signal_handlers(outputStream*, char*, unsigned long)
+                 U os::active_processor_count()
+                 U os::rss()
+0000000000000000 T os::find(unsigned char*, outputStream*)
+                 U os::snprintf(char*, unsigned long, char const*, ...)
+                 U OSInfo::_vm_page_size
+                 U __code_start
+                 U __cxa_demangle
+                 U __rodata_start
+                 U free
+                 U js_horizon_fault_context_read
+                 U memset
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/vmError_horizon.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/vmError_horizon.o
+0000000000000000 t _GLOBAL__sub_I__ZN7VMError17reporting_startedEv
+0000000000000000 b horizon_reporter_thread_id
+                 U os::current_thread_id()
+                 U os::die()
+0000000000000000 T VMError::reporting_started()
+0000000000000000 T VMError::check_failing_cds_access(outputStream*, void const*)
+0000000000000000 T VMError::interrupt_reporting_thread()
+0000000000000000 T VMError::install_secondary_signal_handler()
+                 U __getreent
+                 U jio_fprintf
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero/os_horizon_zero.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/os_horizon_zero.o
+0000000000000000 T SpinPause
+0000000000000000 T _Copy_arrayof_conjoint_bytes
+0000000000000000 T _Copy_arrayof_conjoint_jints
+0000000000000000 T _Copy_arrayof_conjoint_jlongs
+0000000000000000 T _Copy_arrayof_conjoint_jshorts
+0000000000000000 T _Copy_conjoint_jints_atomic
+0000000000000000 T _Copy_conjoint_jlongs_atomic
+0000000000000000 T _Copy_conjoint_jshorts_atomic
+0000000000000000 t _GLOBAL__sub_I__ZN10JavaThread13pd_last_frameEv
+                 U report_should_not_call(char const*, int)
+                 U report_should_not_reach_here(char const*, int)
+0000000000000000 T JavaThread::pd_last_frame()
+0000000000000000 T JavaThread::cache_global_variables()
+0000000000000000 T JavaThread::pd_get_top_frame_for_profiling(frame*, void*, bool)
+0000000000000000 T JavaThread::pd_get_top_frame_for_signal_handler(frame*, void*, bool)
+                 U ClassLoaderData::oops_do(OopClosure*, int, bool)
+0000000000000000 W OopIterateClosure::reference_iteration_mode()
+0000000000000000 T os::current_frame()
+                 U os::current_stack_pointer()
+0000000000000000 T os::get_sender_for_C_frame(frame*)
+0000000000000000 T os::non_memory_address_word()
+0000000000000000 T os::fetch_frame_from_context(void const*)
+0000000000000000 T os::fetch_frame_from_context(void const*, long**, long**)
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_nmethod(nmethod*)
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_metadata()
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_cld(ClassLoaderData*)
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_klass(Klass*)
+0000000000000000 W ClaimMetadataVisitingOopIterateClosure::do_method(Method*)
+                 U Method::record_gc_epoch()
+                 U nmethod::follow_nmethod(OopIterateClosure*)
+0000000000000000 V vtable for ClaimMetadataVisitingOopIterateClosure
+                 w __cxa_pure_virtual
+                 U memmove
+$ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/precompiled -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D_GNU_SOURCE -D_REENTRANT -pipe -fno-rtti -fno-exceptions -fvisibility=hidden -fno-strict-aliasing -fno-omit-frame-pointer -fstack-protector -finput-charset=utf-8 -std=c++14 -DLIBC=newlib -DHORIZON -Wall -Wextra -Wformat=2 -Winvalid-pch -Wpointer-arith -Wreturn-type -Wsign-compare -Wtrampolines -Wtype-limits -Wundef -Wuninitialized -Wunused-const-variable=1 -Wunused-function -Wunused-result -Wunused-value -Woverloaded-virtual -Wreorder -fPIC -fmacro-prefix-map=/workspace/java-switch/.deps/openjdk25-horizon/= -DVM_LITTLE_ENDIAN -D_LP64=1 -Wno-psabi -fno-lifetime-dse -march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include -DNDEBUG -DPRODUCT -DTARGET_ARCH_zero -DINCLUDE_SUFFIX_OS=_horizon -DINCLUDE_SUFFIX_CPU=_zero -DINCLUDE_SUFFIX_COMPILER=_gcc -DTARGET_COMPILER_gcc -DAARCH64 '-DHOTSPOT_LIB_ARCH="aarch64"' -DZERO '-DZERO_LIBARCH="aarch64"' -I/workspace/java-switch/build/libffi/include -DINCLUDE_JVMCI=0 -DINCLUDE_VM_STRUCTS=0 -DINCLUDE_MANAGEMENT=0 -DINCLUDE_CDS=0 -DINCLUDE_G1GC=0 -DINCLUDE_PARALLELGC=0 -DINCLUDE_EPSILONGC=0 -DINCLUDE_ZGC=0 -DINCLUDE_SHENANDOAHGC=0 -DINCLUDE_JFR=0 -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon/include -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/libjimage -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os/horizon -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/cpu/zero -I/workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/os_cpu/horizon_zero -I/workspace/java-switch/build/openjdk25-horizon/hotspot/variant-zero/gensrc -I/workspace/java-switch/build/openjdk25-horizon/support/modules_include/java.base -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/unix/native/include -I/workspace/java-switch/.deps/openjdk25-horizon/src/java.base/share/native/include -DSTATIC_BUILD=1 -DLIBRARY_NAME=jvm -Wno-unused-parameter -Wno-array-bounds -Wno-comment -Wno-delete-non-virtual-dtor -Wno-empty-body -Wno-format-zero-length -Wno-implicit-fallthrough -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-missing-field-initializers -Wno-shift-negative-value -Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-local-typedefs -Wno-unused-variable -O3 -ffunction-sections -fdata-sections -c /workspace/java-switch/.deps/openjdk25-horizon/src/hotspot/share/utilities/stringUtils.cpp -o /workspace/java-switch/build/openjdk25-horizon/components/stringUtils.o
 0000000000000000 t _GLOBAL__sub_I__ZN11StringUtils17replace_no_expandEPcPKcS2_
                  U AllocateHeap(unsigned long, MemTag, AllocFailStrategy::AllocFailEnum)
                  U FreeHeap(void*)
@@ -46,4 +537,4 @@ $ /workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf
                  U strncpy
                  U strstr
                  U tolower
-CROSS-BUILT: time, semaphore, string utilities and C bridge; no VM linked or executed.
+CROSS-BUILT: time, synchronization, parking, native thread/TLS, SafeFetch/fatal entry and string utilities; no VM linked or executed.

@@ -1,0 +1,29 @@
+{
+  "port_digest": "12b4916e3cad6b43cb8ba24aed7a6fd4bd71667706a9bc74884cce82092f4ed9",
+  "archives": {
+    "jli_manifest": {
+      "sha256": "b4668f1967a64dee9201bf1c2ceffed94f8b9c2f2e7bf4b99d166627a316a77b",
+      "members": [
+        "parse_manifest.o"
+      ]
+    },
+    "instrument": {
+      "sha256": "65deac06216fe217e10f2933a5c1b13f8c3ca3a34a77ef6c39f4a32793ec7992",
+      "members": [
+        "EncodingSupport.o",
+        "EncodingSupport_md.o",
+        "FileSystemSupport_md.o",
+        "InstrumentationImplNativeMethods.o",
+        "InvocationAdapter.o",
+        "JPLISAgent.o",
+        "JPLISAssert.o",
+        "JarFacade.o",
+        "JavaExceptions.o",
+        "PathCharsValidator.o",
+        "Reentrancy.o",
+        "Utilities.o"
+      ]
+    }
+  },
+  "horizon_execution": "NOT TESTED"
+}

@@ -11,15 +11,17 @@ are verified; **Horizon execution is NOT TESTED**. This baseline cannot run
 modern Minecraft and does not implement standard JNI Invocation.
 
 The main runtime target is **Java 25**, required by Minecraft
-`26.4-snapshot-6`. A genuine OpenJDK 25 Zero VM and eight native `java.base`
-archives now cross-build and link into `java25-test.nro`. Its runtime image
+`26.4-snapshot-6`. A genuine OpenJDK 25 Zero VM, eight base native archives
+and optional `java.instrument`/manifest archives now cross-build and link into
+`java25-test.nro`. The instrument profile includes real HotSpot JVMTI. Its runtime image
 contains target-built classfile-69 classes, configuration and data. **VM startup,
 Java execution, JNI and FFM on physical Switch are NOT TESTED.** Minecraft's
 Horizon title screen has not been demonstrated.
 
 `java25-test.nro` A attempts the Java25 Hello JAR. X attempts the real JNI,
-thread, NIO and FFM downcall/upcall suite on that VM; relaunch the NRO before
-selecting another mode. It records status, stdout and stderr under
+thread, NIO and FFM downcall/upcall suite on that VM. The optional instrument
+profile adds Y for a real startup javaagent/Class-File API transformation.
+Relaunch the application in a fresh process before selecting another mode. It records status, stdout and stderr under
 `switch/mc-runtime/logs/`. Install the complete generated SD tree, including
 `runtimes/openjdk25`; the NRO alone does not contain the class image.
 
@@ -38,6 +40,8 @@ separately. Source packages include the pinned OpenJDK archive and port notices.
 
 ```sh
 bash scripts/build-all.sh
+# Optional complete experimental VM build, including startup agents:
+bash scripts/build-openjdk25-runtime.sh --with-instrument
 ```
 
 Requires Linux x86_64, Python 3.12+, GCC/G++, Make, patch, Git and HTTPS access.

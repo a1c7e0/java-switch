@@ -1,7 +1,7 @@
 # Horizon Java 25 class library
 
 The genuine upstream `java.base-java`, copy/gendata and static-native-library
-targets build with the tracked Horizon port. The minimal image contains 7,325
+targets build with the tracked Horizon port. The base image contains 7,325
 classfile-69 classes, generated security configuration, timezone/currency data,
 CA roots and notices. Host jmod/jlink/jimage are build/format tools. The image
 has no host native VM or shared library. Switch startup and execution are
@@ -23,7 +23,7 @@ NOT TESTED.
 | Random seed | Real checked CSRNG IPC, private temporary buffer, raw Result in Java failure | Service availability/entropy execution unverified on Switch |
 | FFM | Horizon selects configured libffi fallback; actual native layouts and bounded libc/libm catalogue | Downcalls/upcalls and W^X permissions need physical validation |
 | Processes / Unix facilities | Process creation, Unix-domain sockets and absent terminal operations fail explicitly | No fork/exec, Unix identity or signal success is invented |
-| Instrumentation | Separate Horizon path/encoding adapter sources prepared | JVMTI/module/static-agent build and execution still required |
+| Instrumentation | Optional genuine target java.instrument/JPLIS, static manifest subset and JVMTI NRO CROSS-BUILT; 7,336 classes in two-module image | Host initial-definition transform and negative control PASS; Horizon startup/transform/retransform NOT TESTED |
 
 The SDK/native resolver registration remains immutable for process lifetime.
 The standard module keys are `java`, `zip`, `jimage`, `verify`, `net`, `nio`,
@@ -60,3 +60,7 @@ flushing and an emergency path that avoids stdio locks. Ordinary NRO libc exit
 returns through a loader and is not equivalent to terminating VM workers.
 The native services and completed VM diagnostics therefore end the application
 process rather than leave workers executing code that a loader may unmap.
+
+The optional instrumentation build and Y-mode procedure are documented in
+`docs/OPENJDK25_INSTRUMENTATION.md`. Attach transport and CPU timer capabilities
+remain unavailable; startup instrumentation does not enable dynamic ELF loading.

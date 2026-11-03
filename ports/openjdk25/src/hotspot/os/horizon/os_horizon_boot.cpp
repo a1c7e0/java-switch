@@ -47,9 +47,18 @@ jint os::init_2() {
     jio_fprintf(stderr, "Horizon requires reduced signal usage, private PerfData, no native priorities/NUMA\n");
     return JNI_ERR;
   }
+  // There is no process attach transport on Horizon. Keep the advertised flag
+  // truthful by default, and reject attempts to opt in rather than starting a
+  // listener that cannot accept requests.
+  if ((!DisableAttachMechanism && !FLAG_IS_DEFAULT(DisableAttachMechanism)) ||
+      (StartAttachListener && !FLAG_IS_DEFAULT(StartAttachListener))) {
+    jio_fprintf(stderr, "Horizon does not support the Attach Listener or process attach\n");
+    return JNI_ERR;
+  }
   FLAG_SET_DEFAULT(ReduceSignalUsage, true);
   FLAG_SET_DEFAULT(PerfDisableSharedMem, true);
   FLAG_SET_DEFAULT(UseThreadPriorities, false);
+  FLAG_SET_DEFAULT(DisableAttachMechanism, true);
   // Shared os::init_before_ergo has already initialized the initial CPU count.
   if (set_minimum_stack_sizes() != JNI_OK) return JNI_ERR;
   // The directory policy is explicit; creation may fail, and actual file

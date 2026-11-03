@@ -8,11 +8,14 @@ No Switchcraft source or dependency lock was edited.
 
 ## Verified build and remaining runtime evidence
 
-A real OpenJDK25 Zero archive (553 ARM64 objects), eight native java.base
-archives, a static native resolver and a Horizon PIE/NRO now build. The minimal
-java.base image contains target-built classfile-69 classes and generated data.
+A real OpenJDK25 Zero archive (577 ARM64 objects with JVMTI/services), eight
+base native archives, genuine libinstrument and a separate upstream manifest
+parser archive, a static native resolver and a Horizon PIE/NRO now build.
+The optional java.base/java.instrument image contains 7,336 target-built
+classfile-69 classes and generated data. The base-only profile remains available.
 `java25-test.nro` A attempts Hello; X attempts actual JNI registration, threads,
-NIO, FFM downcall and upcall. **Switch VM startup, Java execution and every
+NIO/TCP/selector, FFM integer/FP downcalls and upcalls; the optional Y mode
+attempts actual premain and Class-File API transformation. **Switch VM startup, Java execution and every
 hardware workload are NOT TESTED. Minecraft/title execution is not established.**
 
 The normal SDK remains VM-free. `include/javaswitch/runtime.h` is byte-identical
@@ -42,7 +45,7 @@ Java or imply that an optional native module exists.
 | dist/zero-services-test.nro | Actual HotSpot service probes, no VM; A/X/Y/B/L actions |
 | dist/java25-test.nro | Genuine experimental Zero VM and native providers; startup/execution unverified |
 | dist/javaswitch-horizon-sdk.tar.gz | Baseline SDK ABI 1, public headers and libffi, no VM |
-| dist/openjdk25-horizon-runtime.tar.gz | Actual libjvm.a, eight native archives, generated resolver, JNI headers, image and notices |
+| dist/openjdk25-horizon-runtime.tar.gz | Actual libjvm.a, ten provider archives in the instrument profile, generated resolver, JNI/JVMTI headers, image and notices |
 | dist/java-switch-source.tar.gz | Complete tracked source and full pinned OpenJDK archive plus miniJVM/libffi source |
 | dist/COPY_TO_SD and test-package ZIP | Complete safely installable diagnostics/image/JAR/source tree |
 | dist/manifest.json and SHA256SUMS | Exact source revision and generated artifact hashes |
@@ -58,11 +61,15 @@ Use the real devkitA64/libnx flags:
 -specs=$DEVKITPRO/libnx/switch.specs -L$DEVKITPRO/libnx/lib
 -Wl,--gc-sections -Wl,-u,JNI_CreateJavaVM
 -Wl,--start-group libjava.a libzip.a libjimage.a libverify.a libnet.a libnio.a \
-  libfallbackLinker.a libsyslookup.a libjvm.a libjavaswitch.a -lnx -lc -lm \
+  libfallbackLinker.a libsyslookup.a libjli_manifest.a libinstrument.a \
+  libjvm.a libjavaswitch.a -lnx -lc -lm \
 -Wl,--end-group
 ```
 
 Use the C++ driver. Keep libnx before libc to retain libnx's actual fcntl.
+The two extra archives above belong to the instrument profile; omit them for
+the base-only package. They add genuine JPLIS and manifest parsing, not the JLI
+launcher. The generated resolver references the real static agent entries.
 The exact tested invocation and all archive hashes are recorded in
 `build/openjdk25-runtime-link.log/json` and the integration manifest. No host VM
 or dynamic native library belongs in this image. JNI header paths are
@@ -102,12 +109,17 @@ The image's lib/modules, configuration, generated data and legal files must all
 be copied. Classpath separation is `;` so device colons remain intact. Java
 reports Horizon, AArch64 and UTF-8. Java and native path handling retain sdmc:/.
 
-The SDK ready hook supports real RegisterNatives. The static module keys are
-java, zip, jimage, verify, net, nio, fallbackLinker and syslookup. The syslookup
+The SDK ready hook supports real RegisterNatives. The base static module keys are
+java, zip, jimage, verify, net, nio, fallbackLinker and syslookup. The instrument
+profile adds jli_manifest and instrument. The syslookup
 catalogue contains only selected real target libc/libm exports; missing symbols
 return unavailable. Horizon uses the configured libffi fallback and its actual
-AAPCS64/native sizes. The test image does not have java.instrument yet;
-JVMTI, standard -javaagent and retransformation integration remain work.
+AAPCS64/native sizes. The optional profile enables genuine JVMTI/services and
+standard startup -javaagent, with target java.instrument in the image.
+Its premain/Class-File API smoke and negative control pass on the pinned host
+JDK; Horizon execution and retransformation are unverified. Attach is unavailable
+and explicit requests to enable it fail initialization. See
+`docs/OPENJDK25_INSTRUMENTATION.md` for the build and Y-mode test.
 
 Unsupported operations fail explicitly: fork/exec, dynamic ELF loading, Unix
 domain sockets, file mappings/locks, unavailable filesystem attributes, process
@@ -140,5 +152,30 @@ The strict Vulkan host trace also loads lwjgl_opengl incidentally; audit those
 initialization bindings before omitting them. These native modules are owned by
 the graphics/launcher task. Keep Horizon platform detection
 truthful, install the complete image, and retain the ABI/version availability
-gate. The next runtime tasks are JVMTI/java.instrument, actual hardware startup
-and JNI/FFM logs, then the pinned Minecraft title workload through Switchcraft.
+gate. Next runtime evidence is actual hardware startup and A/X/Y logs, followed
+by fixes from genuine JNI/FFM/agent execution and the pinned title workload
+through Switchcraft. Use `bash scripts/build-openjdk25-runtime.sh --with-instrument`
+to rebuild and verify all integration artifacts; the base profile omits the option.
+
+### Confirmed LWJGL platform adaptation request
+
+At Switchcraft pin `7ce851b3c4fca4f85a6fee64fd9b0a40ef5d2255`, the strict
+host trace uses LWJGL 3.4.3+4 with `jdk.internal.misc.Unsafe` and FFM. Preserve
+`--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED` and
+`--enable-native-access=ALL-UNNAMED`. This path does not demonstrate a need for
+the legacy `jdk.unsupported` Unsafe fallback. Log4j 2.26.0 attempts JMX during
+configuration but catches linkage failure; its management-dependent layouts,
+OSHI 7.7.2 desktop enumeration and JDBC logging paths are not confirmed title
+requirements. Additional JDK modules need workload evidence.
+
+The graphics/launcher task must adapt the actual LWJGL platform dispatch for
+Horizon. In upstream LWJGL tag `3.4.3`,
+`modules/lwjgl/core/src/main/java/org/lwjgl/system/Platform.java:136` reads
+`os.name` and throws `LinkageError("Unknown platform: " + osName)` for Horizon
+during class initialization. ARM64 architecture recognition does not bypass
+this rejection. The audited downstream pin has an SDL Vulkan patch but no
+LWJGL Java platform patch. Keep `os.name=Horizon`; supply explicit library
+naming, static lookup and platform capability decisions in the downstream
+binding adaptation. Reporting Linux would also select unrelated Linux native
+assumptions. This is a concrete source-level title blocker after VM startup,
+independent of the remaining native binding families and hardware evidence.

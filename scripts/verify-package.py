@@ -14,6 +14,16 @@ import zipfile
 
 root = pathlib.Path(__file__).resolve().parents[1]
 dist = root / 'dist'
+BASE_PROVIDER_MODULES={'java','zip','jimage','verify','net','nio','fallbackLinker','syslookup'}
+INSTRUMENT_PROVIDER_MODULES=BASE_PROVIDER_MODULES|{'jli_manifest','instrument'}
+
+def jvmti_header():
+    build=root/'build/openjdk25-horizon'
+    candidates=[build/'jdk/include/jvmti.h',
+                build/'hotspot/variant-zero/gensrc/jvmtifiles/jvmti.h',
+                build/'support/modules_include/java.base/jvmti.h',
+                root/'.deps/openjdk25-source/src/java.base/share/native/include/jvmti.h']
+    return next((path for path in candidates if path.is_file()),None)
 
 def sha256(data):
     if isinstance(data, pathlib.Path):
@@ -62,6 +72,24 @@ if java25_exists:
     runtime_proof = json.loads((root / 'build/openjdk25-runtime-link.json').read_text())
     image_proof = json.loads((root / 'build/openjdk25-image.json').read_text())
     java_base_proof = json.loads((root / 'build/openjdk25-java-base.json').read_text())
+    assert isinstance(runtime_proof['java_instrument'],bool)
+    instrument = runtime_proof['java_instrument']
+    assert isinstance(runtime_proof['jvm_features'],list) and runtime_proof['jvm_features']
+    assert manifest['java25_instrumentation_available'] is instrument
+    assert set(manifest['java25_runtime_image_modules']) == (
+        {'java.base','java.instrument'} if instrument else {'java.base'})
+    assert manifest['java25_jvm_features'] == runtime_proof['jvm_features']
+    if instrument:
+        assert {'jvmti','services'} <= set(runtime_proof['jvm_features'])
+        instrument_proof = json.loads((root / 'build/openjdk25-java-instrument.json').read_text())
+        assert instrument_proof['classfile_major'] == 69 and instrument_proof['files']
+        agent_proof=json.loads((root/'build/openjdk25-agent-host.json').read_text())
+        assert agent_proof['host_tests']=={'startup_agent':'PASS','no_agent_control':'PASS'}
+        assert agent_proof['classfile_major']==69 and agent_proof['horizon_execution']=='NOT TESTED'
+        for name,digest in agent_proof['inputs'].items():assert sha256(root/name)==digest
+        for name,digest in agent_proof['jars'].items():assert sha256(root/'build'/name)==digest
+    else:
+        instrument_proof = None
     assert runtime_proof['link_exit_status'] == 0 and runtime_proof['missing_symbols'] == []
     assert runtime_proof['java_execution'] == 'NOT TESTED'
     assert runtime_proof['horizon_execution'] == 'NOT TESTED'
@@ -73,8 +101,15 @@ if java25_exists:
     assert 'Minecraft' not in manifest['java25_runtime']
     assert image_proof['classfile_major'] == java_base_proof['classfile_major'] == 69
     assert image_proof['native_vm_included'] is False
-    assert image_proof['modules'] == ['java.base']
+    expected_image_modules={'java.base','java.instrument'} if instrument else {'java.base'}
+    assert set(image_proof['modules']) == expected_image_modules
     assert image_proof['java_base_port_digest'] == java_base_proof['port_digest']
+    if instrument:
+        assert set(image_proof['module_port_digests']) == expected_image_modules
+        assert image_proof['module_port_digests']['java.base'] == java_base_proof['port_digest']
+        assert image_proof['module_port_digests']['java.instrument'] == instrument_proof['port_digest']
+    elif 'module_port_digests' in image_proof:
+        assert image_proof['module_port_digests'] == {'java.base':java_base_proof['port_digest']}
     image_root = root / 'build/openjdk25-runtime'
     actual_image = {p.relative_to(image_root).as_posix() for p in image_root.rglob('*') if p.is_file()}
     assert actual_image == set(image_proof['files'])
@@ -110,11 +145,15 @@ if java25_exists:
     nm = nm / 'devkitA64/bin/aarch64-none-elf-nm'
     symbols = subprocess.check_output([str(nm), str(elf_path)], text=True)
     assert ' T JNI_CreateJavaVM' in symbols
+    if instrument:
+        for symbol in ['JNI_OnLoad_instrument','Agent_OnLoad_instrument','JLI_ManifestIterate']:
+            assert any(line.split()[-1:]==[symbol] for line in symbols.splitlines()), symbol
     assert sha256(root / 'src/java25_vm_test.c') == runtime_proof['launcher_sha256']
     archive_proof = json.loads((root / 'build/openjdk25-archive.json').read_text())
     assert archive_proof['full_upstream_archive_target'] is True
     assert archive_proof['archive_sha256'] == runtime_proof['archive_sha256']
     assert archive_proof['port_digest'] == runtime_proof['archive_port_digest']
+    assert archive_proof['jvm_features'] == runtime_proof['jvm_features']
 
     integration_path = dist / 'openjdk25-horizon-runtime.tar.gz'
     assert integration_path.is_file()
@@ -122,11 +161,12 @@ if java25_exists:
     native_archive = root / 'build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/libjvm.a'
     assert sha256(native_archive) == runtime_proof['archive_sha256']
     provider = runtime_proof['class_library_provider']
+    expected_modules=INSTRUMENT_PROVIDER_MODULES if instrument else BASE_PROVIDER_MODULES
+    assert set(provider['modules'])==expected_modules
     resolver_dir = root / 'build/openjdk25-horizon/runtime-link'
     resolver_json = resolver_dir / 'native_resolver.json'
     resolver_c = resolver_dir / 'native_resolver.c'
     assert json.loads(resolver_json.read_text()) == provider
-    expected_modules = {'java', 'zip', 'jimage', 'verify', 'net', 'nio', 'fallbackLinker', 'syslookup'}
     native_archives = {}
     excluded_system_archives = set()
     for item in provider['archives']:
@@ -159,6 +199,12 @@ if java25_exists:
         jni_md = jdk_include / 'horizon/jni_md.h'
         assert tar_bytes(package, integration_root + 'include/jni.h') == jni_h.read_bytes()
         assert tar_bytes(package, integration_root + 'include/horizon/jni_md.h') == jni_md.read_bytes()
+        if instrument:
+            jvmti_h=jvmti_header()
+            assert jvmti_h is not None
+            assert tar_bytes(package,integration_root+'include/jvmti.h')==jvmti_h.read_bytes()
+        else:
+            assert integration_root+'include/jvmti.h' not in package_names
         for header in (root / 'include').rglob('*'):
             if header.is_file():
                 assert tar_bytes(package, integration_root + header.relative_to(root).as_posix()) == header.read_bytes()
@@ -176,6 +222,9 @@ if java25_exists:
         assert package_manifest['minecraft_or_title_execution'] == 'NOT CLAIMED'
         assert package_manifest['sdk_dependency'] == 'javaswitch-horizon-sdk.tar.gz (ABI 1; no VM)'
         assert package_manifest['runtime_image_files'] == image_proof['files']
+        assert package_manifest['java_instrument'] is instrument
+        assert package_manifest['runtime_image_modules'] == image_proof['modules']
+        assert package_manifest['jvm_features'] == runtime_proof['jvm_features']
         assert package_manifest['elf_sha256'] == sha256(elf_path)
         assert package_manifest['nro_sha256'] == sha256(nro)
         assert package_manifest['upstream_libjvm_archive_sha256'] == sha256(native_archive)
@@ -187,6 +236,18 @@ if java25_exists:
             'c_sha256': sha256(resolver_c), 'json_sha256': sha256(resolver_json)}
         assert package_manifest['jni_headers'] == {
             'jni.h': sha256(jni_h), 'horizon/jni_md.h': sha256(jni_md)}
+        if instrument:
+            assert package_manifest['jvmti_header_sha256'] == sha256(jvmti_h)
+            smoke_jars={name:sha256(root/'build'/name) for name in
+                        ['java25-agent-smoke-agent.jar','java25-agent-smoke-app.jar']}
+            assert package_manifest['agent_smoke_jars'] == smoke_jars
+            for name,digest in smoke_jars.items():
+                packaged=integration_root+'smoke-tests/'+name
+                assert sha256(tar_bytes(package,packaged))==digest
+        else:
+            assert package_manifest['agent_smoke_jars'] == {}
+            assert 'jvmti_header_sha256' not in package_manifest
+            assert not any(name.startswith(integration_root+'smoke-tests/') for name in package_names)
         assert package_manifest['system_archives_verified_not_bundled'] == {
             path.name: sha256(path) for path in sorted(
                 pathlib.Path(item['path']) for item in provider['archives']
@@ -218,6 +279,13 @@ with zipfile.ZipFile(dist / 'java-switch-test-package.zip') as sd:
                   for name in sd.namelist()
                   if name.startswith('switch/mc-runtime/runtimes/openjdk25/')}
         assert staged == set(image_proof['files'])
+        if instrument:
+            for name in ['java25-agent-smoke-agent.jar','java25-agent-smoke-app.jar']:
+                packaged='switch/mc-runtime/tests/'+name
+                assert sha256(sd.read(packaged))==sha256(root/'build'/name)
+        else:
+            assert not any(name.startswith('switch/mc-runtime/tests/java25-agent-smoke-')
+                           for name in sd.namelist())
     else:
         assert 'switch/java25-test/java25-test.nro' not in sd.namelist()
         assert not any(name.startswith('switch/mc-runtime/runtimes/openjdk25/') for name in sd.namelist())

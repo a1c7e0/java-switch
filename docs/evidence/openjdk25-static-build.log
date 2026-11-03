@@ -1,5 +1,16 @@
-$ make CONF_CHECK=auto JOBS=2 hotspot-zero-static-libs
+$ make CONF_CHECK=auto JOBS=2 ENABLE_JAVAC_SERVER=false hotspot-zero-static-libs
+Note: Command line contains non-control variables:
+* ENABLE_JAVAC_SERVER=false
+Make sure it is not mistyped, and that you intend to override this variable.
+'make help' will list known control variables.
+
+Note: Command line contains non-control variables:
+* ENABLE_JAVAC_SERVER=false
+Make sure it is not mistyped, and that you intend to override this variable.
+'make help' will list known control variables.
+
 Building target 'hotspot-zero-static-libs' in configuration '/workspace/java-switch/build/openjdk25-horizon'
+Updating hotspot/variant-zero/libjvm/objs/static/libjvm.a due to 2 file(s)
 Finished building target 'hotspot-zero-static-libs' in configuration '/workspace/java-switch/build/openjdk25-horizon'
 
 Exit status: 0

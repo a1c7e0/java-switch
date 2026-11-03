@@ -1,5 +1,5 @@
 {
-  "port_digest": "f4572555046aa211db0d1fa1e89bedf5cda02bbd566f772941dbd113746a8b41",
+  "port_digest": "12b4916e3cad6b43cb8ba24aed7a6fd4bd71667706a9bc74884cce82092f4ed9",
   "java_vm_linked": false,
   "inputs": {
     "src/zero_services_test.c": "2de13cb45641328901c4269441d5b105cc5df0e3dbc9c6e1b3fb17a8bfdeeabb",
@@ -12,7 +12,7 @@
     "src/vmem_horizon.c": "d46ddefc1f2ba0b227cd153283f5e3289c03824d8d6e7d5d8758c33bf1be12a5",
     "include/javaswitch/detail/horizon_alias.h": "912fda62ff2023989d15eaa1730a397ab29206e8aebdd50be91bc785b5b8f0fc",
     "include/javaswitch/vmem.h": "504243018b03ec91e8997bd31e65d34d7ccc7e2de35a29b321d5a55ea84e6a60",
-    "scripts/openjdk25.py": "0146cd95b90ee4a1b94541afbdb2c768311588928d08fcc01b16a611bfb0ff9b"
+    "scripts/openjdk25.py": "99696897b39225959da84cb70cac1cfe0f205503f5c7edbd473b7a21532831c5"
   },
   "elf_sha256": "98fc10d912240aa794705436ff9287453b900fe03ff0e52c0408a6c4bdc24a0a",
   "nro_sha256": "25061d17f56545efda7a242e5a56e187d815517fa4910d82fcdd8f7bf56c15df"

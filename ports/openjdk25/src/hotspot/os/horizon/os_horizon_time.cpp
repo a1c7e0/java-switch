@@ -40,3 +40,19 @@ jlong os::javaTimeMillis() {
   javaTimeSystemUTC(seconds, nanos);
   return seconds * 1000 + nanos / 1000000;
 }
+
+void os::current_thread_cpu_time_info(jvmtiTimerInfo* info) {
+  // JVMTI does not grant can_get_current_thread_cpu_time on Horizon while
+  // is_thread_cpu_time_supported() is false. Reaching this hook would bypass
+  // that capability contract, so do not return fabricated timer metadata.
+  (void)info;
+  guarantee(false, "Horizon does not support current-thread CPU timers");
+}
+
+void os::thread_cpu_time_info(jvmtiTimerInfo* info) {
+  // JVMTI does not grant can_get_thread_cpu_time on Horizon while
+  // is_thread_cpu_time_supported() is false. Reaching this hook would bypass
+  // that capability contract, so do not return fabricated timer metadata.
+  (void)info;
+  guarantee(false, "Horizon does not support thread CPU timers");
+}

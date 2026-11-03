@@ -1,8 +1,5 @@
-$ bash /workspace/java-switch/.deps/openjdk25-horizon/configure --openjdk-target=aarch64-none-horizon --with-jvm-variants=zero --enable-headless-only --disable-warnings-as-errors --with-freetype=bundled --with-debug-level=release --with-boot-jdk=/workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8 CC=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc CXX=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ AR=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-ar NM=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-nm STRIP=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-strip OBJCOPY=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-objcopy '--with-extra-cflags=-march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include' '--with-extra-cxxflags=-march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include' '--with-extra-ldflags=-specs=/workspace/java-switch/.toolchain/opt/devkitpro/libnx/switch.specs -L/workspace/java-switch/.toolchain/opt/devkitpro/libnx/lib' --with-libffi-include=/workspace/java-switch/build/libffi/include --with-libffi-lib=/workspace/java-switch/build/openjdk25-horizon/horizon-libffi --disable-jvm-feature-jfr --disable-jvm-feature-cds --disable-jvm-feature-services --disable-jvm-feature-jvmti --disable-jvm-feature-vm-structs
-Runnable configure script is not up to date
-Generating runnable configure script at /workspace/java-switch/build/openjdk25-horizon/configure-support/generated-configure.sh
-Using autoconf at /workspace/java-switch/.deps/build-tools/root/usr/bin/autoconf [autoconf (GNU Autoconf) 2.73]
-configure: Configuration created at Mon Nov  2 14:02:19 UTC 2026.
+$ bash /workspace/java-switch/.deps/openjdk25-horizon/configure --openjdk-target=aarch64-none-horizon --with-jvm-variants=zero --enable-headless-only --disable-warnings-as-errors --disable-javac-server --with-freetype=bundled --with-debug-level=release --with-boot-jdk=/workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8 CC=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc CXX=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ AR=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-ar NM=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-nm STRIP=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-strip OBJCOPY=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-objcopy '--with-extra-cflags=-march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include' '--with-extra-cxxflags=-march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include' '--with-extra-ldflags=-specs=/workspace/java-switch/.toolchain/opt/devkitpro/libnx/switch.specs -L/workspace/java-switch/.toolchain/opt/devkitpro/libnx/lib' --with-libffi-include=/workspace/java-switch/build/libffi/include --with-libffi-lib=/workspace/java-switch/build/openjdk25-horizon/horizon-libffi --disable-jvm-feature-jfr --disable-jvm-feature-cds --enable-jvm-feature-services --enable-jvm-feature-jvmti --disable-jvm-feature-g1gc --disable-jvm-feature-parallelgc --disable-jvm-feature-shenandoahgc --disable-jvm-feature-epsilongc --disable-jvm-feature-management --disable-jvm-feature-vm-structs
+configure: Configuration created at Tue Nov  3 04:21:36 UTC 2026.
 checking for basename... /usr/bin/basename
 checking for dirname... /usr/bin/dirname
 checking for file... /usr/bin/file
@@ -85,8 +82,8 @@ checking for zypper... [not found]
 checking for apt-get... /usr/local/bin/apt-get
 checking for pandoc... /usr/bin/pandoc
 checking for pandoc version... 3.1.11.1
-configure: WARNING: pandoc is version 3.1.11.1, not the recommended version 2.19.2
-checking if the pandoc smart extension needs to be disabled for markdown... yes
+checking if the pandoc smart extension needs to be disabled for markdown... configure: WARNING: pandoc is version 3.1.11.1, not the recommended version 2.19.2
+yes
 checking if the pandoc tex_math_dollars extension needs to be disabled for markdown... yes
 checking for gmake... /usr/bin/gmake
 configure: Testing potential make at /usr/bin/gmake, found using gmake in PATH
@@ -114,8 +111,8 @@ checking if bash supports pipefail... yes
 checking if bash supports errexit (-e)... yes
 checking for aarch64-none-horizon-pkg-config... no
 checking for pkg-config... /usr/bin/pkg-config
-checking pkg-config is at least version 0.9.0... configure: WARNING: using cross tools not prefixed with host triplet
-yes
+configure: WARNING: using cross tools not prefixed with host triplet
+checking pkg-config is at least version 0.9.0... yes
 checking for default LOG value... 
 checking for JMOD compression type... zip-6, default
 checking whether or not a JDK suitable for linking from the run-time image should be produced... disabled, default
@@ -148,7 +145,7 @@ checking if Boot JDK is 32 or 64 bits... 64
 checking for local Boot JDK Class Data Sharing (CDS)... yes, created
 checking for Build JDK... yes, will build it for the host platform
 checking for docs-reference JDK... no, using interim javadoc for the docs-reference targets
-checking what source date to use... 1793628141, from 'current' (default)
+checking what source date to use... 1793679698, from 'current' (default)
 checking if we should build headless-only (no GUI)... enabled, from command line
 checking if linker should clean out unused code (linktime-gc)... disabled, default
 checking for graphviz dot... yes
@@ -273,8 +270,8 @@ checking if libffi works... yes
 checking for FFI_GO_CLOSURES definition... yes
 checking for cos in -lm... yes
 checking for dlopen in -ldl... no
-checking for JVM features enabled by the user... none
-checking for JVM features disabled by the user... 'cds jfr jvmti services vm-structs'
+checking for JVM features enabled by the user... 'jvmti services'
+checking for JVM features disabled by the user... 'cds epsilongc g1gc jfr management parallelgc shenandoahgc vm-structs'
 checking if platform is supported by CDS... yes
 checking if JVM feature 'cds' is available... yes
 checking for dtrace tool and platform support... no
@@ -287,8 +284,9 @@ checking if platform is supported by Shenandoah... yes
 checking if JVM feature 'shenandoahgc' is available... yes
 checking if platform is supported by ZGC... no, horizon-aarch64
 checking if JVM feature 'zgc' is available... no
-checking JVM features to use for variant 'zero'... 'epsilongc g1gc jni-check management parallelgc serialgc shenandoahgc zero'
-checking what hotspot build time to use... 2026-11-02T14:02:21Z (from --with-source-date)
+configure: Default JVM features explicitly enabled for 'zero': 'jvmti services'
+checking JVM features to use for variant 'zero'... 'jni-check jvmti serialgc services zero'
+checking what hotspot build time to use... 2026-11-03T04:21:38Z (from --with-source-date)
 checking if the jtreg failure handler is available... no (jtreg not present)
 checking if the jtreg failure handler should be built... disabled, default
 checking if the jtreg test thread factory is available... no (jtreg not present)
@@ -307,7 +305,7 @@ checking for --enable-java-warnings-as-errors... enabled, default
 checking for number of cores... 3
 checking for memory size... 9968 MB
 checking for appropriate number of jobs to run in parallel... 3
-checking whether to use javac server... enabled, default
+checking whether to use javac server... disabled, from command line
 checking flags for boot jdk java command ...  -Duser.language=en -Duser.country=US -Xlog:all=off:stdout -Xlog:all=warning:stderr  -XX:+UnlockDiagnosticVMOptions -XX:-VerifySharedSpaces -XX:SharedArchiveFile=/workspace/java-switch/build/openjdk25-horizon/configure-support/classes.jsa -Xshare:auto 
 checking flags for boot jdk java command for big workloads...  -Xms64M -Xmx2048M
 checking flags for bootcycle boot jdk java command for big workloads... -Xms64M -Xmx2048M
@@ -330,17 +328,17 @@ config.status: creating /workspace/java-switch/build/openjdk25-horizon/Makefile
 ====================================================
 The existing configuration has been successfully updated in
 /workspace/java-switch/build/openjdk25-horizon
-using configure arguments '--openjdk-target=aarch64-none-horizon --with-jvm-variants=zero --enable-headless-only --disable-warnings-as-errors --with-freetype=bundled --with-debug-level=release --with-boot-jdk=/workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8 CC=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc CXX=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ AR=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-ar NM=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-nm STRIP=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-strip OBJCOPY=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-objcopy --with-extra-cflags='-march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include' --with-extra-cxxflags='-march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include' --with-extra-ldflags='-specs=/workspace/java-switch/.toolchain/opt/devkitpro/libnx/switch.specs -L/workspace/java-switch/.toolchain/opt/devkitpro/libnx/lib' --with-libffi-include=/workspace/java-switch/build/libffi/include --with-libffi-lib=/workspace/java-switch/build/openjdk25-horizon/horizon-libffi --disable-jvm-feature-jfr --disable-jvm-feature-cds --disable-jvm-feature-services --disable-jvm-feature-jvmti --disable-jvm-feature-vm-structs'.
+using configure arguments '--openjdk-target=aarch64-none-horizon --with-jvm-variants=zero --enable-headless-only --disable-warnings-as-errors --disable-javac-server --with-freetype=bundled --with-debug-level=release --with-boot-jdk=/workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8 CC=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc CXX=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-g++ AR=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-ar NM=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-nm STRIP=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-strip OBJCOPY=/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-objcopy --with-extra-cflags='-march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include' --with-extra-cxxflags='-march=armv8-a+crc+crypto -mtune=cortex-a57 -mno-outline-atomics -mtp=soft -fPIE -D__SWITCH__ -D_DEFAULT_SOURCE -I/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include -I/workspace/java-switch/include' --with-extra-ldflags='-specs=/workspace/java-switch/.toolchain/opt/devkitpro/libnx/switch.specs -L/workspace/java-switch/.toolchain/opt/devkitpro/libnx/lib' --with-libffi-include=/workspace/java-switch/build/libffi/include --with-libffi-lib=/workspace/java-switch/build/openjdk25-horizon/horizon-libffi --disable-jvm-feature-jfr --disable-jvm-feature-cds --enable-jvm-feature-services --enable-jvm-feature-jvmti --disable-jvm-feature-g1gc --disable-jvm-feature-parallelgc --disable-jvm-feature-shenandoahgc --disable-jvm-feature-epsilongc --disable-jvm-feature-management --disable-jvm-feature-vm-structs'.
 
 Configuration summary:
 * Name:           /workspace/java-switch/build/openjdk25-horizon
 * Debug level:    release
 * HS debug level: product
 * JVM variants:   zero
-* JVM features:   zero: 'epsilongc g1gc jni-check management parallelgc serialgc shenandoahgc zero' 
+* JVM features:   zero: 'jni-check jvmti serialgc services zero' 
 * OpenJDK target: OS: horizon, CPU architecture: aarch64, address length: 64
 * Version string: 25.0.5.0.3-internal-adhoc.agent.openjdk25-horizon (25.0.5.0.3-internal)
-* Source date:    1793628141 (2026-11-02T14:02:21Z)
+* Source date:    1793679698 (2026-11-03T04:21:38Z)
 
 Tools summary:
 * Boot JDK:       openjdk version "25.0.5" 2026-10-20 LTS OpenJDK Runtime Environment Temurin-25.0.5+8 (build 25.0.5+8-LTS) OpenJDK 64-Bit Server VM Temurin-25.0.5+8 (build 25.0.5+8-LTS, mixed mode, sharing) (at /workspace/java-switch/.deps/host-jdk25/jdk-25.0.5+8)

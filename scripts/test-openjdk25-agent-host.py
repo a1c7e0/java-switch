@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build and run a real java.instrument startup-agent smoke on pinned JDK 25."""
 import json
+import hashlib
 import pathlib
 import re
 import shlex
@@ -16,6 +17,13 @@ AGENT_CLASSES = OUT / "agent-classes"
 APP_CLASSES = OUT / "app-classes"
 AGENT_JAR = ROOT / "build/java25-agent-smoke-agent.jar"
 APP_JAR = ROOT / "build/java25-agent-smoke-app.jar"
+PROOF = ROOT / "build/openjdk25-agent-host.json"
+PROOF_INPUTS = [
+    "scripts/test-openjdk25-agent-host.py",
+    "tests/java25/AgentSmoke.java",
+    "tests/java25/AgentSmokeAgent.java",
+    "dependencies.lock.json",
+]
 
 
 def record_run(command, log, expect_success=True):
@@ -54,7 +62,13 @@ def pinned_java_version():
     return match.group(1)
 
 
+def sha256(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def main():
+    # A failed rerun must not leave an old proof describing stale jars/source.
+    PROOF.unlink(missing_ok=True)
     javac = next(JDK_ROOT.glob("*/bin/javac"), None)
     if javac is None:
         raise SystemExit(f"pinned genuine JDK 25 is missing under {JDK_ROOT}")
@@ -111,9 +125,20 @@ def main():
         if expected_failure not in no_agent_output:
             raise RuntimeError(f"no-agent launch failed for an unexpected reason; see {LOG}")
 
+    proof = {
+        "host_tests": {"startup_agent": "PASS", "no_agent_control": "PASS"},
+        "pinned_jdk_version": version,
+        "classfile_major": 69,
+        "horizon_execution": "NOT TESTED",
+        "inputs": {name: sha256(ROOT / name) for name in PROOF_INPUTS},
+        "jars": {path.name: sha256(path) for path in (AGENT_JAR, APP_JAR)},
+    }
+    PROOF.write_text(json.dumps(proof, indent=2) + "\n")
+
     print(f"agent jar: {AGENT_JAR.relative_to(ROOT)}")
     print(f"app jar: {APP_JAR.relative_to(ROOT)}")
     print(f"host log: {LOG.relative_to(ROOT)}")
+    print(f"host proof: {PROOF.relative_to(ROOT)}")
     print(f"OpenJDK {version} java.instrument host smoke: PASS; no-agent control: PASS; Horizon NOT TESTED")
 
 

@@ -43,7 +43,7 @@ void __libnx_exception_handler(ThreadExceptionDump *dump) {
 
 typedef struct {
     JsLaunchRequest request;
-    const char *options[1];
+    const char *options[2];
     size_t option_count;
     JsLaunchResult result;
     int status;
@@ -74,9 +74,23 @@ static const char *const java25_smoke_options[] = {
     "-Djs.option.forwarded=yes"
 };
 
+#ifdef JS_OPENJDK25_INSTRUMENT
+static const char *const java25_agent_arguments[] = {
+    "main-argument-forwarded"
+};
+static const char *const java25_agent_options[] = {
+    "-javaagent:sdmc:/switch/mc-runtime/tests/java25-agent-smoke-agent.jar="
+    "premain-argument-forwarded",
+    "-Dagent.smoke.property=property-forwarded"
+};
+#endif
+
 typedef enum {
     JAVA25_MODE_HELLO,
-    JAVA25_MODE_SMOKE
+    JAVA25_MODE_SMOKE,
+#ifdef JS_OPENJDK25_INSTRUMENT
+    JAVA25_MODE_AGENT
+#endif
 } Java25Mode;
 
 static jint java25_smoke_native_add(JNIEnv *env, jclass klass,
@@ -115,14 +129,27 @@ static int java25_smoke_register_natives(void *vm, void *opaque_env,
 }
 
 static bool select_java25_mode(Java25Mode *mode) {
+#ifdef JS_OPENJDK25_INSTRUMENT
+    sc_log("A: classfile-69 Hello | X: full Java25Smoke suite | "
+           "Y: startup javaagent/JVMTI/ClassFileLoadHook "
+           "[device NOT TESTED] | +: exit\n"
+           "One VM launch per process.\n");
+#else
     sc_log("A: classfile-69 Hello | X: full Java25Smoke suite | +: exit\n"
            "One VM launch per process.\n");
+#endif
     u64 keys;
     while (sc_frame(&keys)) {
         if (keys & HidNpadButton_X) {
             *mode = JAVA25_MODE_SMOKE;
             return true;
         }
+#ifdef JS_OPENJDK25_INSTRUMENT
+        if (keys & HidNpadButton_Y) {
+            *mode = JAVA25_MODE_AGENT;
+            return true;
+        }
+#endif
         if (keys & HidNpadButton_A) {
             *mode = JAVA25_MODE_HELLO;
             return true;
@@ -284,8 +311,14 @@ int main(void) {
         sc_exit();
         return 0;
     }
-    sc_log("Selected Java25 mode=%s\n",
-           mode == JAVA25_MODE_SMOKE ? "Java25Smoke" : "classfile-69-Hello");
+    const char *mode_name = mode == JAVA25_MODE_SMOKE
+        ? "Java25Smoke" : "classfile-69-Hello";
+#ifdef JS_OPENJDK25_INSTRUMENT
+    if (mode == JAVA25_MODE_AGENT) {
+        mode_name = "startup-javaagent (cross-built; device NOT TESTED)";
+    }
+#endif
+    sc_log("Selected Java25 mode=%s\n", mode_name);
 #endif
     JsRuntimeInfo info = {0};
     int status = js_runtime_query("openjdk25", &info);
@@ -312,6 +345,24 @@ int main(void) {
         extra_option_count = sizeof(java25_smoke_options) /
                              sizeof(java25_smoke_options[0]);
     }
+#ifdef JS_OPENJDK25_INSTRUMENT
+    if (mode == JAVA25_MODE_AGENT) {
+        request.classpath =
+            "sdmc:/switch/mc-runtime/tests/java25-agent-smoke-app.jar";
+        request.main_class = "AgentSmoke";
+        request.arguments = java25_agent_arguments;
+        request.argument_count = sizeof(java25_agent_arguments) /
+                                 sizeof(java25_agent_arguments[0]);
+        /* Agent premain and ClassFileLoadHook must run before application class
+         * lookup. This mode deliberately has no VM-ready JNI callback. */
+        request.on_vm_ready = NULL;
+        extra_options = java25_agent_options;
+        extra_option_count = sizeof(java25_agent_options) /
+                             sizeof(java25_agent_options[0]);
+        sc_log("Y selected: genuine startup -javaagent request; premain/JVMTI "
+               "transformation is cross-built but device execution NOT TESTED.\n");
+    }
+#endif
 #endif
     JsLaunchResult result = {0};
 #ifdef JS_OPENJDK25_STATIC_PROVIDER

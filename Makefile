@@ -34,6 +34,8 @@ build/sdk/libjavaswitch.a build/jni25-host &: scripts/build-sdk.py src/runtime.c
 	python3 scripts/build-sdk.py
 build/java25-tests.jar build/java25-hello.jar &: scripts/build-java25-tests.py tests/java25/Java25Smoke.java tests/java25/HelloHorizon25.java | build
 	python3 scripts/build-java25-tests.py
+build/java25-agent-smoke-agent.jar build/java25-agent-smoke-app.jar build/openjdk25-agent-host.json &: scripts/test-openjdk25-agent-host.py tests/java25/AgentSmokeAgent.java tests/java25/AgentSmoke.java dependencies.lock.json | build
+	python3 scripts/test-openjdk25-agent-host.py
 host-test: build/java-test-host build/minijvm_rt.jar build/diagnostic-tests.jar build/dependency.jar build/jni25-host build/java25-tests.jar
 	python3 -m unittest discover -s tests -v
 clean:

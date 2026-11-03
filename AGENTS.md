@@ -34,7 +34,7 @@ archive plus overlay/notices with the NRO. Never include libnx headers directly
 in HotSpot C++: u8/s8/Handle/Mutex conflict; use the opaque C bridge. Current
 full build passes the PCH, mutex/monitor, OSThread/Parker headers and the POSIX
 SafeFetch selection. Read the latest build evidence for its next exact blocker.
-Latest full build: 553 AArch64 objects and the genuine upstream libjvm.a target
+Latest optional JVMTI/services build: 577 AArch64 objects and the genuine upstream libjvm.a target
 complete. A real Horizon PIE link containing JNI_CreateJavaVM now passes with
 zero missing symbols (not VM startup). See openjdk25-static-archive.json and
 openjdk25-vm-link.log/json in evidence. Eight native java.base archives, the target class/data image and a genuine
@@ -87,8 +87,22 @@ not unload their code. Native-services and completed VM diagnostics close the
 application process. Reopen application-mode hbmenu for the next test. Emergency
 termination avoids stdio locks. The public SDK still permits one VM per process.
 
-Next confirmed Minecraft requirement is standard startup javaagent:
-java.instrument + HotSpot JVMTI/ClassFileLoadHook. Horizon path/encoding adapter
-sources are prepared under java.instrument but not yet wired/built. Management
-and other game modules need dependency evidence; see the downstream handoff.
-Keep the current base profile reproducible before experimenting with JVMTI.
+Optional standard startup agents now genuinely cross-build and link. Run
+scripts/build-openjdk25-runtime.sh --with-instrument for JVMTI/services plus
+java.instrument; the default base profile still disables these features.
+The actual extra archives are libinstrument.a and parse_manifest.o-only
+libjli_manifest.a. The image contains 7,336 classfile-69 classes across two modules.
+Y attempts the host-validated premain/Class-File API initial-definition transform;
+all Horizon execution is NOT TESTED. Attach is disabled and explicit enabling
+fails; unsupported CPU timer capabilities stay false, and invariant-bypassing
+void hooks fail loudly. Async signal-context frame sampling returns unavailable.
+Direct javac avoids cloud compiler-server startup failures. Source prepare now
+publishes reconstructed trees only after every patch succeeds; its rollback test
+runs in make host-test. Keep all port inputs tracked before packaging.
+
+Minecraft also needs downstream LWJGL Horizon platform/native-loader adaptation:
+3.4.3 Platform currently rejects os.name=Horizon before Library JNI loading.
+Do not spoof Linux or edit Switchcraft. The handoff contains exact source paths.
+Management and other game modules still need workload evidence. Next priorities:
+actual device startup/A/X/Y logs, genuine JNI/FFM/class-transform failures, and
+composition of the downstream native providers through the immutable SDK API.

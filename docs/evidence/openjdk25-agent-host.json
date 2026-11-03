@@ -1,0 +1,19 @@
+{
+  "host_tests": {
+    "startup_agent": "PASS",
+    "no_agent_control": "PASS"
+  },
+  "pinned_jdk_version": "25.0.5",
+  "classfile_major": 69,
+  "horizon_execution": "NOT TESTED",
+  "inputs": {
+    "scripts/test-openjdk25-agent-host.py": "e49e78116bbae1bf8a8141e94ad5e45bb2e8001107e59dec220fbba3067db0d3",
+    "tests/java25/AgentSmoke.java": "15f39d85efe9ff452d8750dfc36bf22ebe46a299b808108b0cb0335ecb1805a1",
+    "tests/java25/AgentSmokeAgent.java": "6d6fb2129da621d33419ccdf40b14f2fe51fcca41781e0b1bfaf2512d476d90f",
+    "dependencies.lock.json": "647604e2d5a73dff0819af2958402fc1b7375dff9b1a0c472005c0de9893bdfe"
+  },
+  "jars": {
+    "java25-agent-smoke-agent.jar": "35097fd8d19e0053bd7b78e3b3bb4c3c8e66a7639070b9dcd74b007d38137f66",
+    "java25-agent-smoke-app.jar": "c1e623685f2df581121eb18c9f6e9a09e06e8990e1f38eee44edc17a71a9b399"
+  }
+}

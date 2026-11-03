@@ -1,12 +1,20 @@
 {
-  "archive_port_digest": "f4572555046aa211db0d1fa1e89bedf5cda02bbd566f772941dbd113746a8b41",
-  "archive_sha256": "f1ca2b7f7fdb88e45aa642e3642d0ebbe140f98a90748ef7b416ebf931048553",
+  "archive_port_digest": "12b4916e3cad6b43cb8ba24aed7a6fd4bd71667706a9bc74884cce82092f4ed9",
+  "archive_sha256": "9fb22130f8cbe42f62b63ebc32b1e1d51694682911bd7dcd6188948fd7cdbd9a",
+  "jvm_features": [
+    "jni-check",
+    "jvmti",
+    "serialgc",
+    "services",
+    "zero"
+  ],
+  "java_instrument": true,
   "sdk_sha256": "933e2ae6e92808158c36b2f04460b9cd0e02087d2dabf1bb8bf9e19dce3e87ef",
   "link_exit_status": 0,
   "missing_symbols": [],
   "java_execution": "NOT TESTED",
   "horizon_execution": "NOT TESTED",
-  "elf_sha256": "12b8c609d3520ed02bb80ab7261e40db66d960c4b773c125931df8bc0ae1a276",
+  "elf_sha256": "6f515895d047592729fb1a7db6a03fd46ffb815ad1bd735b11c39bbd914a4827",
   "class_library_provider": {
     "address_model": "symbol addresses use final static-link selection; a strong definition that overrides a weak same-name definition is visible in each module table",
     "archives": [
@@ -16,7 +24,7 @@
         "module": "java",
         "path": "/workspace/java-switch/build/openjdk25-horizon/support/native/java.base/libjava/static/libjava.a",
         "resolver_symbol_count": 264,
-        "sha256": "28ffa6f12baad729e3b2dec4f173948d125ee9e472a168a33bf66a3085db4a7b",
+        "sha256": "7e7705c75fbc84a8f71d723f0c30e82da77746d663ef8dcfc45229a2f9d5e21d",
         "unsafe_identifier_count": 0
       },
       {
@@ -25,7 +33,7 @@
         "module": "zip",
         "path": "/workspace/java-switch/build/openjdk25-horizon/support/native/java.base/libzip/static/libzip.a",
         "resolver_symbol_count": 153,
-        "sha256": "e80dd72dd2219c6b250ce94e429601b751af2948cfd663a4dc162c8336db5190",
+        "sha256": "3f19c434ed433df7e7ce148ac8699afcd8ab165c178af573c936e415bb4b0acf",
         "unsafe_identifier_count": 8
       },
       {
@@ -34,7 +42,7 @@
         "module": "jimage",
         "path": "/workspace/java-switch/build/openjdk25-horizon/support/native/java.base/libjimage/static/libjimage.a",
         "resolver_symbol_count": 8,
-        "sha256": "92af2b1af724d7f23d3a20cca4445d23ce8853b2bb92ae04256edaa2cb558505",
+        "sha256": "e02f41c6ff4d619f57249366e15a0cb467d90da542c088e2971e6d96dca40b66",
         "unsafe_identifier_count": 108
       },
       {
@@ -43,7 +51,7 @@
         "module": "verify",
         "path": "/workspace/java-switch/build/openjdk25-horizon/support/native/java.base/libverify/static/libverify.a",
         "resolver_symbol_count": 4,
-        "sha256": "aa8f546c784cd1ef57ab1a37a75e91e08d8fc6c3db14afb6484f8818fc39dbb5",
+        "sha256": "7c77765dadc371eddbcc970ffce24de8160bdf8ee31d59f504356c10dc9e2103",
         "unsafe_identifier_count": 0
       },
       {
@@ -52,7 +60,7 @@
         "module": "net",
         "path": "/workspace/java-switch/build/openjdk25-horizon/support/native/java.base/libnet/static/libnet.a",
         "resolver_symbol_count": 108,
-        "sha256": "876982cbca1be080a8d6d1b49ccb59e4ad71316077a594389ee6092a9fcb2e51",
+        "sha256": "3c037191a883891a0bbce8bd851aa9c3cc7bf1413503b26b598fe0d52e6f679d",
         "unsafe_identifier_count": 0
       },
       {
@@ -61,7 +69,7 @@
         "module": "nio",
         "path": "/workspace/java-switch/build/openjdk25-horizon/support/native/java.base/libnio/static/libnio.a",
         "resolver_symbol_count": 183,
-        "sha256": "cd03f77024a63550cdd4bdc858ca5695c22f696f9dd404c60ee64022d310bef8",
+        "sha256": "420414f9a6c071e1907e57335a43bda0860e8d515e59f9ccba3e8991e717ea39",
         "unsafe_identifier_count": 0
       },
       {
@@ -70,7 +78,7 @@
         "module": "fallbackLinker",
         "path": "/workspace/java-switch/build/openjdk25-horizon/support/native/java.base/libfallbackLinker/static/libfallbackLinker.a",
         "resolver_symbol_count": 28,
-        "sha256": "06c29039da3aae16b9a28ecb7e2e106d615717533f95979c28edb2b03e5475e4",
+        "sha256": "c772f65a2fd24822808b8a5bad37c8f9039e2dd9d2513054c3a2cf0791eedb57",
         "unsafe_identifier_count": 0
       },
       {
@@ -79,7 +87,25 @@
         "module": "syslookup",
         "path": "/workspace/java-switch/build/openjdk25-horizon/support/native/java.base/libsyslookup/static/libsyslookup.a",
         "resolver_symbol_count": 2,
-        "sha256": "0737c035fa7393057b73771cc62eaf8d133114b9564961fa51e252a94a30b8c8",
+        "sha256": "973dd1d185df013e14fcc0961fc75d0d9abe186e6072aee178c397bdc179fc5a",
+        "unsafe_identifier_count": 0
+      },
+      {
+        "defined_symbol_count": 4,
+        "ignored_type_counts": {},
+        "module": "jli_manifest",
+        "path": "/workspace/java-switch/build/openjdk25-horizon/support/native/java.base/libjli_manifest/static/libjli_manifest.a",
+        "resolver_symbol_count": 4,
+        "sha256": "b4668f1967a64dee9201bf1c2ceffed94f8b9c2f2e7bf4b99d166627a316a77b",
+        "unsafe_identifier_count": 0
+      },
+      {
+        "defined_symbol_count": 102,
+        "ignored_type_counts": {},
+        "module": "instrument",
+        "path": "/workspace/java-switch/build/openjdk25-horizon/support/native/java.instrument/libinstrument/static/libinstrument.a",
+        "resolver_symbol_count": 102,
+        "sha256": "65deac06216fe217e10f2933a5c1b13f8c3ca3a34a77ef6c39f4a32793ec7992",
         "unsafe_identifier_count": 0
       },
       {
@@ -105,11 +131,13 @@
     "generator": "/workspace/java-switch/scripts/generate-openjdk25-native-resolver.py",
     "generator_sha256": "ba337369aeb244dc9a952c7900386706ca6dc51d250f094987dc82cb701f08b8",
     "global_duplicate_choices": [],
-    "global_symbol_count": 797,
+    "global_symbol_count": 903,
     "modules": [
       "fallbackLinker",
+      "instrument",
       "java",
       "jimage",
+      "jli_manifest",
       "net",
       "nio",
       "syslookup",
@@ -209,6 +237,26 @@
             "-g",
             "--defined-only",
             "--format=posix",
+            "/workspace/java-switch/build/openjdk25-horizon/support/native/java.base/libjli_manifest/static/libjli_manifest.a"
+          ],
+          "exit_status": 0
+        },
+        {
+          "argv": [
+            "/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-nm",
+            "-g",
+            "--defined-only",
+            "--format=posix",
+            "/workspace/java-switch/build/openjdk25-horizon/support/native/java.instrument/libinstrument/static/libinstrument.a"
+          ],
+          "exit_status": 0
+        },
+        {
+          "argv": [
+            "/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-nm",
+            "-g",
+            "--defined-only",
+            "--format=posix",
             "/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/aarch64-none-elf/lib/pic/libc.a"
           ],
           "exit_status": 0
@@ -227,9 +275,9 @@
       "path": "/workspace/java-switch/.toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-nm",
       "version": "GNU nm (GNU Binutils) 2.45.1"
     },
-    "resolver_symbol_count": 797,
+    "resolver_symbol_count": 903,
     "schema_version": 2,
-    "source_sha256": "fe90148a00cf369a3c3a241811135cb71aa0e24d8583905217a3036eb94ef8bf",
+    "source_sha256": "033bb9e9740deba5d8ed9a0615984f4d9d25b1fdbf64ca2fa9acdbba93e1e6ab",
     "symbol_filters": {
       "syslookup": [
         "JNI_OnLoad_syslookup",
@@ -284,6 +332,6 @@
       ]
     }
   },
-  "launcher_sha256": "b110952f9e80481d8f4c50e0d909805dc9fc0ed4f137474a4fd0256e0b602d78",
-  "nro_sha256": "308d568b9d5572abcf94a5f70af7dff5b06c515c3bcf797dae7db1a5678b5115"
+  "launcher_sha256": "6af40b662c6f008d87c2767e83fd708ad54c50b1bce46c4a4891a0cd4bf47f7b",
+  "nro_sha256": "e78310ddf7d12a053730ccdd7e77e7876278aba1f4cb0a09df81042d483c9b60"
 }

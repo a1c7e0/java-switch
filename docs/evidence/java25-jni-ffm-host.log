@@ -1,0 +1,17 @@
+$ build/jni25-host build/java25-tests.jar <host-temporary-directory>
+PASS: Java 25 runtime / classfile 69
+PASS: structured JVM option forwarding
+PASS: record / reflection
+PASS: standard JNI RegisterNatives / native call
+PASS: thread / lambda / synchronization
+PASS: NIO file roundtrip
+PASS: TCP loopback roundtrip
+PASS: NIO selector wakeup
+PASS: FFM native downcall
+PASS: FFM floating-point libm downcall
+PASS: FFM upcall / executable trampoline
+PASS: FFM mixed integer/FP downcall and upcall
+JAVA25 JNI FFM SUITE PASS
+JNI result=0 stage=completed
+
+Exit status: 0; Horizon execution NOT TESTED

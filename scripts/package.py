@@ -6,8 +6,20 @@ elf=(ROOT/'build/java-test.elf').read_bytes()
 
 def sha256(path):return hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()
 
+BASE_PROVIDER_MODULES={'java','zip','jimage','verify','net','nio','fallbackLinker','syslookup'}
+INSTRUMENT_PROVIDER_MODULES=BASE_PROVIDER_MODULES|{'jli_manifest','instrument'}
+
+def jvmti_header():
+    build=ROOT/'build/openjdk25-horizon'
+    candidates=[build/'jdk/include/jvmti.h',
+                build/'hotspot/variant-zero/gensrc/jvmtifiles/jvmti.h',
+                build/'support/modules_include/java.base/jvmti.h',
+                ROOT/'.deps/openjdk25-source/src/java.base/share/native/include/jvmti.h']
+    return next((path for path in candidates if path.is_file()),None)
+
 def copy_verified_image(proof, destination):
-    assert proof['classfile_major']==69 and proof['modules']==['java.base']
+    modules=set(proof['modules'])
+    assert proof['classfile_major']==69 and modules in ({'java.base'}, {'java.base','java.instrument'})
     assert proof['native_vm_included'] is False and proof['horizon_execution']=='NOT TESTED'
     image_root=ROOT/'build/openjdk25-runtime'
     assert set(proof['files'])
@@ -37,6 +49,27 @@ def validate_java25_runtime():
     assert archive_proof['full_upstream_archive_target'] is True
     assert archive_proof['archive_sha256']==proof['archive_sha256']
     assert archive_proof['port_digest']==proof['archive_port_digest']
+    assert archive_proof['port_digest']==port_digest, 'Rebuild VM for the current maintained port inputs'
+    assert isinstance(proof['java_instrument'],bool)
+    assert isinstance(proof['jvm_features'],list) and proof['jvm_features']
+    assert archive_proof['jvm_features']==proof['jvm_features']
+    instrument=proof['java_instrument']
+    if instrument:
+        assert {'jvmti','services'}<=set(proof['jvm_features']), 'Instrument profile requires real JVMTI/services features'
+        instrument_proof=json.loads((ROOT/'build/openjdk25-java-instrument.json').read_text())
+        assert instrument_proof['classfile_major']==69 and instrument_proof['files']
+        agent_proof=json.loads((ROOT/'build/openjdk25-agent-host.json').read_text())
+        assert agent_proof['host_tests']=={'startup_agent':'PASS','no_agent_control':'PASS'}
+        assert agent_proof['classfile_major']==69 and agent_proof['horizon_execution']=='NOT TESTED'
+        expected_inputs={'scripts/test-openjdk25-agent-host.py','tests/java25/AgentSmoke.java',
+                         'tests/java25/AgentSmokeAgent.java','dependencies.lock.json'}
+        assert set(agent_proof['inputs'])==expected_inputs
+        for name,digest in agent_proof['inputs'].items():
+            assert sha256(ROOT/name)==digest, 'Rebuild the agent smoke after source changes: '+name
+        assert set(agent_proof['jars'])=={'java25-agent-smoke-agent.jar','java25-agent-smoke-app.jar'}
+        for name,digest in agent_proof['jars'].items():assert sha256(ROOT/'build'/name)==digest
+    else:
+        instrument_proof=None
     assert sdk_contract['abi']==1 and sdk_contract['built_backends']['openjdk25'] is False
     linked=elf_path.read_bytes();binary=nro_path.read_bytes()
     assert linked[:6]==b'\x7fELF\x02\x01' and struct.unpack_from('<HH',linked,16)==(3,183), 'Java 25 ELF must be AArch64 PIE'
@@ -45,16 +78,19 @@ def validate_java25_runtime():
     nm=dk/'devkitA64/bin/aarch64-none-elf-nm'
     symbols=subprocess.check_output([str(nm),str(elf_path)],text=True)
     assert ' T JNI_CreateJavaVM' in symbols and ' T JNI_OnLoad_java' in symbols
+    if instrument:
+        for symbol in ['JNI_OnLoad_instrument','Agent_OnLoad_instrument','JLI_ManifestIterate']:
+            assert any(line.split()[-1:]==[symbol] for line in symbols.splitlines()), 'Missing real instrument symbol: '+symbol
 
     provider=proof['class_library_provider']
     resolver_json=ROOT/'build/openjdk25-horizon/runtime-link/native_resolver.json'
     resolver_c=ROOT/'build/openjdk25-horizon/runtime-link/native_resolver.c'
     assert resolver_json.is_file() and resolver_c.is_file()
     assert json.loads(resolver_json.read_text())==provider
-    assert provider['modules']==['fallbackLinker','java','jimage','net','nio','syslookup','verify','zip']
+    expected_modules=INSTRUMENT_PROVIDER_MODULES if instrument else BASE_PROVIDER_MODULES
+    assert set(provider['modules'])==expected_modules
     assert provider['generator_sha256']==sha256(ROOT/'scripts/generate-openjdk25-native-resolver.py')
     assert provider['source_sha256']==sha256(resolver_c)
-    expected_modules={'java','zip','jimage','verify','net','nio','fallbackLinker','syslookup'}
     native_archives={};system_archives={}
     for item in provider['archives']:
         path=pathlib.Path(item['path'])
@@ -70,15 +106,28 @@ def validate_java25_runtime():
     image_proof=json.loads((ROOT/'build/openjdk25-image.json').read_text())
     java_proof=json.loads((ROOT/'build/openjdk25-java-base.json').read_text())
     assert image_proof['java_base_port_digest']==java_proof['port_digest']
+    assert java_proof['port_digest']==proof['archive_port_digest']
     assert image_proof['classfile_major']==java_proof['classfile_major']==69
     assert java_proof['files']
+    expected_image_modules={'java.base','java.instrument'} if instrument else {'java.base'}
+    assert set(image_proof['modules'])==expected_image_modules
+    if instrument:
+        module_digests=image_proof['module_port_digests']
+        assert set(module_digests)==expected_image_modules
+        assert module_digests['java.base']==java_proof['port_digest']
+        assert module_digests['java.instrument']==instrument_proof['port_digest']
+        assert instrument_proof['port_digest']==proof['archive_port_digest']
+    elif 'module_port_digests' in image_proof:
+        assert image_proof['module_port_digests']=={'java.base':java_proof['port_digest']}
     image_root=ROOT/'build/openjdk25-runtime'
     actual={path.relative_to(image_root).as_posix() for path in image_root.rglob('*') if path.is_file()}
     assert actual==set(image_proof['files']), 'Java 25 runtime image contents differ from its proof'
     for rel,digest in image_proof['files'].items():
         path=image_root/rel
         assert path.is_file() and sha256(path)==digest, 'Java 25 runtime image hash mismatch: '+rel
-    return proof,elf_path,nro_path,archive_path,native_archives,resolver_json,resolver_c,image_proof
+    header=jvmti_header() if instrument else None
+    if instrument:assert header is not None, 'Missing real generated/source jvmti.h'
+    return proof,elf_path,nro_path,archive_path,native_archives,resolver_json,resolver_c,image_proof,instrument,header,instrument_proof
 assert data[16:20]==b'NRO0' and elf[:6]==b'\x7fELF\x02\x01'
 assert struct.unpack_from('<HH',elf,16)==(3,183)
 size=struct.unpack_from('<I',data,24)[0];assert data[size:size+4]==b'ASET'
@@ -133,6 +182,11 @@ shutil.copyfile(ROOT/'build/java25-tests.jar',runtime/'tests/java25-tests.jar')
 shutil.copyfile(ROOT/'build/java25-hello.jar',runtime/'tests/java25-hello.jar')
 if java25:
     copy_verified_image(java25[7],runtime/'runtimes/openjdk25')
+    if java25[8]:
+        for name in ['java25-agent-smoke-agent.jar','java25-agent-smoke-app.jar']:
+            source=ROOT/'build'/name
+            assert source.is_file(), 'Missing instrument smoke JAR: '+str(source)
+            shutil.copyfile(source,runtime/'tests'/name)
 with tarfile.open(DIST/'javaswitch-horizon-sdk.tar.gz','w:gz',dereference=True) as archive:
     archive.add(ROOT/'include',arcname='include')
     archive.add(ROOT/'build/sdk/libjavaswitch.a',arcname='lib/libjavaswitch.a')
@@ -155,7 +209,7 @@ with tarfile.open(DIST/'java-switch-source.tar.gz','w:gz') as archive:
         assert hashlib.sha256(upstream.read_bytes()).hexdigest()==locked['sha256']
         archive.add(upstream,arcname='third-party/openjdk25-upstream.tar.gz')
 if java25:
-    proof,elf_path,nro_path,archive_path,native_archives,resolver_json,resolver_c,image_proof=java25
+    proof,elf_path,nro_path,archive_path,native_archives,resolver_json,resolver_c,image_proof,instrument,jvmti_h,instrument_proof=java25
     package_root=pathlib.Path('openjdk25-horizon-runtime')
     jdk_include=ROOT/'build/openjdk25-horizon/jdk/include'
     jni_h=jdk_include/'jni.h';jni_md=jdk_include/'horizon/jni_md.h'
@@ -166,6 +220,9 @@ if java25:
               'Its runtime ABI remains version 1 and contains no Java VM.\n')
     pkg_manifest={
         'runtime':'Experimental OpenJDK 25 Zero AArch64 Horizon static integration package',
+        'java_instrument':instrument,
+        'jvm_features':proof['jvm_features'],
+        'runtime_image_modules':image_proof['modules'],
         'cross_built_genuine_vm':True,
         'runtime_startup':'UNVERIFIED',
         'classfile_execution':'NOT TESTED',
@@ -183,7 +240,10 @@ if java25:
              if pathlib.Path(item['path']).name in {'libc.a','libm.a'}])},
         'native_resolver':{'c_sha256':sha256(resolver_c),'json_sha256':sha256(resolver_json)},
         'jni_headers':{'jni.h':sha256(jni_h),'horizon/jni_md.h':sha256(jni_md)},
+        **({'jvmti_header_sha256':sha256(jvmti_h)} if instrument else {}),
         'runtime_image_files':image_proof['files'],
+        'agent_smoke_jars':({name:sha256(ROOT/'build'/name) for name in
+                             ['java25-agent-smoke-agent.jar','java25-agent-smoke-app.jar']} if instrument else {}),
         'sdk_dependency':'javaswitch-horizon-sdk.tar.gz (ABI 1; no VM)'
     }
     pkg_path=DIST/'openjdk25-horizon-runtime.tar.gz'
@@ -195,6 +255,10 @@ if java25:
         add_file(resolver_json,'native/native_resolver.json')
         add_file(jni_h,'include/jni.h')
         add_file(jni_md,'include/horizon/jni_md.h')
+        if instrument:add_file(jvmti_h,'include/jvmti.h')
+        if instrument:
+            for name in ['java25-agent-smoke-agent.jar','java25-agent-smoke-app.jar']:
+                add_file(ROOT/'build'/name,'smoke-tests/'+name)
         for path in sorted(sdk_headers.rglob('*')):
             if path.is_file():add_file(path,path.relative_to(ROOT))
         # The runtime image proof is also the exact allowlist for staged files.
@@ -217,7 +281,12 @@ with zipfile.ZipFile(DIST/'java-switch-test-package.zip','w',zipfile.ZIP_DEFLATE
 manifest={'source_revision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
     'source_tree_dirty':bool(subprocess.check_output(['git','status','--porcelain'],cwd=ROOT)),
     'horizon_execution':'NOT TESTED','java8_interpreter':'built and host-tested',
-    'java25_runtime':('EXPERIMENTAL: genuine cross-built OpenJDK 25 Zero VM linked into an AArch64 Horizon PIE and NRO; runtime startup UNVERIFIED; classfile execution NOT TESTED; hardware NOT TESTED' if java25 else 'not built'),
+    'java25_runtime':(('EXPERIMENTAL: genuine cross-built OpenJDK 25 Zero VM linked into an AArch64 Horizon PIE and NRO'
+                       + (' with java.instrument/JVMTI support' if java25[8] else '')
+                       + '; runtime startup UNVERIFIED; classfile execution NOT TESTED; hardware NOT TESTED') if java25 else 'not built'),
+    'java25_instrumentation_available':bool(java25 and java25[8]),
+    'java25_jvm_features':java25[0]['jvm_features'] if java25 else [],
+    'java25_runtime_image_modules':java25[7]['modules'] if java25 else [],
     'java25_sdk_availability':'NOT INCLUDED; baseline Horizon SDK ABI 1 remains VM-free',
     'baseline_jni_host_tests':'Host Java 25 JNI/FFM tests are separate from Horizon runtime startup and execution evidence',
     'openjdk25_services_probe':'CROSS-BUILT; time/synchronization/native-thread/SafeFetch probes; no VM; faults NOT TESTED on hardware' if probe.exists() else 'not built',
@@ -232,8 +301,12 @@ for p in sorted(DIST.iterdir()):
                        'Experimental hardware execution NOT TESTED','No Minecraft or title-execution claim']
                      if java25_artifact else
                      ['Horizon Java25 startup and execution remain unverified','Native CPU/JIT permissions NOT TESTED','No Minecraft execution on Horizon'])
-        bundled=(['OpenJDK Zero VM and native java.base providers linked into Horizon NRO']
+        bundled=(['OpenJDK Zero VM and native java.base/java.instrument providers linked into Horizon NRO']
+                 if p.name=='java25-test.nro' and java25 and java25[8] else
+                 ['OpenJDK Zero VM and native java.base providers linked into Horizon NRO']
                  if p.name=='java25-test.nro' else
+                 ['OpenJDK Zero VM archive and native java.base/java.instrument archives; libc/libm excluded']
+                 if p.name=='openjdk25-horizon-runtime.tar.gz' and java25 and java25[8] else
                  ['OpenJDK Zero VM archive and eight native java.base archives; libc/libm excluded']
                  if p.name=='openjdk25-horizon-runtime.tar.gz' else
                  ['libnx/newlib','miniJVM Java8 or libffi component as applicable'])
@@ -242,7 +315,11 @@ for p in sorted(DIST.iterdir()):
                       'PASS: archive/image/provider hashes validated; runtime execution unverified'
                       if p.name=='openjdk25-horizon-runtime.tar.gz' else 'PASS')
         tested='Cross-build/link checks only; no Horizon runtime execution' if java25_artifact else 'Linux cross-build and host runtime tests'
-        manifest['artifacts'].append({'name':p.name,'purpose':{'java-test.nro':'Java8 interpreter diagnostic','ffi-test.nro':'Native AAPCS64/libnx W^X and page-mapping tests','zero-services-test.nro':'OpenJDK25 native synchronization/thread/fault probe; NO Java VM','java25-test.nro':'Experimental cross-built OpenJDK25 VM NRO; startup and classfile execution UNVERIFIED','openjdk25-horizon-runtime.tar.gz':'Experimental static OpenJDK25 Horizon integration inputs; startup and classfile execution NOT TESTED','javaswitch-horizon-sdk.tar.gz':'Reusable ABI 1 runtime/JNI/FFI SDK; no Horizon Java25 VM','java-switch-source.tar.gz':'Corresponding source','java-switch-test-package.zip':'Installable diagnostics'}.get(p.name,'Build artifact'),
+        purposes={'java-test.nro':'Java8 interpreter diagnostic','ffi-test.nro':'Native AAPCS64/libnx W^X and page-mapping tests','zero-services-test.nro':'OpenJDK25 native synchronization/thread/fault probe; NO Java VM','java25-test.nro':'Experimental cross-built OpenJDK25 VM NRO; startup and classfile execution UNVERIFIED','openjdk25-horizon-runtime.tar.gz':'Experimental static OpenJDK25 Horizon integration inputs; startup and classfile execution NOT TESTED','javaswitch-horizon-sdk.tar.gz':'Reusable ABI 1 runtime/JNI/FFI SDK; no Horizon Java25 VM','java-switch-source.tar.gz':'Corresponding source','java-switch-test-package.zip':'Installable diagnostics'}
+        if java25 and java25[8]:
+            purposes['java25-test.nro']='Experimental cross-built OpenJDK25 VM with java.instrument/JVMTI; runtime startup and classfile execution UNVERIFIED'
+            purposes['openjdk25-horizon-runtime.tar.gz']='Experimental static OpenJDK25 java.base/java.instrument Horizon integration inputs; startup and classfile execution NOT TESTED'
+        manifest['artifacts'].append({'name':p.name,'purpose':purposes.get(p.name,'Build artifact'),
             'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'source_revision':manifest['source_revision'],'build_date':datetime.datetime.now(datetime.timezone.utc).isoformat(),
             'toolchain':compiler,'bundled_dependencies':bundled,'build_dependencies':json.loads((ROOT/'dependencies.lock.json').read_text()),'build_verification':verification,'tested_environment':tested,
             'hardware_verification':'NOT TESTED','known_limitations':limitations})

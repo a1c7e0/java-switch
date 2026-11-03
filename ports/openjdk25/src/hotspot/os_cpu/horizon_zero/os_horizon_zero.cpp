@@ -142,3 +142,25 @@ frame os::fetch_frame_from_context(const void* context) {
   (void)context;
   return frame();
 }
+
+bool JavaThread::pd_get_top_frame_for_signal_handler(frame* fr_addr,
+                                                     void* ucontext,
+                                                     bool isInJava) {
+  // Horizon has no POSIX signal context to inspect. In particular, do not
+  // reinterpret a HOS exception record as a Zero or Linux ucontext frame.
+  (void)fr_addr;
+  (void)ucontext;
+  (void)isInJava;
+  return false;
+}
+
+bool JavaThread::pd_get_top_frame_for_profiling(frame* fr_addr,
+                                                void* ucontext,
+                                                bool isInJava) {
+  // Asynchronous frame sampling has the same unavailable signal-context
+  // dependency on Horizon as pd_get_top_frame_for_signal_handler.
+  (void)fr_addr;
+  (void)ucontext;
+  (void)isInJava;
+  return false;
+}

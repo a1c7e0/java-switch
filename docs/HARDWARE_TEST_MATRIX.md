@@ -19,7 +19,8 @@ assets or credentials. Copy `dist/COPY_TO_SD/` to the SD root.
 | `zero-services-test.nro`, B | Worker retires while still alive; reaper joins only after exit, then closes; pending cleanup can be retried | Same | IMPLEMENTED, CROSS-BUILT, reaper/start-gate failure tests HOST-PASSED |
 | `zero-services-test.nro`, L | Actual Alias reserve/commit/protect/recommit/query; release middle page; retained canaries and SDK/VM reservation separation | Same | IMPLEMENTED, CROSS-BUILT, shared-ownership/error tests HOST-PASSED |
 | `java25-test.nro`, A | Real VM prints Hello from Horizon Java 25 and Java major 25; status JS_OK / completed | `java25-test.log`, `java25-vm-stdout.log`, `java25-vm-stderr.log` in the same logs directory | Genuine VM/provider/image CROSS-BUILT; startup/classfile69 execution NOT TESTED |
-| Fresh `java25-test.nro`, X | Actual JNI nativeAdd=42, record/reflection, threads, NIO roundtrip, FFM strlen=10 and upcall=42; final JAVA25 JNI FFM SUITE PASS | All three Java25 logs | Workloads IMPLEMENTED, host reference PASS; execution on Horizon NOT TESTED |
+| Fresh `java25-test.nro`, X | Actual JNI nativeAdd=42, record/reflection, threads, NIO/TCP/selector, FFM strlen=10, pow=32, integer upcall=42 and mixed integer/FP down/upcall=14.75; final JAVA25 JNI FFM SUITE PASS | All three Java25 logs | Workloads IMPLEMENTED, host reference PASS; execution on Horizon NOT TESTED |
+| Fresh instrument-profile `java25-test.nro`, Y | Standard -javaagent runs premain once, transforms AgentSmoke before definition with the Class-File API, forwards arguments/property and prints JAVA25_AGENT_SMOKE_PASS | All three Java25 logs | Genuine JVMTI/libinstrument/image/NRO CROSS-BUILT; positive and no-agent negative controls HOST-PASSED; execution on Horizon NOT TESTED |
 
 Press + to exit. Relaunch each app and repeat once to check cleanup. The Y/B
 actions in ffi-test retain failed-release handles; another Y/B retries release
@@ -58,15 +59,21 @@ physical-device logs are reviewed.
 5. Select X only in the new process. Keep all three complete logs, including the
    final suite marker or the first exception/fatal error. A successful VM cannot
    be initialized again in the same process.
-6. If startup stalls, preserve the logs after closing the application through
+6. With the instrument-profile package, relaunch the application in a fresh
+   process and select Y. Confirm the agent and app JARs are installed in tests/
+   and java.instrument is in the image. Keep the premain/transform observations,
+   actual capability flags and final JAVA25_AGENT_SMOKE_PASS or first failure.
+   No agent mode can be selected a second time in an existing VM process.
+7. If startup stalls, preserve the logs after closing the application through
    the system UI. Include the last button/action, approximate wait time,
    firmware/Atmosphere version, application/applet mode and any crash report.
    Do not change syscall privileges or heap policies to hide a failing result.
 
 The expected clean VM log is actual Java output plus SDK stage completed; VM
-linking alone cannot satisfy that row. The current image has java.base only and
-is not the Minecraft launcher. Minecraft/title validation follows the runtime
-and Switchcraft native-binding/instrumentation milestones.
+linking alone cannot satisfy that row. The optional current image contains
+java.base and java.instrument; it is not the Minecraft launcher. Minecraft/title
+validation follows real runtime startup and the downstream native-binding and
+truthful Horizon platform adaptation milestones.
 
 Native services and completed Java25 sessions close the entire application
 process on +. libnx's ordinary NRO exit can return to a loader while VM/reaper

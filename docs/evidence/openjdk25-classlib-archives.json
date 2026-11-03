@@ -1,8 +1,8 @@
 {
-  "port_digest": "f4572555046aa211db0d1fa1e89bedf5cda02bbd566f772941dbd113746a8b41",
+  "port_digest": "12b4916e3cad6b43cb8ba24aed7a6fd4bd71667706a9bc74884cce82092f4ed9",
   "archives": {
     "java": {
-      "sha256": "28ffa6f12baad729e3b2dec4f173948d125ee9e472a168a33bf66a3085db4a7b",
+      "sha256": "7e7705c75fbc84a8f71d723f0c30e82da77746d663ef8dcfc45229a2f9d5e21d",
       "members": [
         "Array.o",
         "BootLoader.o",
@@ -70,7 +70,7 @@
       ]
     },
     "zip": {
-      "sha256": "e80dd72dd2219c6b250ce94e429601b751af2948cfd663a4dc162c8336db5190",
+      "sha256": "3f19c434ed433df7e7ce148ac8699afcd8ab165c178af573c936e415bb4b0acf",
       "members": [
         "Adler32.o",
         "CRC32.o",
@@ -95,7 +95,7 @@
       ]
     },
     "jimage": {
-      "sha256": "92af2b1af724d7f23d3a20cca4445d23ce8853b2bb92ae04256edaa2cb558505",
+      "sha256": "e02f41c6ff4d619f57249366e15a0cb467d90da542c088e2971e6d96dca40b66",
       "members": [
         "NativeImageBuffer.o",
         "endian.o",
@@ -106,13 +106,13 @@
       ]
     },
     "verify": {
-      "sha256": "aa8f546c784cd1ef57ab1a37a75e91e08d8fc6c3db14afb6484f8818fc39dbb5",
+      "sha256": "7c77765dadc371eddbcc970ffce24de8160bdf8ee31d59f504356c10dc9e2103",
       "members": [
         "check_code.o"
       ]
     },
     "net": {
-      "sha256": "876982cbca1be080a8d6d1b49ccb59e4ad71316077a594389ee6092a9fcb2e51",
+      "sha256": "3c037191a883891a0bbce8bd851aa9c3cc7bf1413503b26b598fe0d52e6f679d",
       "members": [
         "DefaultProxySelector.o",
         "Inet4Address.o",
@@ -130,7 +130,7 @@
       ]
     },
     "nio": {
-      "sha256": "cd03f77024a63550cdd4bdc858ca5695c22f696f9dd404c60ee64022d310bef8",
+      "sha256": "420414f9a6c071e1907e57335a43bda0860e8d515e59f9ccba3e8991e717ea39",
       "members": [
         "DatagramChannelImpl.o",
         "DatagramDispatcher.o",
@@ -153,13 +153,13 @@
       ]
     },
     "fallbackLinker": {
-      "sha256": "06c29039da3aae16b9a28ecb7e2e106d615717533f95979c28edb2b03e5475e4",
+      "sha256": "c772f65a2fd24822808b8a5bad37c8f9039e2dd9d2513054c3a2cf0791eedb57",
       "members": [
         "fallbackLinker.o"
       ]
     },
     "syslookup": {
-      "sha256": "0737c035fa7393057b73771cc62eaf8d133114b9564961fa51e252a94a30b8c8",
+      "sha256": "973dd1d185df013e14fcc0961fc75d0d9abe186e6072aee178c397bdc179fc5a",
       "members": [
         "syslookup.o"
       ]

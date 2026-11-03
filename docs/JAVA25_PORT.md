@@ -20,14 +20,14 @@ the real JAR tests require clean teardown without executing the rejected body.
   No Linux `dlopen` is used by the Horizon invocation adapter.
 * Standard JNI Invocation adapter: `JNI_CreateJavaVM`, main-class/argument
   construction, native-registration hook, exceptions and `DestroyJavaVM`.
-  The adapter checks the actual VM's Java version. On Horizon no VM is linked,
-  so it returns `JS_UNAVAILABLE` rather than entering Java 8.
+  The adapter checks the actual VM's Java version. The ordinary Horizon SDK remains VM-free and returns `JS_UNAVAILABLE`;
+  the separate real VM/provider NRO attempts genuine initialization.
 * The same adapter linked to hash-pinned host Temurin Java 25 executes a real
   classfile-69 JAR, JNI native method, records/reflection, threads/lambda/NIO,
   FFM downcall to strlen and an FFM upcall trampoline. Passing these tests proves
   the adapter on the host, not a Horizon JVM port.
 
-## Source-build investigation (updated 2026-11-02)
+## Source-build investigation (updated 2026-11-03)
 
 **J1 configuration gate crossed.** The tracked patches in `patches/openjdk25/`
 classify `aarch64-none-horizon` as Horizon/newlib (not POSIX/Linux) and select
@@ -40,14 +40,17 @@ fault islands are tracked. The full build passes the precompiled header and
 compiles genuine shared/Zero VM sources; it is still an incomplete port.
 See the latest evidence logs, `docs/OPENJDK25_SYNC.md` and
 `docs/OPENJDK25_FAULTS.md` for the current exact barrier and validation boundaries.
-The complete upstream static target now produces **553 AArch64 objects and a
-real libjvm.a**. The JNI VM links with eight real java.base native archives and
-an archive-derived static resolver into a Horizon PIE and `java25-test.nro`.
-Target-built classfile-69 classes and generated data form the minimal java.base
-image. See `docs/OPENJDK25_CLASSLIB.md` and the latest build/link evidence.
+The complete upstream static target now produces **577 AArch64 objects and a
+real libjvm.a** in the optional JVMTI/services profile. The JNI VM links with
+eight base native archives, genuine libinstrument and the upstream-only manifest
+parser subset through an archive-derived resolver into a Horizon PIE/NRO.
+The two-module target image contains 7,336 classfile-69 classes and generated
+data. The base-only profile remains available. See `docs/OPENJDK25_CLASSLIB.md` and the latest build/link evidence.
 **VM startup and Java execution on Switch remain NOT TESTED.**
 
-Reproduce the experimental build separately from the preserved diagnostics:
+Build and verify the complete experimental instrument profile with
+`bash scripts/build-openjdk25-runtime.sh --with-instrument`. Omit the option
+for the base profile. Individual base build steps remain available:
 
 ```sh
 bash scripts/build-all.sh
@@ -80,13 +83,16 @@ ARM64 instruction tests with a mocked kernel are separate evidence.
 The full source archive accompanies the GPL diagnostics and VM. Native services
 B checks deferred thread reaping and L checks private Alias memory/splitting.
 `java25-test.nro` A now attempts the real classfile-69 Hello JAR; X attempts JNI,
-threads, NIO and FFM on the same genuine VM. Both need physical-device logs.
+threads, NIO/TCP/selector and FFM on the same genuine VM. The instrument profile
+adds Y for startup premain and real Class-File API transformation before class
+definition. All need physical-device logs; see `docs/OPENJDK25_INSTRUMENTATION.md`.
 
 J0/J1 are complete. J2 has a cross-built Zero OS backend and explicit failures
 for unavailable services. J3.1 has a genuine linked Horizon VM NRO and minimal
 image. J3.2-J3.5 have runnable diagnostic workloads but physical execution is
-NOT TESTED. J3.6 instrumentation/retransformation and Minecraft integration
-remain source work; no title screen has been demonstrated.
+NOT TESTED. J3.6 has genuine cross-built startup instrumentation and a
+host-validated transform/control workload; Horizon execution and retransformation
+are unverified. Minecraft integration and title execution remain unverified.
 
 ### Original observed barrier
 
@@ -147,7 +153,9 @@ raw Result; executable protection explicitly returns `JS_VMEM_UNSUPPORTED`.
 Whole-region functions remain compatible. Release retries retain the reservation
 and only the still-mapped page runs after partial failure. Release must be
 synchronized against every other access to that region. Partial **release** and
-complete HotSpot integration remain unimplemented. This is an experiment, not mmap.
+the shared Alias coordinator are implemented privately for HotSpot and tested
+with host failures. The public SDK does not expose partial release. These are
+explicit reservation/mapping services, not a general POSIX mmap implementation.
 
 In `ffi-test.nro`, Y reserves 64 KiB, attempts commit, writes and reads both
 ends, uncommits, recommits and releases it; every syscall failure is logged.

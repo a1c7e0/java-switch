@@ -1,6 +1,6 @@
 # Experimental OpenJDK 25 Horizon source overlay
 
-Modified/created on 2026-11-02. These files are copied into the patched upstream
+Modified/created on 2026-11-02 and 2026-11-03. These files are copied into the patched upstream
 tree by `scripts/openjdk25.py`; never maintain edits only in `.deps/`.
 The source revision and archive hash remain in `dependencies.lock.json`.
 
@@ -22,7 +22,11 @@ exports standard-width types and opaque pointers. It makes no POSIX signal or
 dynamic-loading claims. See `docs/OPENJDK25_SYNC.md` and
 `docs/OPENJDK25_FAULTS.md` for contracts, exact build barriers and test limits.
 
-Reproduce, after the ordinary baseline build:
+Build and verify the complete optional instrument profile with
+`bash scripts/build-openjdk25-runtime.sh --with-instrument`; omit the option
+for the base profile. JVMTI/services, libinstrument and the manifest-parser subset
+are genuine cross-built upstream components. Execution remains unverified.
+See `docs/OPENJDK25_INSTRUMENTATION.md`. Individual base steps remain available:
 
 ```sh
 python3 scripts/bootstrap-openjdk-tools.py

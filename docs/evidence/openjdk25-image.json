@@ -1,9 +1,14 @@
 {
-  "java_base_port_digest": "f4572555046aa211db0d1fa1e89bedf5cda02bbd566f772941dbd113746a8b41",
+  "java_base_port_digest": "12b4916e3cad6b43cb8ba24aed7a6fd4bd71667706a9bc74884cce82092f4ed9",
+  "module_port_digests": {
+    "java.base": "12b4916e3cad6b43cb8ba24aed7a6fd4bd71667706a9bc74884cce82092f4ed9",
+    "java.instrument": "12b4916e3cad6b43cb8ba24aed7a6fd4bd71667706a9bc74884cce82092f4ed9"
+  },
   "classfile_major": 69,
-  "class_count": 7325,
+  "class_count": 7336,
   "modules": [
-    "java.base"
+    "java.base",
+    "java.instrument"
   ],
   "native_vm_included": false,
   "horizon_execution": "NOT TESTED",
@@ -28,12 +33,24 @@
     "legal/java.base/siphash.md": "5a792b5a74ad2a5f3d6a7ad8b7a841116e58a772c18bc6e392320a365b222c76",
     "legal/java.base/unicode.md": "5194d6760f2e7eccc07804196cc619f84e730fa9d10c0529b71416186f4d12dc",
     "legal/java.base/zlib.md": "c9c70c36a1f0325e8788771906202d42ba6ab4205caca44ec0f665707e83226b",
+    "legal/java.instrument/ADDITIONAL_LICENSE_INFO": "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+    "legal/java.instrument/ASSEMBLY_EXCEPTION": "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+    "legal/java.instrument/LICENSE": "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+    "legal/java.instrument/aes.md": "45c6d4da48325edfbff3dcf71c704e504c057904435ed23c6d57046d551eb69d",
+    "legal/java.instrument/c-libutl.md": "bef40679922d6fdfb7e4ddb223ad6722300f6054ba737bbf6188d60fcec517f9",
+    "legal/java.instrument/cldr.md": "472e341c36efc1136860ed7a6461a2af4a53ae95d55d1126726340f5ba62b06a",
+    "legal/java.instrument/gcc.md": "589e34f142cdf7d1430daa573e61c2e3dd0330c9eb5a2c00d4a98b3a4450810b",
+    "legal/java.instrument/icu.md": "be23ad20a8231d2241b37fcf401548febd8597de8373f89268882020cb7c8818",
+    "legal/java.instrument/public_suffix.md": "861de1e4992a7d28f1de25c73cd50d26a94779ebd749c0643fecfa56442c3429",
+    "legal/java.instrument/siphash.md": "5a792b5a74ad2a5f3d6a7ad8b7a841116e58a772c18bc6e392320a365b222c76",
+    "legal/java.instrument/unicode.md": "5194d6760f2e7eccc07804196cc619f84e730fa9d10c0529b71416186f4d12dc",
+    "legal/java.instrument/zlib.md": "c9c70c36a1f0325e8788771906202d42ba6ab4205caca44ec0f665707e83226b",
     "lib/jvm.cfg": "40aceb62df970fa0c33a9e3f3f88a433fb0b7dc3a78743beac3a9d84a4b5f90d",
-    "lib/modules": "9a1f1f1873b6c1144267a3b602cadc0f24680dae9419070b83f58ff568cd1090",
+    "lib/modules": "6474143447b0884f624e1d17c7b1d93402ab93cb6675bb027bd189849caa263e",
     "lib/security/blocked.certs": "2596bb6dda83c66d96c5a252d7b2ae1f24cc1ae3f1890223b4f3591a8d52bf10",
     "lib/security/cacerts": "c4ea628ed2497ee7973dc642c362d233e50a6f9d45574bb5a2c619628721d534",
     "lib/security/public_suffix_list.dat": "16b42002aa6f83a7763c4cdbd399ecf738460377d447e362884495545afd60a3",
     "lib/tzdb.dat": "a02e3a23d67255782b11ab81070902235ab564080f0f65ffe2a989cdaa86fe89",
-    "release": "b64b91419230e24a5a93117be73ac525a3d43366e06425cfab55a6587d58c5b0"
+    "release": "df8233661e25cafb46c608cb47f3fea0b49f2cc3d2d34ceab80c165ea3f8e898"
   }
 }

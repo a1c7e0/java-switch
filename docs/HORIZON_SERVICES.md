@@ -5,7 +5,7 @@ explicit mocks; CROSS-BUILT means actual target compilation/linking.
 
 | Service | Actual implementation | Remaining evidence / limitation |
 | --- | --- | --- |
-| VM archive / entry | Genuine 553-object upstream Zero archive and real JNI_CreateJavaVM PIE/NRO link | VM startup/classfile execution need device logs |
+| VM archive / entry | Genuine 577-object JVMTI/services upstream Zero archive and real JNI_CreateJavaVM PIE/NRO link | VM startup/classfile execution need device logs |
 | Address reservation | Shared SDK/VM Alias coordinator, checked kernel spans and real libnx reservations | Process permissions/resources and third-party direct Alias users |
 | Physical memory | Partial commit/uncommit, NONE/R/RW, retryable cleanup and private partial release | Hardware map/protect/unmap behavior; no arbitrary executable mappings |
 | Memory budget | Actual process total/used queries and logged native heap policy | Loader heap override can consume physical budget before VM creation |
@@ -23,7 +23,7 @@ explicit mocks; CROSS-BUILT means actual target compilation/linking.
 | Native I/O interruption | NativeThread reports unsupported signaling | Blocking native IO cannot be interrupted with POSIX signals |
 | Random seed | Checked libnx CSRNG IPC and Java error with raw Result | Real service/entropy execution unverified |
 | Java FFM | Configured libffi fallback and real selected target C/math symbols | Native down/upcall, closure and thread-attachment tests unverified |
-| Instrumentation | Horizon path/encoding sources prepared | JVMTI/java.instrument/static-agent build and workload still required |
+| Instrumentation | Genuine JVMTI/services, libinstrument and manifest subset, target module/image and static agent NRO CROSS-BUILT; host transform/control PASS | Device premain/ClassFileLoadHook and retransformation NOT TESTED; attach unavailable |
 
 See `OPENJDK25_MEMORY.md` for exact mapping, splitting, rollback, locks and
 process-budget contracts. SDK metadata costs one byte per requested page plus

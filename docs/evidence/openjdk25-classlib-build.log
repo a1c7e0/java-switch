@@ -1,11 +1,15 @@
-$ make CONF_CHECK=auto JOBS=2 -k java.base-static-libs
+$ make CONF_CHECK=auto JOBS=2 ENABLE_JAVAC_SERVER=false -k java.base-static-libs
+Note: Command line contains non-control variables:
+* ENABLE_JAVAC_SERVER=false
+Make sure it is not mistyped, and that you intend to override this variable.
+'make help' will list known control variables.
+
+Note: Command line contains non-control variables:
+* ENABLE_JAVAC_SERVER=false
+Make sure it is not mistyped, and that you intend to override this variable.
+'make help' will list known control variables.
+
 Building target 'java.base-static-libs' in configuration '/workspace/java-switch/build/openjdk25-horizon'
-Updating support/native/java.base/libnet/static/libnet.a due to 2 file(s)
-In file included from /workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch.h:12,
-                 from /workspace/java-switch/.deps/openjdk25-horizon/src/java.base/horizon/native/libnet/net_util_md.c:34:
-/workspace/java-switch/.toolchain/opt/devkitpro/libnx/include/switch/types.h:89:5: warning: '__cplusplus' is not defined, evaluates to '0' [-Wundef]
-   89 | #if __cplusplus >= 201402L
-      |     ^~~~~~~~~~~
 Finished building target 'java.base-static-libs' in configuration '/workspace/java-switch/build/openjdk25-horizon'
 
 Exit status: 0

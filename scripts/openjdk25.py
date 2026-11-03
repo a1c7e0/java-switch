@@ -17,6 +17,7 @@ import struct
 import subprocess
 import sys
 import tarfile
+import tempfile
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -38,6 +39,14 @@ def port_snapshot():
 
 def port_inputs():
     return port_snapshot()[:4]
+
+
+def jvm_features():
+    spec = (BUILD / 'spec.gmk').read_text()
+    match = re.search(r'^JVM_FEATURES_zero\s*:=\s*(.*)$', spec, re.M)
+    if match is None:
+        raise RuntimeError('Configured Zero feature list is missing')
+    return match.group(1).split()
 
 
 def prepare():
@@ -80,27 +89,46 @@ def prepare():
                 info = old.stat()
                 unchanged_times[name] = (hashlib.sha256(old.read_bytes()).digest(),
                                          info.st_atime_ns, info.st_mtime_ns)
-        if PORT.exists():
-            shutil.rmtree(PORT)
-        shutil.copytree(SOURCE, PORT)
-        for patch in patches:
-            subprocess.run(['patch', '-p1', '--batch', '--fuzz=0'],
-                           input=contents[patch], cwd=PORT, check=True)
-    for source in files:
-        target = PORT / source.relative_to(overlay)
-        if not target.exists() or target.read_bytes() != contents[source]:
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(contents[source])
-    for name, (old_hash, atime, mtime) in unchanged_times.items():
-        target = PORT / name
-        if target.is_file() and hashlib.sha256(target.read_bytes()).digest() == old_hash:
-            os.utime(target, ns=(atime, mtime))
-    # Use the captured bytes throughout: another agent's later source edit may
-    # require a subsequent rebuild, but cannot corrupt this build's digest.
-    patch_stamp.write_text(patch_digest)
-    if not stamp.exists() or stamp.read_text() != digest:
-        stamp.write_text(digest)
-    overlay_stamp.write_text(json.dumps(names))
+    # A rejected patch must not destroy the last complete prepared tree or its
+    # timestamps. Publish a reconstructed tree only after every patch/overlay
+    # and provenance stamp has been installed successfully.
+    temporary = pathlib.Path(tempfile.mkdtemp(prefix='.openjdk25-prepare-', dir=DEPS)) if rebuild else None
+    target_root = temporary / 'tree' if rebuild else PORT
+    try:
+        if rebuild:
+            shutil.copytree(SOURCE, target_root)
+            for patch in patches:
+                subprocess.run(['patch', '-p1', '--batch', '--fuzz=0'],
+                               input=contents[patch], cwd=target_root, check=True)
+        for source in files:
+            target = target_root / source.relative_to(overlay)
+            if not target.exists() or target.read_bytes() != contents[source]:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(contents[source])
+        for name, (old_hash, atime, mtime) in unchanged_times.items():
+            target = target_root / name
+            if target.is_file() and hashlib.sha256(target.read_bytes()).digest() == old_hash:
+                os.utime(target, ns=(atime, mtime))
+        # Use captured bytes throughout: later source edits require another
+        # build, but cannot corrupt this build's recorded input digest.
+        (target_root / patch_stamp.name).write_text(patch_digest)
+        target_stamp = target_root / stamp.name
+        if not target_stamp.exists() or target_stamp.read_text() != digest:
+            target_stamp.write_text(digest)
+        (target_root / overlay_stamp.name).write_text(json.dumps(names))
+        if rebuild:
+            old = temporary / 'old'
+            if PORT.exists():
+                PORT.rename(old)
+            try:
+                target_root.rename(PORT)
+            except BaseException:
+                if old.exists():
+                    old.rename(PORT)
+                raise
+    finally:
+        if temporary is not None:
+            shutil.rmtree(temporary)
     print(f'OpenJDK {entry["revision"]}, patches SHA256 {digest}', flush=True)
 
 
@@ -118,7 +146,7 @@ def run(command, env, log):
     return process.returncode
 
 
-def link_vm(dk, env, native=False):
+def link_vm(dk, env, native=False, instrument=False):
     # Never replace missing services with stubs or turn an unresolved ELF into
     # an NRO. This action intentionally stops at a real native link failure.
     archive = BUILD / 'hotspot/variant-zero/libjvm/objs/static/libjvm.a'
@@ -126,6 +154,9 @@ def link_vm(dk, env, native=False):
     proof = json.loads((ROOT / 'build/openjdk25-archive.json').read_text())
     if not proof['full_upstream_archive_target'] or proof['archive_sha256'] != archive_hash:
         raise RuntimeError('Build the genuine upstream archive before linking')
+    features = proof.get('jvm_features', [])
+    if instrument and not {'jvmti', 'services'}.issubset(features):
+        raise RuntimeError('The startup agent requires a genuine JVMTI/services VM archive')
     output = BUILD / ('runtime-link' if native else 'vm-link')
     output.mkdir(exist_ok=True)
     arch = ['-march=armv8-a+crc+crypto', '-mtune=cortex-a57', '-mno-outline-atomics', '-mtp=soft', '-fPIE']
@@ -136,11 +167,25 @@ def link_vm(dk, env, native=False):
     with log_path.open('w') as log:
         log.write('Real upstream Zero archive SHA256 ' + hashlib.sha256(archive.read_bytes()).hexdigest() + '\n')
         if native:
+            base_proof = json.loads((ROOT / 'build/openjdk25-native-base.json').read_text())
+            if base_proof['port_digest'] != proof['port_digest']:
+                raise RuntimeError('Rebuild native java.base for this VM port revision')
             for module in ['java', 'zip', 'jimage', 'verify', 'net', 'nio', 'fallbackLinker', 'syslookup']:
                 path = BUILD / 'support/native/java.base' / ('lib' + module) / 'static' / ('lib' + module + '.a')
                 if not path.is_file():
                     raise RuntimeError('Build real native class library first: ' + str(path))
+                if hashlib.sha256(path.read_bytes()).hexdigest() != base_proof['archives'][module]['sha256']:
+                    raise RuntimeError('Native java.base archive changed: ' + module)
                 libraries.append((module, path))
+            if instrument:
+                native_proof = json.loads((ROOT / 'build/openjdk25-native-instrument.json').read_text())
+                if native_proof['port_digest'] != proof['port_digest']:
+                    raise RuntimeError('Rebuild java.instrument for this port revision')
+                for module, owner in [('jli_manifest', 'java.base'), ('instrument', 'java.instrument')]:
+                    path = BUILD / 'support/native' / owner / ('lib' + module) / 'static' / ('lib' + module + '.a')
+                    if hashlib.sha256(path.read_bytes()).hexdigest() != native_proof['archives'][module]['sha256']:
+                        raise RuntimeError('The instrument archive changed: ' + module)
+                    libraries.append((module, path))
             generator = [sys.executable, str(ROOT / 'scripts/generate-openjdk25-native-resolver.py'),
                          '--nm', str(dk / 'devkitA64/bin/aarch64-none-elf-nm'),
                          '--output', str(output / 'native_resolver.c'),
@@ -176,6 +221,7 @@ def link_vm(dk, env, native=False):
         for name in ['java25_vm_test', 'platform']:
             command = [str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'), *arch,
                        *(['-DJS_OPENJDK25_STATIC_PROVIDER'] if native else []),
+                       *(['-DJS_OPENJDK25_INSTRUMENT'] if instrument else []),
                        '-D__SWITCH__', '-I' + str(dk / 'libnx/include'),
                        '-I' + str(ROOT / 'include'), '-I' + str(ROOT / 'src'),
                        '-I' + str(PORT / 'src/java.base/share/native/include'),
@@ -197,6 +243,7 @@ def link_vm(dk, env, native=False):
     missing = sorted(set(re.findall(r"undefined reference to [`‘'](.*?)[’']", log_path.read_text())))
     (ROOT / 'build/openjdk25-missing-symbols.txt').write_text('\n'.join(missing) + '\n')
     evidence = {'archive_port_digest': proof['port_digest'], 'archive_sha256': archive_hash,
+                'jvm_features': features, 'java_instrument': instrument,
                 'sdk_sha256': hashlib.sha256((ROOT / 'build/sdk/libjavaswitch.a').read_bytes()).hexdigest(),
                 'link_exit_status': result.returncode, 'missing_symbols': missing,
                 'java_execution': 'NOT TESTED', 'horizon_execution': 'NOT TESTED'}
@@ -212,7 +259,10 @@ def link_vm(dk, env, native=False):
         evidence['class_library_provider'] = json.loads((output / 'native_resolver.json').read_text())
         evidence['launcher_sha256'] = hashlib.sha256((ROOT / 'src/java25_vm_test.c').read_bytes()).hexdigest()
         if result.returncode == 0:
-            for symbol in ['JNI_OnLoad_java', 'JIMAGE_Open', 'js_openjdk25_native_resolver']:
+            required = ['JNI_OnLoad_java', 'JIMAGE_Open', 'js_openjdk25_native_resolver']
+            if instrument:
+                required += ['JNI_OnLoad_instrument', 'Agent_OnLoad_instrument', 'JLI_ManifestIterate']
+            for symbol in required:
                 if not re.search(r'^[0-9a-f]+ [A-Za-z] ' + symbol + '$', symbols, re.M):
                     raise RuntimeError('Missing real runtime provider symbol: ' + symbol)
             nacp = output / 'java25-test.nacp'
@@ -232,11 +282,11 @@ def link_vm(dk, env, native=False):
 
 def work():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['prepare', 'configure', 'build', 'java-base', 'native-base', 'link-vm', 'link-runtime', 'components', 'probe', 'test-host'])
+    parser.add_argument('action', choices=['prepare', 'configure', 'configure-agent', 'build', 'java-base', 'native-base', 'java-instrument', 'native-instrument', 'link-vm', 'link-runtime', 'link-runtime-agent', 'components', 'probe', 'test-host'])
     args = parser.parse_args()
     # ELF linking consumes an already verified archive, independent of source
     # preparation. Its metadata records that archive's exact source digest.
-    if args.action not in ('link-vm', 'link-runtime'):
+    if args.action not in ('link-vm', 'link-runtime', 'link-runtime-agent'):
         prepare()
     if args.action == 'prepare':
         return 0
@@ -255,8 +305,8 @@ def work():
                    AUTOM4TE=str(tools / 'bin/autom4te'),
                    AUTOCONF=str(tools / 'bin/autoconf'), M4=str(tools / 'bin/m4'))
     env['PATH'] = str(dk / 'devkitA64/bin') + os.pathsep + env['PATH']
-    if args.action in ('link-vm', 'link-runtime'):
-        return link_vm(dk, env, native=args.action == 'link-runtime')
+    if args.action in ('link-vm', 'link-runtime', 'link-runtime-agent'):
+        return link_vm(dk, env, native=args.action != 'link-vm', instrument=args.action == 'link-runtime-agent')
     if args.action == 'components':
         # Reuse the real upstream compiler command, not host-JDK headers or a
         # substitute VM. Run the normal build first to generate this command.
@@ -555,10 +605,16 @@ def work():
         (ROOT / 'build/openjdk25-probe.json').write_text(json.dumps(evidence, indent=2) + '\n')
         print('zero-services-test.nro: CROSS-BUILT; Java VM unavailable; hardware NOT TESTED')
         return 0
-    if args.action in ('java-base', 'native-base'):
-        target = 'java.base-java' if args.action == 'java-base' else 'java.base-static-libs'
+    if args.action in ('java-base', 'native-base', 'java-instrument', 'native-instrument'):
+        java = args.action.startswith('java-')
+        module_name = 'java.instrument' if args.action.endswith('-instrument') else 'java.base'
+        target = module_name + ('-java' if java else '-static-libs')
         targets = [target, 'java.base-copy', 'java.base-gendata'] if args.action == 'java-base' else [target]
-        result = run(['make', 'CONF_CHECK=auto', 'JOBS=2', *(['-k'] if args.action == 'native-base' else []), *targets], env, args.action + '.log')
+        # Direct javac avoids a detached compiler server surviving a cloud
+        # pause or failing to publish its port file on a new module build.
+        result = run(['make', 'CONF_CHECK=auto', 'JOBS=2', 'ENABLE_JAVAC_SERVER=false',
+                      *([] if java else ['-k']),
+                      *targets], env, args.action + '.log')
         if result == 0 and args.action == 'native-base':
             records = {}
             for module in ['java', 'zip', 'jimage', 'verify', 'net', 'nio', 'fallbackLinker', 'syslookup']:
@@ -571,25 +627,38 @@ def work():
             proof = {'port_digest': (PORT / '.javaswitch-patches').read_text(),
                      'archives': records, 'horizon_execution': 'NOT TESTED'}
             (ROOT / 'build/openjdk25-native-base.json').write_text(json.dumps(proof, indent=2) + '\n')
-        if result == 0 and args.action == 'java-base':
-            module = BUILD / 'jdk/modules/java.base'
+        if result == 0 and args.action == 'native-instrument':
+            records = {}
+            for name, owner in [('jli_manifest', 'java.base'), ('instrument', 'java.instrument')]:
+                path = BUILD / 'support/native' / owner / ('lib' + name) / 'static' / ('lib' + name + '.a')
+                members = subprocess.check_output([str(dk / 'devkitA64/bin/aarch64-none-elf-ar'),
+                                                   't', str(path)], text=True).splitlines()
+                records[name] = {'sha256': hashlib.sha256(path.read_bytes()).hexdigest(), 'members': members}
+            if records['jli_manifest']['members'] != ['parse_manifest.o']:
+                raise RuntimeError('The manifest subset must contain only the genuine upstream parser')
+            proof = {'port_digest': (PORT / '.javaswitch-patches').read_text(),
+                     'archives': records, 'horizon_execution': 'NOT TESTED'}
+            (ROOT / 'build/openjdk25-native-instrument.json').write_text(json.dumps(proof, indent=2) + '\n')
+        if result == 0 and java:
+            module = BUILD / 'jdk/modules' / module_name
             inventory = {str(path.relative_to(module)): hashlib.sha256(path.read_bytes()).hexdigest()
                          for path in sorted(module.rglob('*')) if path.is_file() and not path.name.startswith('_the.')}
             for path in module.rglob('*.class'):
                 data = path.read_bytes()
                 if data[:4] != b'\xca\xfe\xba\xbe' or struct.unpack_from('>H', data, 6)[0] != 69:
-                    raise RuntimeError('java.base contains a non-Java25 class: ' + str(path))
+                    raise RuntimeError(module_name + ' contains a non-Java25 class: ' + str(path))
             proof = {'port_digest': (PORT / '.javaswitch-patches').read_text(),
                      'classfile_major': 69, 'files': inventory, 'horizon_execution': 'NOT TESTED'}
-            (ROOT / 'build/openjdk25-java-base.json').write_text(json.dumps(proof, indent=2) + '\n')
+            (ROOT / ('build/openjdk25-' + args.action + '.json')).write_text(json.dumps(proof, indent=2) + '\n')
         return result
     if args.action == 'build':
-        result = run(['make', 'CONF_CHECK=auto', 'JOBS=2', 'hotspot-zero-static-libs'], env, 'build.log')
+        result = run(['make', 'CONF_CHECK=auto', 'JOBS=2', 'ENABLE_JAVAC_SERVER=false', 'hotspot-zero-static-libs'], env, 'build.log')
         if result == 0:
             archive = BUILD / 'hotspot/variant-zero/libjvm/objs/static/libjvm.a'
             members = subprocess.check_output([str(dk / 'devkitA64/bin/aarch64-none-elf-ar'),
                                                't', str(archive)], text=True).splitlines()
             proof = {'port_digest': (PORT / '.javaswitch-patches').read_text(),
+                     'jvm_features': jvm_features(),
                      'archive_sha256': hashlib.sha256(archive.read_bytes()).hexdigest(),
                      'members': members, 'full_upstream_archive_target': True,
                      'vm_linked': False, 'horizon_execution': 'NOT TESTED'}
@@ -608,6 +677,7 @@ def work():
     command = ['bash', str(PORT / 'configure'),
                '--openjdk-target=aarch64-none-horizon', '--with-jvm-variants=zero',
                '--enable-headless-only', '--disable-warnings-as-errors',
+               '--disable-javac-server',
                '--with-freetype=bundled',
                '--with-debug-level=release', f'--with-boot-jdk={boot}',
                f'CC={prefix}gcc', f'CXX={prefix}g++', f'AR={prefix}ar',
@@ -617,7 +687,9 @@ def work():
                f'--with-libffi-include={ROOT}/build/libffi/include',
                f'--with-libffi-lib={ffi}',
                '--disable-jvm-feature-jfr', '--disable-jvm-feature-cds',
-               '--disable-jvm-feature-services', '--disable-jvm-feature-jvmti',
+               *(['--enable-jvm-feature-services', '--enable-jvm-feature-jvmti']
+                 if args.action == 'configure-agent' else
+                 ['--disable-jvm-feature-services', '--disable-jvm-feature-jvmti']),
                '--disable-jvm-feature-g1gc', '--disable-jvm-feature-parallelgc',
                '--disable-jvm-feature-shenandoahgc', '--disable-jvm-feature-epsilongc',
                '--disable-jvm-feature-management',

@@ -8,6 +8,7 @@ public final class Java25Smoke {
     private static native int nativeAdd(int a,int b);
     public record Point(int x,int y) {}
     public static int twice(int value){return value*2;}
+    public static double mixed(long left,double value,int scale,float tail){return left+value*scale+tail;}
     static void check(boolean value,String text){if(!value)throw new AssertionError(text);System.out.println("PASS: "+text);}
     public static void main(String[] args)throws Throwable {
         check(Runtime.version().feature()==25,"Java 25 runtime / classfile 69");
@@ -38,10 +39,21 @@ public final class Java25Smoke {
             MemorySegment text=arena.allocateFrom("javaswitch");
             MethodHandle strlen=linker.downcallHandle(linker.defaultLookup().find("strlen").orElseThrow(),FunctionDescriptor.of(ValueLayout.JAVA_LONG,ValueLayout.ADDRESS));
             check((long)strlen.invokeExact(text)==10,"FFM native downcall");
+            MethodHandle pow=linker.downcallHandle(linker.defaultLookup().find("pow").orElseThrow(),
+                    FunctionDescriptor.of(ValueLayout.JAVA_DOUBLE,ValueLayout.JAVA_DOUBLE,ValueLayout.JAVA_DOUBLE));
+            check((double)pow.invokeExact(2.0,5.0)==32.0,"FFM floating-point libm downcall");
             MethodHandle twice=MethodHandles.lookup().findStatic(Java25Smoke.class,"twice",MethodType.methodType(int.class,int.class));
             MemorySegment up=linker.upcallStub(twice,FunctionDescriptor.of(ValueLayout.JAVA_INT,ValueLayout.JAVA_INT),arena);
             MethodHandle invoke=linker.downcallHandle(up,FunctionDescriptor.of(ValueLayout.JAVA_INT,ValueLayout.JAVA_INT));
             check((int)invoke.invokeExact(21)==42,"FFM upcall / executable trampoline");
+            FunctionDescriptor mixedDescriptor=FunctionDescriptor.of(ValueLayout.JAVA_DOUBLE,
+                    ValueLayout.JAVA_LONG,ValueLayout.JAVA_DOUBLE,ValueLayout.JAVA_INT,ValueLayout.JAVA_FLOAT);
+            MethodHandle mixed=MethodHandles.lookup().findStatic(Java25Smoke.class,"mixed",
+                    MethodType.methodType(double.class,long.class,double.class,int.class,float.class));
+            MemorySegment mixedUp=linker.upcallStub(mixed,mixedDescriptor,arena);
+            MethodHandle invokeMixed=linker.downcallHandle(mixedUp,mixedDescriptor);
+            check((double)invokeMixed.invokeExact(7L,2.5,3,0.25f)==14.75,
+                    "FFM mixed integer/FP downcall and upcall");
         }
         System.out.println("JAVA25 JNI FFM SUITE PASS");
     }
