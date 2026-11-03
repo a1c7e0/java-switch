@@ -5,6 +5,20 @@ commit feb2f4dd076d453d4f2db2be45096aecd4f2c2e7. Write documentation in English
 and commit/push meaningful milestones. Never claim Horizon execution from a
 host test or cross-link. Minecraft integration lives in a1c7e0/switchcraft.
 
+The owner authorizes the coordinating assistant to edit, commit and push directly
+to both java-switch and Switchcraft. Keep runtime implementation in java-switch
+and launcher/LWJGL/graphics integration in Switchcraft. Use an isolated worktree
+when another agent is working in the repository; preserve its uncommitted work
+and push focused commits without rewriting shared history. Report reproducible
+runtime defects in java-switch issues even when fixing them directly: search
+for an existing issue, record immutable revisions and evidence, and follow up
+with the fix and validation results.
+
+Actively delegate bounded work to `gpt-6-luna` subagents with `reasoning_effort`
+set to `high`. Give each agent clear ownership of disjoint files or a read-only
+review task. The coordinating assistant reviews the combined changes and runs
+the relevant checks before committing and pushing.
+
 `bash scripts/build-all.sh` bootstraps pinned dependencies, cross-builds the
 interpreter diagnostic and SDK, runs real host JAR tests and packages artifacts.
 Default toolchain: `.toolchain/opt/devkitpro`; override DEVKITPRO for reuse.
@@ -102,7 +116,9 @@ runs in make host-test. Keep all port inputs tracked before packaging.
 
 Minecraft also needs downstream LWJGL Horizon platform/native-loader adaptation:
 3.4.3 Platform currently rejects os.name=Horizon before Library JNI loading.
-Do not spoof Linux or edit Switchcraft. The handoff contains exact source paths.
+Do not spoof Linux. Implement downstream adaptations in Switchcraft under the
+cross-repository collaboration agreement above. The handoff contains exact
+source paths.
 Management and other game modules still need workload evidence. Next priorities:
 actual device startup/A/X/Y logs, genuine JNI/FFM/class-transform failures, and
 composition of the downstream native providers through the immutable SDK API.
