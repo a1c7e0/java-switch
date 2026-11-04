@@ -30,7 +30,7 @@ build/java-test-host: scripts/build-minijvm.py src/java_vm.c src/java_host.c bui
 	python3 scripts/build-minijvm.py --host
 build/minijvm_rt.jar build/diagnostic-tests.jar build/dependency.jar &: scripts/build-java-tests.py tests/java/DiagnosticSmoke.java tests/java/JarDependency.java | build
 	python3 scripts/build-java-tests.py
-build/sdk/libjavaswitch.a build/jni25-host &: scripts/build-sdk.py src/runtime.c src/runtime_minijvm.c src/runtime_openjdk.c src/runtime_services.c src/native_resolver.c src/ffi_horizon.c src/vmem_horizon.c src/horizon_alias.c include/javaswitch/vmem.h include/javaswitch/detail/horizon_alias.h include/javaswitch/runtime.h include/javaswitch/native_resolver.h tests/runtime_gate.c build/libminijvm.a build/java-test-host build/libffi-horizon.a
+build/sdk/libjavaswitch.a build/jni25-host &: scripts/build-sdk.py scripts/isolate-private-crypto.py src/runtime.c src/runtime_minijvm.c src/runtime_openjdk.c src/runtime_services.c src/native_resolver.c src/ffi_horizon.c src/vmem_horizon.c src/horizon_alias.c include/javaswitch/vmem.h include/javaswitch/detail/horizon_alias.h include/javaswitch/runtime.h include/javaswitch/native_resolver.h tests/runtime_gate.c build/libminijvm.a build/java-test-host build/libffi-horizon.a
 	python3 scripts/build-sdk.py
 build/java25-tests.jar build/java25-hello.jar &: scripts/build-java25-tests.py tests/java25/Java25Smoke.java tests/java25/HelloHorizon25.java | build
 	python3 scripts/build-java25-tests.py

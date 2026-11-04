@@ -151,3 +151,8 @@ zero (553 members); instrument remains JVMTI/services (577 members). See the
 paired clean-base and clean-instrument reports in docs/evidence/. Issue comments
 contain the tested immutable pin; #2 is closed and #1 is ready for completion.
 The main workspace retains its instrument-enabled artifacts.
+
+SDK private Mbed TLS globals are namespaced at SDK archive construction using
+`scripts/isolate-private-crypto.py`; keep definitions and references isolated,
+preserve public ABI 1, and test external crypto library composition. Do not use
+duplicate-definition linker suppression. See docs/SDK_PRIVATE_CRYPTO.md.

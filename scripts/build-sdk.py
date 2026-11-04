@@ -28,6 +28,13 @@ for host in [False,True]:
         objects+=sorted(ffi_members.glob('*.o'))
     ar='ar' if host else str(dk/'devkitA64/bin/aarch64-none-elf-ar')
     subprocess.run([ar,'rcs',str(dest/'libjavaswitch.a'),*map(str,objects)],check=True)
+    nm='nm' if host else str(dk/'devkitA64/bin/aarch64-none-elf-nm')
+    objcopy='objcopy' if host else str(dk/'devkitA64/bin/aarch64-none-elf-objcopy')
+    subprocess.run([
+        'python3','scripts/isolate-private-crypto.py',str(dest/'libjavaswitch.a'),
+        '--nm',nm,'--objcopy',objcopy,
+        '--map-out',str(dest/'private-crypto-symbols.map')
+    ],check=True)
     if host:
         server=jdk.parent/'lib/server'
         subprocess.run(['gcc',*common,'tests/jni_host.c',str(dest/'libjavaswitch.a'),'-Wl,--no-as-needed','-L'+str(server),'-Wl,-rpath,'+str(server),'-ljvm','-pthread','-lm','-o','build/jni25-host'],check=True)
