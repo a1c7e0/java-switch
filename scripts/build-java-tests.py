@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import pathlib
+import hashlib
 import subprocess
 import shutil
 import zipfile
@@ -9,6 +10,8 @@ ROOT=pathlib.Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 JDK=ROOT/".deps/host-jdk8/jdk8u504-b01/bin"
 SOURCE=ROOT/".deps/minijvm-source/minijvm/java/src/main"
+JAVA_FS_PATCH=ROOT/"patches/minijvm-java8-fs.patch"
+JAVA_FS_PATCH_SHA256=ROOT/"patches/minijvm-java8-fs.patch.sha256"
 
 def build(name,sources,resource=None):
     dest=ROOT/"build"/(name+"-classes")
@@ -27,6 +30,19 @@ def build(name,sources,resource=None):
                     info.compress_type=zipfile.ZIP_DEFLATED
                     jar.writestr(info,file.read_bytes())
 
-build("minijvm_rt",sorted((SOURCE/"java").rglob("*.java")),SOURCE/"resource")
+def prepare_runtime_sources():
+    # Keep the pinned upstream tree pristine. Java 8 Horizon filesystem fixes
+    # are maintained as a zero-fuzz patch over a private generated copy.
+    dest=ROOT/"build"/"minijvm-java-source"
+    if dest.exists():shutil.rmtree(dest)
+    shutil.copytree(SOURCE/"java",dest)
+    expected=JAVA_FS_PATCH_SHA256.read_text().strip()
+    actual=hashlib.sha256(JAVA_FS_PATCH.read_bytes()).hexdigest()
+    if actual!=expected:
+        raise RuntimeError("Java 8 filesystem patch SHA-256 mismatch")
+    subprocess.run(["patch","-p1","--batch","--fuzz=0","-i",str(JAVA_FS_PATCH)],cwd=dest,check=True)
+    return dest
+
+build("minijvm_rt",sorted(prepare_runtime_sources().rglob("*.java")),SOURCE/"resource")
 build("diagnostic-tests",[ROOT/"tests/java/DiagnosticSmoke.java"])
 build("dependency",[ROOT/"tests/java/JarDependency.java"])

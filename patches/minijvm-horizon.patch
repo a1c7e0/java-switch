@@ -414,3 +414,37 @@
  
      Instance *clIns = insOfJavaLangClass_create_get(runtime, cl);
  
+--- a/jvm/jni_io.c
++++ b/jvm/jni_io.c
+@@ -5,0 +6 @@
++#include <errno.h>
+@@ -794,0 +796,27 @@
++s32 org_mini_fs_InnerFile_createFileExclusive(Runtime *runtime, JClass *clazz) {
++    Instance *name_arr = localvar_getRefer(runtime->localvar, 0);
++    s32 result = -EINVAL;
++    if (name_arr) {
++        Utf8String *filepath = utf8_create_c(jarray_body(name_arr));
++        ByteBuf *platformPath = bytebuf_create(0);
++        if (filepath && platformPath &&
++            conv_utf8_2_platform_encoding(platformPath, filepath) >= 0) {
++            int fd = open(platformPath->buf, O_WRONLY | O_CREAT | O_EXCL, 0666);
++            if (fd >= 0) {
++                close(fd);
++                result = 1;
++            } else if (errno == EEXIST) {
++                result = 0;
++            } else {
++                result = -(errno ? errno : EIO);
++            }
++        } else {
++            result = -ENOMEM;
++        }
++        if (platformPath) bytebuf_destroy(platformPath);
++        if (filepath) utf8_destroy(filepath);
++    }
++    push_int(runtime->stack, result);
++    return 0;
++}
++
+@@ -1799,0 +1828 @@
++    {"org/mini/fs/InnerFile", "createFileExclusive", "([B)I", org_mini_fs_InnerFile_createFileExclusive},

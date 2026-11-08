@@ -1,0 +1,48 @@
+--- a/org/mini/fs/FileSystemPosix.java
++++ b/org/mini/fs/FileSystemPosix.java
+@@ -24,7 +24,7 @@
+         if (path.length() == 0) {
+             return false;
+         }
+-        if (path.charAt(0) == getSeparator()) {
++        if (path.charAt(0) == getSeparator() || path.startsWith("sdmc:/")) {
+             return true;
+         }
+         return false;
+--- a/org/mini/fs/FileSystemImpl.java
++++ b/org/mini/fs/FileSystemImpl.java
+@@ -138,17 +138,14 @@
+ 
+     @Override
+     public boolean createFileExclusively(String pathname) throws IOException {
+-        InnerFileStat ifa = new InnerFileStat();
+-        InnerFile.loadFS(SocketNative.toCStyle(pathname), ifa);
+-        if (ifa.exists) {
+-            throw new IOException("file exists.");
+-        }
+-        long fd = InnerFile.openFile(SocketNative.toCStyle(pathname), SocketNative.toCStyle("w"));
+-        if (fd != 0) {
+-            InnerFile.closeFile(fd);
++        int result = InnerFile.createFileExclusive(SocketNative.toCStyle(pathname));
++        if (result > 0) {
+             return true;
+         }
+-        return false;
++        if (result == 0) {
++            return false;
++        }
++        throw new IOException("exclusive file creation failed (errno=" + (-result) + "): " + pathname);
+     }
+ 
+     @Override
+--- a/org/mini/fs/InnerFile.java
++++ b/org/mini/fs/InnerFile.java
+@@ -312,6 +312,8 @@
+ 
+     public static native String[] listDir(byte[] filePath);
+ 
++    public static native int createFileExclusive(byte[] filePath);
++
+     public static native long openFile(byte[] filePath, byte[] mode);
+ 
+     public static native long openFD(int fd, byte[] mode); //open file descriptor as file
