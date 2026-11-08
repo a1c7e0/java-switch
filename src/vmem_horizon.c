@@ -6,6 +6,8 @@
 #include <string.h>
 
 #define PAGE_SIZE ((size_t)4096)
+/* Horizon returns this when the process has no SystemResourceSize. */
+#define RESULT_NO_SYSTEM_RESOURCE ((Result)0xfa01u)
 struct js_vmem {
     void *address;
     size_t size;
@@ -65,6 +67,14 @@ static int all_mapped(const js_vmem *v, size_t offset, size_t length, int mapped
     return 1;
 }
 
+static js_vmem_status physical_memory_status(Result result) {
+    if (R_SUCCEEDED(result)) return JS_VMEM_OK;
+    /* SVC Map/UnmapPhysicalMemory require a nonzero process SystemResourceSize.
+     * That field is fixed by process metadata and cannot be granted by this API. */
+    if (result == RESULT_NO_SYSTEM_RESOURCE) return JS_VMEM_UNSUPPORTED;
+    return JS_VMEM_SYSTEM;
+}
+
 static js_vmem_status change_mapping(js_vmem *v, size_t offset, size_t length,
                                       int commit, uint32_t *result) {
     if (result) *result = 0;
@@ -83,7 +93,7 @@ static js_vmem_status change_mapping(js_vmem *v, size_t offset, size_t length,
     if (R_SUCCEEDED(rc))
         memset(v->pages + offset / PAGE_SIZE, commit ? JS_VMEM_READ_WRITE : 0, length / PAGE_SIZE);
     mutexUnlock(&vmem_lock);
-    return R_SUCCEEDED(rc) ? JS_VMEM_OK : JS_VMEM_SYSTEM;
+    return physical_memory_status(rc);
 }
 
 js_vmem_status js_vmem_commit_range(js_vmem *v, size_t offset, size_t length, uint32_t *result) {
@@ -141,7 +151,7 @@ js_vmem_status js_vmem_release(js_vmem *v, uint32_t *result) {
         if (result) *result = rc;
         if (R_FAILED(rc)) {
             virtmemUnlock(); mutexUnlock(&vmem_lock);
-            return JS_VMEM_SYSTEM;
+            return physical_memory_status(rc);
         }
         memset(v->pages + first, 0, end - first);
         first = end;

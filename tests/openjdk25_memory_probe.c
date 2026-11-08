@@ -113,9 +113,21 @@ static int check_canary(const volatile uint32_t* slot, uint32_t expected,
 }
 
 void js_zero_memory_probe(void) {
-  sc_log("Native Alias memory probe: begin (physical mapping syscalls; no VM execution)\n");
+  u64 system_resource_total = 0, system_resource_used = 0;
+  Result total_result = svcGetInfo(&system_resource_total,
+      InfoType_SystemResourceSizeTotal, CUR_PROCESS_HANDLE, 0);
+  Result used_result = svcGetInfo(&system_resource_used,
+      InfoType_SystemResourceSizeUsed, CUR_PROCESS_HANDLE, 0);
+  const int heap_backed = R_SUCCEEDED(total_result) && system_resource_total == 0;
+  sc_log("Process system-resource total=%llu used=%llu bytes rc=0x%x/0x%x\n",
+      (unsigned long long)system_resource_total,
+      (unsigned long long)system_resource_used, total_result, used_result);
+  sc_log("Private VM memory backend: %s\n", heap_backed ?
+      "eager C-heap backing; full size charged until final release; logical uncommit retains backing" :
+      "Alias svcMapPhysicalMemory; commit/uncommit allocate/release physical pages");
+  sc_log("Horizon private VM memory probe: begin (no Java VM execution)\n");
   if (!retry_cleanup()) {
-    sc_log("Native Alias memory probe: prior cleanup still owns resources; retry later\n");
+    sc_log("Horizon private VM memory probe: prior cleanup still owns resources; retry later\n");
     return;
   }
 
@@ -128,13 +140,13 @@ void js_zero_memory_probe(void) {
   if (reserve_status != JS_HORIZON_MEMORY_OK) goto done;
   g_private_parent = base;
   if (((uintptr_t)base & (PROBE_ALIGNMENT - 1)) != 0) {
-    sc_log("memory probe alignment: FAIL address=%p required=%zu\n",
-           base, PROBE_ALIGNMENT);
+    sc_log("memory probe alignment: FAIL address=%p required=%zu backend=%s\n",
+           base, PROBE_ALIGNMENT, heap_backed ? "eager heap" : "Alias");
     passed = 0;
     goto done;
   }
-  sc_log("memory probe alignment: PASS address=%p alignment=%zu\n",
-         base, PROBE_ALIGNMENT);
+  sc_log("memory probe alignment: PASS address=%p alignment=%zu backend=%s\n",
+         base, PROBE_ALIGNMENT, heap_backed ? "eager heap" : "Alias");
 
   raw = 0;
   js_horizon_memory_status status = js_horizon_memory_commit(
@@ -221,6 +233,16 @@ void js_zero_memory_probe(void) {
   if (sdk_status != JS_VMEM_OK) goto done;
   g_sdk_reservation = sdk_region;
   void* sdk_address = js_vmem_address(sdk_region);
+  MemoryInfo sdk_info;
+  u32 sdk_page_info = 0;
+  Result sdk_query = svcQueryMemory(&sdk_info, &sdk_page_info,
+                                    (u64)(uintptr_t)sdk_address);
+  const int sdk_unmapped = R_SUCCEEDED(sdk_query) &&
+                           sdk_info.type == MemType_Unmapped;
+  sc_log("memory probe SDK reservation remains unmapped: %s raw=0x%x type=%u\n",
+         sdk_unmapped ? "PASS" : "FAIL", sdk_query,
+         R_SUCCEEDED(sdk_query) ? sdk_info.type : UINT32_MAX);
+  passed &= sdk_unmapped;
   const int separate =
       !ranges_overlap(sdk_address, PROBE_PAGE_SIZE,
                       g_private_children[0].address, g_private_children[0].size) &&
@@ -235,7 +257,7 @@ void js_zero_memory_probe(void) {
 done:
   if (!retry_cleanup()) passed = 0;
   if (passed)
-    sc_log("Native Alias memory probe: native PASS (actual Horizon bridge syscalls; hardware result only)\n");
+    sc_log("Horizon private VM memory probe: native PASS (selected backend contract; hardware result only)\n");
   else
-    sc_log("Native Alias memory probe: FAIL; retained ownership will be retried on next press\n");
+    sc_log("Horizon private VM memory probe: FAIL; retained ownership will be retried on next press\n");
 }

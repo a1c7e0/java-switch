@@ -29,4 +29,4 @@ class HorizonMemoryTests(unittest.TestCase):
                 cwd=ROOT, check=True)
             result = subprocess.run([str(binary)], cwd=ROOT, check=True,
                 text=True, capture_output=True)
-            self.assertIn('Alias-region placement and failures: PASS', result.stdout)
+            self.assertIn('eager heap-backed bridge paths: PASS', result.stdout)

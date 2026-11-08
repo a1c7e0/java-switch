@@ -3,16 +3,25 @@
 #include <javaswitch/detail/horizon_alias.h>
 
 #include <switch.h>
+#include <malloc.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define HORIZON_PAGE_SIZE ((size_t)4096)
+
+typedef struct HorizonMemoryBacking {
+  unsigned references;
+  size_t size;
+  unsigned char* address;
+} HorizonMemoryBacking;
 
 typedef struct HorizonMemoryRegion {
   struct HorizonMemoryRegion* next;
   uintptr_t address;
   size_t size;
   js_horizon_alias_reservation* reservation;
+  HorizonMemoryBacking* backing;
+  int heap_backed;
   unsigned char* mapped;
   unsigned char* permissions;
 } HorizonMemoryRegion;
@@ -47,10 +56,60 @@ static HorizonMemoryRegion* find_region(uintptr_t address, size_t size) {
 
 static void free_region(HorizonMemoryRegion* region) {
   if (region != NULL) {
+    if (region->backing != NULL && region->backing->references > 1) {
+      region->backing->references--;
+    }
     free(region->mapped);
     free(region->permissions);
     free(region);
   }
+}
+
+static HorizonMemoryBacking* allocate_heap_backing(size_t size, size_t alignment,
+                                                  uint32_t* raw_result,
+                                                  int* system_failure) {
+  if (system_failure != NULL) *system_failure = 0;
+  if (!size || (size & (HORIZON_PAGE_SIZE - 1)) ||
+      alignment < HORIZON_PAGE_SIZE || (alignment & (alignment - 1)) != 0 ||
+      size > SIZE_MAX - (alignment - 1)) return NULL;
+  HorizonMemoryBacking* backing = calloc(1, sizeof(*backing));
+  if (backing == NULL) return NULL;
+  backing->address = (unsigned char*)memalign(alignment, size);
+  if (backing->address == NULL) {
+    free(backing);
+    return NULL;
+  }
+  backing->size = size;
+  backing->references = 1;
+  Result result = svcSetMemoryPermission(backing->address, size, Perm_None);
+  if (R_FAILED(result)) {
+    set_raw(raw_result, result);
+    if (system_failure != NULL) *system_failure = 1;
+    backing->references = 0;
+    free(backing->address);
+    free(backing);
+    return NULL;
+  }
+  return backing;
+}
+
+static void retain_backing(HorizonMemoryBacking* backing) {
+  if (backing != NULL) backing->references++;
+}
+
+static int release_backing(HorizonMemoryBacking* backing, uint32_t* raw_result) {
+  if (backing == NULL || backing->references == 0) return 0;
+  if (backing->references > 1) {
+    backing->references--;
+    return 1;
+  }
+  Result result = svcSetMemoryPermission(backing->address, backing->size, Perm_Rw);
+  if (raw_result != NULL) *raw_result = (uint32_t)result;
+  if (R_FAILED(result)) return 0;
+  memset(backing->address, 0, backing->size);
+  free(backing->address);
+  free(backing);
+  return 2;
 }
 
 static HorizonMemoryRegion* allocate_region(uintptr_t address, size_t size,
@@ -73,6 +132,9 @@ static HorizonMemoryRegion* allocate_region(uintptr_t address, size_t size,
     const size_t first_page = source_offset / HORIZON_PAGE_SIZE;
     memcpy(region->mapped, source->mapped + first_page, page_count);
     memcpy(region->permissions, source->permissions + first_page, page_count);
+    region->backing = source->backing;
+    region->heap_backed = source->heap_backed;
+    if (region->backing != NULL) retain_backing(region->backing);
   }
   return region;
 }
@@ -105,6 +167,28 @@ js_horizon_memory_status js_horizon_memory_reserve(size_t size, size_t alignment
   HorizonMemoryRegion* region = allocate_region(0, size, NULL, 0);
   if (region == NULL) {
     return JS_HORIZON_MEMORY_NO_MEMORY;
+  }
+
+  u64 system_resource_size = 0;
+  Result resource_result = svcGetInfo(&system_resource_size,
+      InfoType_SystemResourceSizeTotal, CUR_PROCESS_HANDLE, 0);
+  if (R_SUCCEEDED(resource_result) && system_resource_size == 0) {
+    int system_failure = 0;
+    HorizonMemoryBacking* backing = allocate_heap_backing(size, alignment,
+        raw_result, &system_failure);
+    if (backing == NULL) {
+      free_region(region);
+      return system_failure ? JS_HORIZON_MEMORY_SYSTEM : JS_HORIZON_MEMORY_NO_MEMORY;
+    }
+    region->backing = backing;
+    region->heap_backed = 1;
+    region->address = (uintptr_t)backing->address;
+    mutexLock(&g_horizon_memory_lock);
+    region->next = g_horizon_memory_regions;
+    g_horizon_memory_regions = region;
+    mutexUnlock(&g_horizon_memory_lock);
+    *address = backing->address;
+    return JS_HORIZON_MEMORY_OK;
   }
 
   void* found = NULL;
@@ -149,9 +233,15 @@ js_horizon_memory_status js_horizon_memory_commit(void* address, size_t size,
     mutexUnlock(&g_horizon_memory_lock);
     return JS_HORIZON_MEMORY_STATE;
   }
-  virtmemLock();
-  Result result = svcMapPhysicalMemory(address, size);
-  virtmemUnlock();
+  Result result;
+  if (region->heap_backed) {
+    result = svcSetMemoryPermission(address, size, Perm_Rw);
+    if (R_SUCCEEDED(result)) memset(address, 0, size);
+  } else {
+    virtmemLock();
+    result = svcMapPhysicalMemory(address, size);
+    virtmemUnlock();
+  }
   set_raw(raw_result, result);
   if (R_SUCCEEDED(result)) {
     memset(region->mapped + first_page, 1, page_count);
@@ -180,9 +270,14 @@ js_horizon_memory_status js_horizon_memory_uncommit(void* address, size_t size,
     mutexUnlock(&g_horizon_memory_lock);
     return JS_HORIZON_MEMORY_STATE;
   }
-  virtmemLock();
-  Result result = svcUnmapPhysicalMemory(address, size);
-  virtmemUnlock();
+  Result result;
+  if (region->heap_backed) {
+    result = svcSetMemoryPermission(address, size, Perm_None);
+  } else {
+    virtmemLock();
+    result = svcUnmapPhysicalMemory(address, size);
+    virtmemUnlock();
+  }
   set_raw(raw_result, result);
   if (R_SUCCEEDED(result)) {
     memset(region->mapped + first_page, 0, page_count);
@@ -262,6 +357,43 @@ js_horizon_memory_status js_horizon_memory_release(void* address, size_t size,
     free_region(right);
     mutexUnlock(&g_horizon_memory_lock);
     return JS_HORIZON_MEMORY_NO_MEMORY;
+  }
+
+  if (region->heap_backed) {
+    Result result = svcSetMemoryPermission((void*)start, size, Perm_None);
+    if (R_FAILED(result)) {
+      set_raw(raw_result, result);
+      free_region(left);
+      free_region(right);
+      mutexUnlock(&g_horizon_memory_lock);
+      return JS_HORIZON_MEMORY_SYSTEM;
+    }
+    int backing_status = release_backing(region->backing, raw_result);
+    if (backing_status == 0) {
+      /* Final cleanup restores RW before freeing. If that fails, the original
+       * ownership record remains intact for a later release retry. */
+      memset(region->permissions + left_size / HORIZON_PAGE_SIZE,
+             JS_HORIZON_MEMORY_NONE, size / HORIZON_PAGE_SIZE);
+      free_region(left);
+      free_region(right);
+      mutexUnlock(&g_horizon_memory_lock);
+      return JS_HORIZON_MEMORY_SYSTEM;
+    }
+    HorizonMemoryRegion** link = &g_horizon_memory_regions;
+    while (*link != region) link = &(*link)->next;
+    *link = region->next;
+    if (left != NULL) {
+      left->next = g_horizon_memory_regions;
+      g_horizon_memory_regions = left;
+    }
+    if (right != NULL) {
+      right->next = g_horizon_memory_regions;
+      g_horizon_memory_regions = right;
+    }
+    region->backing = NULL; /* release_backing already dropped this reference */
+    free_region(region);
+    mutexUnlock(&g_horizon_memory_lock);
+    return JS_HORIZON_MEMORY_OK;
   }
 
   js_horizon_alias_split* split = NULL;
@@ -369,6 +501,32 @@ js_horizon_memory_status js_horizon_memory_committed_in_range(
 
   const uintptr_t request_start = (uintptr_t)start_address;
   const uintptr_t request_end = request_start + size;
+  mutexLock(&g_horizon_memory_lock);
+  for (HorizonMemoryRegion* region = g_horizon_memory_regions;
+       region != NULL; region = region->next) {
+    if (!region->heap_backed || request_start < region->address ||
+        request_start >= region->address + region->size) continue;
+    size_t page = (request_start - region->address) / HORIZON_PAGE_SIZE;
+    const size_t limit = region->size / HORIZON_PAGE_SIZE;
+    size_t request_limit = (size_t)((request_end - region->address) /
+                                    HORIZON_PAGE_SIZE);
+    if (request_limit > limit) request_limit = limit;
+    while (page < request_limit && !region->mapped[page]) page++;
+    if (page == request_limit) {
+      mutexUnlock(&g_horizon_memory_lock);
+      return JS_HORIZON_MEMORY_STATE;
+    }
+    size_t end_page = page + 1;
+    while (end_page < request_limit && region->mapped[end_page])
+      end_page++;
+    uintptr_t run_start = region->address + page * HORIZON_PAGE_SIZE;
+    uintptr_t run_end = region->address + end_page * HORIZON_PAGE_SIZE;
+    mutexUnlock(&g_horizon_memory_lock);
+    *committed_start = (void*)run_start;
+    *committed_size = (size_t)(run_end - run_start);
+    return JS_HORIZON_MEMORY_OK;
+  }
+  mutexUnlock(&g_horizon_memory_lock);
   uintptr_t cursor = request_start;
   uintptr_t run_start = 0;
   uintptr_t run_end = 0;

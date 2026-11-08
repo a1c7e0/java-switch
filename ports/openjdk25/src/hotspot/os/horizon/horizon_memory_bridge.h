@@ -25,8 +25,13 @@ typedef enum {
   JS_HORIZON_MEMORY_EXECUTE
 } js_horizon_memory_access;
 
-/* raw_result is zero for bridge-level outcomes and carries the exact SVC
- * Result for system failures. Callers must quiesce memory accesses before
+/* Private HotSpot backend. With nonzero process SystemResourceSize it reserves
+ * Alias addresses and uses physical mapping SVCs. When the checked total is
+ * zero, it eagerly allocates the full backing from the C heap instead; this
+ * fallback consumes the full requested size until the last split is released.
+ * Logical uncommit protects pages as NONE and recommit zeros them. It does not
+ * release physical backing. raw_result is zero for bridge outcomes and carries
+ * the exact SVC Result for system failures. Callers must quiesce accesses before
  * uncommit, protection changes, or release. */
 js_horizon_memory_status js_horizon_memory_reserve(size_t size, size_t alignment,
                                                    void** address, uint32_t* raw_result);

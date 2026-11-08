@@ -14,6 +14,7 @@
 struct VirtmemReservation { uintptr_t p; size_t size; int active; };
 static int locked, map_calls, unmap_calls, protect_calls, remove_calls;
 static int map_fail, unmap_fail, protect_fail, unmap_fail_at, add_fail, alias_full;
+static Result map_failure_result=44, unmap_failure_result=45;
 static int calloc_fail_at, calloc_calls;
 static VirtmemReservation reservations[MAX_RESERVATIONS];
 static unsigned char mapped[ALIAS_PAGES];
@@ -78,14 +79,14 @@ Result svcMapPhysicalMemory(void *p, size_t size) {
     assert(locked); map_calls++;
     size_t first=page_index(p,size);
     for (size_t i=first;i<first+size/4096;i++) assert(!mapped[i]);
-    if (map_fail) return 44;
+    if (map_fail) return map_failure_result;
     memset(mapped+first,Perm_Rw,size/4096); return 0;
 }
 Result svcUnmapPhysicalMemory(void *p, size_t size) {
     assert(locked); unmap_calls++;
     size_t first=page_index(p,size);
     for (size_t i=first;i<first+size/4096;i++) assert(mapped[i]);
-    if (unmap_fail || unmap_calls==unmap_fail_at) return 45;
+    if (unmap_fail || unmap_calls==unmap_fail_at) return unmap_failure_result;
     memset(mapped+first,0,size/4096); return 0;
 }
 Result svcSetMemoryPermission(void *p, size_t size, unsigned permission) {
@@ -178,6 +179,18 @@ static void release_retry(void) {
     unmap_fail_at=0;
     assert(js_vmem_release(v,&rc)==JS_VMEM_OK && remove_calls==before+1);
 }
+static void system_resource_failure(void) {
+    js_vmem *v=NULL; uint32_t rc=0;
+    assert(js_vmem_reserve(8192,&v)==JS_VMEM_OK);
+    map_fail=1; map_failure_result=0xfa01;
+    assert(js_vmem_commit_range(v,0,4096,&rc)==JS_VMEM_UNSUPPORTED && rc==0xfa01);
+    map_fail=0; map_failure_result=44;
+    assert(js_vmem_commit_range(v,0,4096,&rc)==JS_VMEM_OK);
+    unmap_fail=1; unmap_failure_result=0xfa01;
+    assert(js_vmem_uncommit_range(v,0,4096,&rc)==JS_VMEM_UNSUPPORTED && rc==0xfa01);
+    unmap_fail=0; unmap_failure_result=45;
+    assert(js_vmem_release(v,&rc)==JS_VMEM_OK && rc==0);
+}
 struct Worker { js_vmem *v; js_vmem_status status; };
 static void *commit_worker(void *arg) {
     struct Worker *w=arg;
@@ -200,7 +213,8 @@ int main(void) {
     whole_region();
     /* Validation tests must never request a huge real mock allocation. */
     allocation_failures();
-    reserve_failures(); ranges_and_protection(); release_retry(); concurrent_commit();
+    reserve_failures(); ranges_and_protection(); release_retry();
+    system_resource_failure(); concurrent_commit();
     assert(!locked);
     for (size_t i=0;i<MAX_RESERVATIONS;i++) assert(!reservations[i].active);
     puts("vmem state and injected failures: PASS");

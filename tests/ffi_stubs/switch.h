@@ -6,6 +6,7 @@
 typedef unsigned int Result;
 typedef uint64_t u64;
 typedef uint32_t u32;
+typedef struct { uintptr_t unused; } ThreadExceptionDump;
 #define R_FAILED(x) ((x) != 0)
 #define R_SUCCEEDED(x) ((x) == 0)
 typedef pthread_mutex_t Mutex;
@@ -20,7 +21,9 @@ static inline void *jitGetRwAddr(Jit *j) { return j->rw_addr; }
 static inline void *jitGetRxAddr(Jit *j) { return j->rx_addr; }
 typedef struct VirtmemReservation VirtmemReservation;
 enum { CUR_PROCESS_HANDLE = 0, InfoType_AliasRegionAddress = 2,
-       InfoType_AliasRegionSize = 3, InfoType_AliasRegionExtraSize = 28,
+       InfoType_AliasRegionSize = 3, InfoType_SystemResourceSizeTotal = 16,
+       InfoType_SystemResourceSizeUsed = 17,
+       InfoType_AliasRegionExtraSize = 28,
        MemType_Unmapped = 0, MemType_Io, MemType_Normal, MemType_CodeStatic,
        MemType_CodeMutable, MemType_Heap, MemType_SharedMem,
        MemType_WeirdMappedMem, MemType_ModuleCodeStatic,

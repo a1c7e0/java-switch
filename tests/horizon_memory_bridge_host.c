@@ -5,8 +5,10 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/mman.h>
 
 #define ALIAS_BASE ((uintptr_t)0x10000000)
 #define ALIAS_SIZE ((size_t)(256 * 4096))
@@ -21,9 +23,11 @@ static int virtmem_locked;
 static int getinfo_failure_id = -1;
 static int query_failure;
 static int alias_full;
+static u64 system_resource_total = 1;
 static int map_failure;
 static int unmap_failure;
 static int protect_failure;
+static int protect_failure_permission = -1;
 static unsigned map_calls, unmap_calls, protect_calls;
 
 void virtmemLock(void) { assert(!virtmem_locked); virtmem_locked = 1; }
@@ -56,6 +60,7 @@ Result svcGetInfo(u64* out, unsigned id, uint64_t handle, uint64_t sub_id) {
     case InfoType_AliasRegionAddress: *out = ALIAS_BASE; return 0;
     case InfoType_AliasRegionSize: *out = ALIAS_SIZE; return 0;
     case InfoType_AliasRegionExtraSize: *out = ALIAS_EXTRA_SIZE; return 0;
+    case InfoType_SystemResourceSizeTotal: *out = system_resource_total; return 0;
     default: return 0x82;
   }
 }
@@ -100,9 +105,16 @@ Result svcUnmapPhysicalMemory(void* address, u64 size) {
 }
 Result svcSetMemoryPermission(void* address, u64 size, u32 permission) {
   ++protect_calls;
-  (void)page_index(address, (size_t)size);
   assert(permission == Perm_None || permission == Perm_R || permission == Perm_Rw);
-  return protect_failure ? 0x86 : 0;
+  uintptr_t start=(uintptr_t)address;
+  if (start >= ALIAS_BASE && start < ALIAS_BASE + ALIAS_SIZE) {
+    (void)page_index(address, (size_t)size);
+    return (protect_failure || (int)permission == protect_failure_permission) ? 0x86 : 0;
+  }
+  if (protect_failure || (int)permission == protect_failure_permission) return 0x86;
+  int protection = permission == Perm_None ? PROT_NONE :
+                   permission == Perm_R ? PROT_READ : PROT_READ | PROT_WRITE;
+  return mprotect(address, (size_t)size, protection) == 0 ? 0 : 0x87;
 }
 
 static void verifies_alias_allocation(void) {
@@ -187,12 +199,52 @@ static void sdk_and_vm_share_alias_reservations(void) {
                                    &raw) == JS_HORIZON_MEMORY_OK);
 }
 
+static void uses_eager_heap_backing_without_system_resources(void) {
+  void* address=NULL; uint32_t raw=0;
+  system_resource_total=0;
+  const unsigned maps_before=map_calls, unmaps_before=unmap_calls;
+  assert(js_horizon_memory_reserve(4*4096, 65536, &address, &raw) ==
+         JS_HORIZON_MEMORY_OK);
+  assert(address && ((uintptr_t)address & 65535)==0 &&
+         ((uintptr_t)address < ALIAS_BASE ||
+          (uintptr_t)address >= ALIAS_BASE + ALIAS_SIZE));
+  assert(raw==0 && map_calls==maps_before && unmap_calls==unmaps_before);
+  assert(js_horizon_memory_commit(address, 2*4096, &raw) == JS_HORIZON_MEMORY_OK);
+  assert(raw==0 && ((unsigned char*)address)[0]==0 && ((unsigned char*)address)[4096]==0);
+  memset(address, 0x5a, 2*4096);
+  void* committed=NULL; size_t committed_size=0;
+  assert(js_horizon_memory_committed_in_range(address, 4*4096,
+      &committed, &committed_size, &raw) == JS_HORIZON_MEMORY_OK);
+  assert(committed==address && committed_size==2*4096);
+  assert(js_horizon_memory_uncommit(address, 2*4096, &raw) == JS_HORIZON_MEMORY_OK);
+  assert(js_horizon_memory_commit(address, 2*4096, &raw) == JS_HORIZON_MEMORY_OK);
+  assert(((unsigned char*)address)[0]==0 && ((unsigned char*)address)[4096]==0);
+  assert(js_horizon_memory_commit((unsigned char*)address+2*4096, 4096, &raw) ==
+         JS_HORIZON_MEMORY_OK);
+  assert(js_horizon_memory_commit((unsigned char*)address+3*4096, 4096, &raw) ==
+         JS_HORIZON_MEMORY_OK);
+  ((unsigned char*)address)[3*4096]=0x7b;
+  assert(js_horizon_memory_release((unsigned char*)address+4096, 2*4096, &raw) ==
+         JS_HORIZON_MEMORY_OK);
+  assert(((unsigned char*)address)[3*4096]==0x7b);
+  assert(js_horizon_memory_release(address, 4096, &raw) == JS_HORIZON_MEMORY_OK);
+  protect_failure_permission=Perm_Rw;
+  assert(js_horizon_memory_release((unsigned char*)address+3*4096, 4096, &raw) ==
+         JS_HORIZON_MEMORY_SYSTEM && raw==0x86);
+  protect_failure_permission=-1;
+  assert(js_horizon_memory_release((unsigned char*)address+3*4096, 4096, &raw) ==
+         JS_HORIZON_MEMORY_OK);
+  assert(!virtmem_locked);
+  system_resource_total=1;
+}
+
 int main(void) {
   verifies_alias_allocation();
   reports_region_errors_and_exhaustion();
   sdk_and_vm_share_alias_reservations();
+  uses_eager_heap_backing_without_system_resources();
   assert(unmap_calls == 3 && !virtmem_locked);
   for (size_t i = 0; i < MAX_RESERVATIONS; ++i) assert(!reservations[i].active);
-  puts("Horizon physical-memory bridge Alias-region placement and failures: PASS");
+  puts("Horizon physical-memory and eager heap-backed bridge paths: PASS");
   return 0;
 }

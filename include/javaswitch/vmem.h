@@ -23,7 +23,9 @@ size_t js_vmem_size(const js_vmem *region);
  * Each range operation makes one syscall and changes state only on success.
  * Commit maps RW pages. Protect supports NONE/R/RW; executable access returns
  * UNSUPPORTED without a syscall. Use the separate libnx JIT closure allocator.
- * These syscalls may be denied by the Horizon process; preserve raw Result. */
+ * Physical mapping needs nonzero process SystemResourceSize. If Horizon returns
+ * 0xfa01 for that missing process resource, the status is UNSUPPORTED and the
+ * raw Result is preserved. Other syscall failures return SYSTEM. */
 js_vmem_status js_vmem_commit_range(js_vmem *, size_t offset, size_t length, uint32_t *result);
 js_vmem_status js_vmem_uncommit_range(js_vmem *, size_t offset, size_t length, uint32_t *result);
 js_vmem_status js_vmem_protect_range(js_vmem *, size_t offset, size_t length,

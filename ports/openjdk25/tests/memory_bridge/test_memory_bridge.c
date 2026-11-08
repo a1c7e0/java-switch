@@ -33,6 +33,7 @@ static size_t g_query_span_count;
 static size_t g_query_calls;
 static unsigned g_query_fail_at;
 static Result g_query_failure_result;
+static unsigned g_system_resource_queries;
 
 void* __real_calloc(size_t count, size_t size);
 void* __wrap_calloc(size_t count, size_t size) {
@@ -149,6 +150,10 @@ Result svcSetMemoryPermission(void* address, uint64_t size64, u32 permission) {
 Result svcGetInfo(u64* out, unsigned id, uint64_t handle, uint64_t sub_id) {
   assert(out != NULL && handle == CUR_PROCESS_HANDLE && sub_id == 0);
   switch (id) {
+    case InfoType_SystemResourceSizeTotal:
+      g_system_resource_queries++;
+      *out = 1; /* Exercise the normal Alias backend unless a test says otherwise. */
+      return 0;
     case InfoType_AliasRegionAddress: *out = TEST_BASE; return 0;
     case InfoType_AliasRegionSize: *out = TEST_PAGE_COUNT * PAGE_SIZE; return 0;
     case InfoType_AliasRegionExtraSize: *out = 0; return 0;
@@ -443,6 +448,7 @@ int main(void) {
   test_os_committed_query();
   assert(reservation_count() == 0);
   assert(!g_virtmem_locked);
+  assert(g_system_resource_queries >= 4);
   puts("Horizon memory bridge mocked libnx tests: PASS");
   return 0;
 }

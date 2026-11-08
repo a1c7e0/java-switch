@@ -56,7 +56,8 @@ enum { Perm_None = 0, Perm_R = 1, Perm_W = 2, Perm_Rw = 3 };
 enum {
   InfoType_AliasRegionAddress = 1,
   InfoType_AliasRegionSize = 2,
-  InfoType_AliasRegionExtraSize = 3
+  InfoType_AliasRegionExtraSize = 3,
+  InfoType_SystemResourceSizeTotal = 16
 };
 #define CUR_PROCESS_HANDLE UINT64_MAX
 enum { Module_Kernel = 1, KernelError_NotImplemented = 33 };

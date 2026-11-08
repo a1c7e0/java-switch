@@ -38,6 +38,28 @@ This source audit does not establish the actual homebrew process permissions.
 No kernel changes or capability bypasses are included. Mapping failures preserve
 the real Horizon Result.
 
+The ordinary `svcMapPhysicalMemory` and `svcUnmapPhysicalMemory` also require
+the running process to have nonzero `SystemResourceSize` in its process metadata.
+The kernel returns `0xfa01` when that resource is zero; lowering the newlib heap
+or finding a different Alias address cannot supply it. The public allocator maps
+that specific result to `JS_VMEM_UNSUPPORTED` while retaining `0xfa01` for
+diagnostics. A homebrew loader or title must create the process with a nonzero
+system-resource budget for these syscalls to work. Privileged unsafe mapping is
+not a supported substitute. Hardware behavior remains to be verified on the
+target process configuration.
+
+The private HotSpot bridge has a separate fallback for processes whose checked
+`SystemResourceSizeTotal` is zero. It eagerly obtains an aligned heap allocation
+for the entire reserved range, initially protects it as NONE, and uses only
+`svcSetMemoryPermission` for logical NONE/R/RW transitions. Commit makes a range
+RW and zeros it; uncommit makes it NONE while keeping the backing allocated and
+charged to the C heap. A partial release retains the complete original backing
+until its last live split is released. Final release restores RW before freeing;
+on a permission error it keeps ownership so cleanup can be retried. This mode
+does not provide sparse physical commitment: the complete request must fit in
+the process heap at reserve time. The public SDK reservation API remains
+unmapped and does not use this fallback.
+
 ## Memory budgets and verification
 
 libnx's default zero `__nx_heap_size` commits almost the entire process budget
