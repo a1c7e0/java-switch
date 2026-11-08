@@ -1,0 +1,24 @@
+[tick=11756747856] 
+Switchcraft ffi-test 0.1.0 | hardware status: NOT TESTED
+[tick=11758021292] Applet type=0 (Application=0); firmware=21.2.0
+[tick=11758148990] Log: sdmc:/switch/mc-runtime/logs/ffi-test.log (open)
+[tick=11758274238] libffi Horizon / Java 25 fallback linker prerequisites
+A: native downcalls | X: W^X upcall closure | +: exit
+This does not initialize a Java 25 VM. Hardware NOT TESTED.
+[tick=11758420474] Y: virtual memory reserve / commit / uncommit probe
+[tick=11758540646] B: aligned partial mappings / R-NONE-RW protection probe
+[tick=11784735216] AAPCS64 integer downcall=42 expected=42 PASS
+[tick=11784982658] AAPCS64 mixed integer/FP downcall=41.5 expected=41.5 PASS
+[tick=11817055649] libffi closure allocated using libnx JIT RW/RX permissions
+[tick=11817303235] FFM-style upcall=42 expected=42 PASS
+[tick=11817422919] jitClose Result=0x0
+[tick=11817548117] mixed integer/FP upcall=41.5 expected=41.5 PASS
+[tick=11817667322] mixed jitClose Result=0x0
+[tick=11923935147] vmem reserved 65536 bytes at 0x3279e00000
+[tick=11924182852] vmem commit failed: status=4 Result=0xfa01
+[tick=11924302399] vmem release status=0 Result=0x0
+[tick=11957535608] partial vmem reserve size=16384 alignment=65536 status=0
+[tick=11957782463] partial vmem address=0x3279e00000 aligned=PASS; outer pages remain unmapped
+[tick=11957902745] partial vmem commit offset=4096 length=8192 status=4 Result=0xfa01
+[tick=11958020943] vmem release status=0 Result=0x0
+[tick=12003294528] Clean exit: ffi-test

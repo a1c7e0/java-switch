@@ -1,0 +1,116 @@
+{
+  "evidence": "Physical Switch user-supplied logs, not host execution",
+  "reported_date": "2026-11-08",
+  "firmware": "21.2.0",
+  "mode": "AppletType_Application=0 observed in logs",
+  "atmosphere_version": "NOT PROVIDED",
+  "hbmenu_version": "NOT PROVIDED",
+  "switch_model": "Switch 1 (user task target; no independent model record)",
+  "sd_package_sha256": "5626a9e6e0f56cbbe89830e8e9bc35c93436a5f13fff1f3bb4037860ca4c696e",
+  "native_source_revision": "e08f36a9d19cf461312f87a866f9bb1f39d57d98",
+  "launcher_source_revision": "13e9cffdd740f94c4882d124e7f8a995aabf5193",
+  "java_switch_revision": "b7c2ac7fd422bc2543e5c698db4e33a01cc0312d",
+  "uploaded_zip_sha256": "1ef684088f54cf9454f14d52e58d43e478919a6bcf3ba5fe2ffe5d3d27b6867b",
+  "observed_passes": [
+    "Native SD roundtrip",
+    "Native malloc4MiB",
+    "Native threadcreate/start/join",
+    "AAPCS64 int/mixed downcalls",
+    "libnx JIT int/mixed upcalls/close",
+    "Native clock/monitor/semaphore/atomic/event accounting",
+    "Native64permit handoffs/TLS isolation",
+    "Deferrednativecleanup",
+    "SafeFetch exactfault islands",
+    "SnapshotVulkanbasefeatures",
+    "NVKoffscreenreadback/triangle",
+    "SDL3/VI rendered300frames andloggedcleanupcompletion"
+  ],
+  "failures": [
+    "Java8 device-URI filesystem path and exclusive-file diagnostic",
+    "SDK/public andprivate memorycommit Result0xfa01",
+    "StandaloneJava25A/X/Y andcombinedA/X terminate withdataabort FAR0x468; no Java output"
+  ],
+  "user_reported": [
+    "vulkan-present color discontinuities and error/exit after colors; logs do not show an explicit Vulkan error aftercleanup",
+    "Java25 closes beforeusercanreadresults"
+  ],
+  "not_established": [
+    "Horizon VMstartup success",
+    "Java25class execution",
+    "Horizon JavaJNI/FFM",
+    "Horizon startupagent/instrumentation",
+    "MinecrafttitleonHorizon"
+  ],
+  "files": [
+    {
+      "name": "ffi-test.log",
+      "bytes": 1501,
+      "sha256": "20cf21f220cb586c6c1147fc86188d19d1faafba12bbf53bd6fe6f65b6793e5e"
+    },
+    {
+      "name": "java-test.log",
+      "bytes": 4919,
+      "sha256": "417e1e607098118ead6c13db3132f101a9f37360a5b582eddb19424f577181aa"
+    },
+    {
+      "name": "java25-test.log",
+      "bytes": 5542,
+      "sha256": "ba5bf2fa0212eea5c5d4be3742561ee9674a005d4a831237c22b86f62f2ca176"
+    },
+    {
+      "name": "java25-vm-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "java25-vm-stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "snapshot-vulkan.json",
+      "bytes": 5162,
+      "sha256": "11be6dcccd82045982371d0133a91542a7c2e1ba87c5352d9378e791451e83c1"
+    },
+    {
+      "name": "switch-diagnostics.log",
+      "bytes": 944,
+      "sha256": "d7c534dd873977b8c94c5267a7b55ef54fa02f8e57e9d75db87b854629dcb636"
+    },
+    {
+      "name": "switchcraft-java25-vm-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "switchcraft-java25-vm-stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "switchcraft-java25.log",
+      "bytes": 4006,
+      "sha256": "41b5bf980b5738c8bedd72303e1d828db2a6cac9322589384955fba7dd68af16"
+    },
+    {
+      "name": "vulkan-present.log",
+      "bytes": 6655,
+      "sha256": "6579c67d117b724d34217f53037bd9b6e5118f4f5e0b2ca9247016a9901bdd64"
+    },
+    {
+      "name": "vulkan-test.log",
+      "bytes": 38956,
+      "sha256": "6cf29dfe9cd67415c13b6c0149addd216e81bbcc65b6affb95e03ec455c15ea4"
+    },
+    {
+      "name": "zero-services-test--.log",
+      "bytes": 3016,
+      "sha256": "60c280066a480a80ca76335476a18dcfdc21f215fcda7744e5c566906d7f6d72"
+    },
+    {
+      "name": "zero-services-test.log",
+      "bytes": 5734,
+      "sha256": "98a6f46a5f2079383aab036a189ef1d212f50d9034fcdcef163552e7a74566b6"
+    }
+  ]
+}

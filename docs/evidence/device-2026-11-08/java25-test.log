@@ -1,0 +1,55 @@
+[tick=15503665580] 
+Switchcraft java25-test 0.1.0 | hardware status: NOT TESTED
+[tick=15503853309] Applet type=0 (Application=0); firmware=21.2.0
+[tick=15503979511] Log: sdmc:/switch/mc-runtime/logs/java25-test.log (open)
+[tick=15504103733] Genuine OpenJDK25 Zero startup diagnostic; device execution NOT TESTED
+[tick=15504224546] Process memory: total=3444572160 used=3440488448 bytes rc=0x0/0x0
+[tick=15504342456] Process limit minus current use=4083712 bytes (not JVM heap)
+[tick=15504462394] Newlib malloc arena=14336000 allocated=14307936 free-in-arena=28064 bytes
+[tick=15504583277] Kernel-used memory includes reserved heap; arena free space is separate.
+[tick=15506522896] 4 MiB allocation/write/read/free: PASS
+[tick=15506786822] Newlib configured heap=268435456 bytes; loader heap override=1 size=3431952384 bytes
+[tick=15506908914] JVM request is -Xmx128M; process total/used budget is reported above and the loader override takes precedence over the configured newlib heap.
+[tick=15507030359] A: classfile-69 Hello | X: full Java25Smoke suite | Y: startup javaagent/JVMTI/ClassFileLoadHook [device NOT TESTED] | +: exit
+One VM launch per process.
+[tick=15539294975] Selected Java25 mode=classfile-69-Hello
+[tick=15539539263] runtime query status=0 available=1 Java=25 JNI=1
+[tick=15539670769] OpenJDK25 will run on a 4 MiB worker; UI updates pause during the worker join. Initial diagnostics are in sdmc:/switch/mc-runtime/logs/java25-test.log; VM stdout/stderr will append to sdmc:/switch/mc-runtime/logs/java25-vm-stdout.log and sdmc:/switch/mc-runtime/logs/java25-vm-stderr.log. If startup hangs, use Home and close the application from the system UI.
+[tick=15540163615] libnx fatal exception: descriptor=0x00000101 PC=0x000000370b012750 ESR=0x92000005 FAR=0x0000000000000468
+[tick=15873996928] 
+Switchcraft java25-test 0.1.0 | hardware status: NOT TESTED
+[tick=15874073570] Applet type=0 (Application=0); firmware=21.2.0
+[tick=15874191192] Log: sdmc:/switch/mc-runtime/logs/java25-test.log (open)
+[tick=15874307109] Genuine OpenJDK25 Zero startup diagnostic; device execution NOT TESTED
+[tick=15874423629] Process memory: total=3444572160 used=3440488448 bytes rc=0x0/0x0
+[tick=15875621708] Process limit minus current use=4083712 bytes (not JVM heap)
+[tick=15875740907] Newlib malloc arena=14336000 allocated=14307936 free-in-arena=28064 bytes
+[tick=15876088820] Kernel-used memory includes reserved heap; arena free space is separate.
+[tick=15878956637] 4 MiB allocation/write/read/free: PASS
+[tick=15880205556] Newlib configured heap=268435456 bytes; loader heap override=1 size=3431952384 bytes
+[tick=15881217227] JVM request is -Xmx128M; process total/used budget is reported above and the loader override takes precedence over the configured newlib heap.
+[tick=15882021595] A: classfile-69 Hello | X: full Java25Smoke suite | Y: startup javaagent/JVMTI/ClassFileLoadHook [device NOT TESTED] | +: exit
+One VM launch per process.
+[tick=16005214719] Selected Java25 mode=Java25Smoke
+[tick=16005458238] runtime query status=0 available=1 Java=25 JNI=1
+[tick=16005852565] OpenJDK25 will run on a 4 MiB worker; UI updates pause during the worker join. Initial diagnostics are in sdmc:/switch/mc-runtime/logs/java25-test.log; VM stdout/stderr will append to sdmc:/switch/mc-runtime/logs/java25-vm-stdout.log and sdmc:/switch/mc-runtime/logs/java25-vm-stderr.log. If startup hangs, use Home and close the application from the system UI.
+[tick=16006277072] libnx fatal exception: descriptor=0x00000101 PC=0x00000024c3c20750 ESR=0x92000005 FAR=0x0000000000000468
+[tick=16223755382] 
+Switchcraft java25-test 0.1.0 | hardware status: NOT TESTED
+[tick=16223831428] Applet type=0 (Application=0); firmware=21.2.0
+[tick=16223945195] Log: sdmc:/switch/mc-runtime/logs/java25-test.log (open)
+[tick=16224059425] Genuine OpenJDK25 Zero startup diagnostic; device execution NOT TESTED
+[tick=16224175056] Process memory: total=3444572160 used=3440488448 bytes rc=0x0/0x0
+[tick=16224288491] Process limit minus current use=4083712 bytes (not JVM heap)
+[tick=16224403871] Newlib malloc arena=14336000 allocated=14307936 free-in-arena=28064 bytes
+[tick=16224517838] Kernel-used memory includes reserved heap; arena free space is separate.
+[tick=16227087640] 4 MiB allocation/write/read/free: PASS
+[tick=16227330856] Newlib configured heap=268435456 bytes; loader heap override=1 size=3431952384 bytes
+[tick=16227452030] JVM request is -Xmx128M; process total/used budget is reported above and the loader override takes precedence over the configured newlib heap.
+[tick=16227571987] A: classfile-69 Hello | X: full Java25Smoke suite | Y: startup javaagent/JVMTI/ClassFileLoadHook [device NOT TESTED] | +: exit
+One VM launch per process.
+[tick=16242016019] Selected Java25 mode=startup-javaagent (cross-built; device NOT TESTED)
+[tick=16242263366] runtime query status=0 available=1 Java=25 JNI=1
+[tick=16242386982] Y selected: genuine startup -javaagent request; premain/JVMTI transformation is cross-built but device execution NOT TESTED.
+[tick=16242520082] OpenJDK25 will run on a 4 MiB worker; UI updates pause during the worker join. Initial diagnostics are in sdmc:/switch/mc-runtime/logs/java25-test.log; VM stdout/stderr will append to sdmc:/switch/mc-runtime/logs/java25-vm-stdout.log and sdmc:/switch/mc-runtime/logs/java25-vm-stderr.log. If startup hangs, use Home and close the application from the system UI.
+[tick=16242930408] libnx fatal exception: descriptor=0x00000101 PC=0x00000023b5503750 ESR=0x92000005 FAR=0x0000000000000468

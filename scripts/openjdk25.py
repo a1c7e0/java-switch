@@ -214,16 +214,16 @@ def link_vm(dk, env, native=False, instrument=False):
             log.write('$ ' + shlex.join(generator) + '\n'); log.flush()
             subprocess.run(generator, stdout=log, stderr=subprocess.STDOUT, check=True)
             command = [str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'), *arch,
-                       '-I' + str(ROOT / 'include'), '-c', str(output / 'native_resolver.c'),
+                       '-I' + str(ROOT / 'include'), '-I' + str(ROOT / 'build'), '-c', str(output / 'native_resolver.c'),
                        '-o', str(output / 'native_resolver.o')]
             log.write('$ ' + shlex.join(command) + '\n'); log.flush()
             subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=True)
-        for name in ['java25_vm_test', 'platform']:
+        for name in ['java25_vm_test', 'platform', 'runtime_openjdk']:
             command = [str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'), *arch,
                        *(['-DJS_OPENJDK25_STATIC_PROVIDER'] if native else []),
                        *(['-DJS_OPENJDK25_INSTRUMENT'] if instrument else []),
                        '-D__SWITCH__', '-I' + str(dk / 'libnx/include'),
-                       '-I' + str(ROOT / 'include'), '-I' + str(ROOT / 'src'),
+                       '-I' + str(ROOT / 'include'), '-I' + str(ROOT / 'build'), '-I' + str(ROOT / 'src'), '-I' + str(ROOT / 'build'),
                        '-I' + str(PORT / 'src/java.base/share/native/include'),
                        '-I' + str(PORT / 'src/java.base/horizon/native/include'),
                        '-c', str(ROOT / 'src' / (name + '.c')), '-o', str(output / (name + '.o'))]
@@ -233,6 +233,7 @@ def link_vm(dk, env, native=False, instrument=False):
                    '-specs=' + str(dk / 'libnx/switch.specs'), '-L' + str(dk / 'libnx/lib'),
                    '-Wl,--gc-sections', '-Wl,-u,JNI_CreateJavaVM',
                    str(output / 'java25_vm_test.o'), str(output / 'platform.o'),
+                   str(output / 'runtime_openjdk.o'),
                    *([str(output / 'native_resolver.o')] if native else []),
                    '-Wl,--start-group', *[str(path) for _, path in libraries if path.name not in ('libc.a', 'libm.a')],
                    str(archive), str(ROOT / 'build/sdk/libjavaswitch.a'), '-lnx',
@@ -387,7 +388,7 @@ def work():
                          'horizon_memory_bridge.c', 'horizon_system_bridge.c']:
                 subprocess.run([str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'),
                                 '-march=armv8-a+crc+crypto', '-fPIE',
-                                '-I' + str(dk / 'libnx/include'), '-I' + str(ROOT / 'include'), '-c',
+                                '-I' + str(dk / 'libnx/include'), '-I' + str(ROOT / 'include'), '-I' + str(ROOT / 'build'), '-c',
                                 str(PORT / 'src/hotspot/os/horizon' / name),
                                 '-o', str(output / (pathlib.Path(name).stem + '.o'))], env=env,
                                stdout=log, stderr=subprocess.STDOUT, check=True)
@@ -508,7 +509,7 @@ def work():
                            str(test_dir / ('test_' + name + '_bridge.c')),
                            '-pthread', '-o', str(binary)]
                 if name == 'memory':
-                    command += ['-I' + str(ROOT / 'include'),
+                    command += ['-I' + str(ROOT / 'include'), '-I' + str(ROOT / 'build'),
                                 str(ROOT / 'src/horizon_alias.c'), str(ROOT / 'src/vmem_horizon.c'),
                                 '-Wl,--wrap=calloc']
                 subprocess.run(command, check=True)
@@ -548,14 +549,14 @@ def work():
         arch = ['-march=armv8-a+crc+crypto', '-mtune=cortex-a57', '-mtp=soft', '-fPIE']
         for source, obj in [('src/zero_services_test.c', runner), ('src/platform.c', output / 'platform.o')]:
             subprocess.run([str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'), *arch, '-D__SWITCH__', '-I' + str(dk / 'libnx/include'),
-                            '-I' + str(ROOT / 'src'), '-c', str(ROOT / source), '-o', str(obj)],
+                            '-I' + str(ROOT / 'src'), '-I' + str(ROOT / 'build'), '-c', str(ROOT / source), '-o', str(obj)],
                            env=env, check=True)
         for source in ['tests/openjdk25_memory_probe.c', 'src/horizon_alias.c', 'src/vmem_horizon.c']:
             obj = output / (pathlib.Path(source).stem + '.o')
             subprocess.run([str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'), *arch,
                             '-mno-outline-atomics', '-D__SWITCH__', '-D_DEFAULT_SOURCE',
-                            '-I' + str(dk / 'libnx/include'), '-I' + str(ROOT / 'include'),
-                            '-I' + str(ROOT / 'src'), '-c', str(ROOT / source), '-o', str(obj)],
+                            '-I' + str(dk / 'libnx/include'), '-I' + str(ROOT / 'include'), '-I' + str(ROOT / 'build'),
+                            '-I' + str(ROOT / 'src'), '-I' + str(ROOT / 'build'), '-c', str(ROOT / source), '-o', str(obj)],
                            env=env, check=True)
         elf = output / 'zero-services-test.elf'
         objects = [output / name for name in ['os_horizon_time.o', 'semaphore_horizon.o',

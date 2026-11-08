@@ -156,3 +156,5 @@ SDK private Mbed TLS globals are namespaced at SDK archive construction using
 `scripts/isolate-private-crypto.py`; keep definitions and references isolated,
 preserve public ABI 1, and test external crypto library composition. Do not use
 duplicate-definition linker suppression. See docs/SDK_PRIVATE_CRYPTO.md.
+
+First physical feedback is preserved in docs/DEVICE_FEEDBACK_2026_11_08.md and tracked as issues4-6. The old B7 artifacts passed native FFI/thread/SafeFetch probes but failed physical mappings and Java8 file I/O, while all Java25 attempts crashed before observed Java output. The new eager private data backend is distinct from public unmapped reservations and retains physical heap backing until release. Result panes never relaunch a VM; fatal capture is bounded and does not recover unmatched faults. New fixes remain device-unverified. Do not overwrite the immutable original evidence or close execution issues on host/cross-build success.

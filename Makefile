@@ -2,13 +2,15 @@ DEVKITPRO ?= $(CURDIR)/.toolchain/opt/devkitpro
 export DEVKITPRO
 DK := $(DEVKITPRO)/devkitA64/bin/aarch64-none-elf-
 ARCH := -march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE
-CFLAGS := $(ARCH) -O2 -g -Wall -Wextra -ffunction-sections -fdata-sections -D__SWITCH__ -isystem $(DEVKITPRO)/libnx/include -Isrc -Iinclude
+CFLAGS := $(ARCH) -O2 -g -Wall -Wextra -ffunction-sections -fdata-sections -D__SWITCH__ -isystem $(DEVKITPRO)/libnx/include -Isrc -Iinclude -Ibuild
 LDFLAGS := $(ARCH) -specs=$(DEVKITPRO)/libnx/switch.specs -L$(DEVKITPRO)/libnx/lib -Wl,--gc-sections
-.PHONY: all host-test clean
+.PHONY: all host-test clean FORCE
 all: dist/java-test.nro dist/ffi-test.nro build/minijvm_rt.jar build/diagnostic-tests.jar build/dependency.jar build/sdk/libjavaswitch.a build/java25-tests.jar build/java25-hello.jar
 build dist:
 	mkdir -p $@
-build/platform.o: src/platform.c src/platform.h | build
+build/build-info.h: FORCE scripts/build-info.py | build
+	python3 scripts/build-info.py
+build/platform.o: src/platform.c src/platform.h src/runtime_diagnostics.h build/build-info.h | build
 	$(DK)gcc $(CFLAGS) -c $< -o $@
 build/libminijvm.a: scripts/build-minijvm.py patches/minijvm-horizon.patch src/minijvm_mman.h src/minijvm_compat.h | build
 	python3 scripts/build-minijvm.py
@@ -28,9 +30,9 @@ dist/ffi-test.nro: build/ffi-test.elf | dist
 	$(DEVKITPRO)/tools/bin/elf2nro $< $@ --nacp=build/ffi-test.nacp --icon=$(DEVKITPRO)/libnx/default_icon.jpg
 build/java-test-host: scripts/build-minijvm.py src/java_vm.c src/java_host.c build/libminijvm.a
 	python3 scripts/build-minijvm.py --host
-build/minijvm_rt.jar build/diagnostic-tests.jar build/dependency.jar &: scripts/build-java-tests.py tests/java/DiagnosticSmoke.java tests/java/JarDependency.java | build
+build/minijvm_rt.jar build/diagnostic-tests.jar build/dependency.jar &: scripts/build-java-tests.py patches/minijvm-java8-fs.patch patches/minijvm-java8-fs.patch.sha256 tests/java/DiagnosticSmoke.java tests/java/JarDependency.java | build
 	python3 scripts/build-java-tests.py
-build/sdk/libjavaswitch.a build/jni25-host &: scripts/build-sdk.py scripts/isolate-private-crypto.py src/runtime.c src/runtime_minijvm.c src/runtime_openjdk.c src/runtime_services.c src/native_resolver.c src/ffi_horizon.c src/vmem_horizon.c src/horizon_alias.c include/javaswitch/vmem.h include/javaswitch/detail/horizon_alias.h include/javaswitch/runtime.h include/javaswitch/native_resolver.h tests/runtime_gate.c build/libminijvm.a build/java-test-host build/libffi-horizon.a
+build/sdk/libjavaswitch.a build/jni25-host &: scripts/build-sdk.py scripts/isolate-private-crypto.py src/runtime.c src/runtime_minijvm.c src/runtime_openjdk.c src/runtime_diagnostics.h src/runtime_services.c src/native_resolver.c src/ffi_horizon.c src/vmem_horizon.c src/horizon_alias.c include/javaswitch/vmem.h include/javaswitch/detail/horizon_alias.h include/javaswitch/runtime.h include/javaswitch/native_resolver.h tests/runtime_gate.c build/libminijvm.a build/java-test-host build/libffi-horizon.a
 	python3 scripts/build-sdk.py
 build/java25-tests.jar build/java25-hello.jar &: scripts/build-java25-tests.py tests/java25/Java25Smoke.java tests/java25/HelloHorizon25.java | build
 	python3 scripts/build-java25-tests.py

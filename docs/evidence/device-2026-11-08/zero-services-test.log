@@ -1,0 +1,77 @@
+[tick=12129382692] 
+Switchcraft zero-services-test 0.1.0 | hardware status: NOT TESTED
+[tick=12129855195] Applet type=0 (Application=0); firmware=21.2.0
+[tick=12129909386] Log: sdmc:/switch/mc-runtime/logs/zero-services-test.log (open)
+[tick=12129964537] OpenJDK25 Horizon OS-service components only
+NO Java VM, NO classfile execution; hardware NOT TESTED.
+A: time/synchronization probe | X: native thread/permit probe | +: exit
+[tick=12130116206] Y: experimental fault-island probe; may abort if recovery is unsupported
+[tick=12130311980] B: deferred native thread ownership / join / close probe
+[tick=12130364218] L: private VM Alias memory / split release / SDK ownership probe
+[tick=12194335694] Genuine OpenJDK25 os:: timing and HorizonSemaphore primitives
+[tick=12194512059] Counter frequency=19200000 Hz
+[tick=12194575646] os::javaTimeNanos samples=10000 span=697188 ns monotonic=PASS
+[tick=12194628012] os::javaTimeMillis=1737943965570 (Horizon/newlib wall clock)
+[tick=12194679216] HorizonSemaphore token accounting=PASS; contention not exercised
+[tick=12194733259] HotSpot Atomic 64-bit add/CAS/load=PASS; contention not exercised
+[tick=12194784578] No Java VM startup, classfile execution, JNI, or Java FFM was tested.
+[tick=12194873528] PlatformMonitor wait(2ms)=-3 expected timeout=-3; mutex reacquired
+[tick=12194924579] PlatformMutex/Monitor accounting/timeout=PASS; contention not exercised
+[tick=12194995810] PlatformEvent coalesced permits and real timed wait=PASS
+[tick=12252895329] native parent identity status=0 Result=0x0 id=668
+[tick=12253058383] native create stack=131072 status=0 Result=0x0
+[tick=12253108116] native start status=0 Result=0x0
+[tick=12253169331] native join status=0 Result=0x0
+[tick=12253221372] native close status=0 Result=0x0 (libnx cannot report svcCloseHandle Result)
+[tick=12253276041] native child id=674 stack Result=0x0 identity Result=0x0 completed=64
+[tick=12253326273] native thread / stack bounds / 64 permit handoffs: PASS; no VM/JNI test
+[tick=12253379259] HotSpot library TLS + compiler __thread isolation=PASS; opaque markers, no Thread/JavaThread objects
+[tick=12274015831] Actual process-lifetime native reaper startup: status=0 Result=0x0
+[tick=12274177043] Retired worker still alive: queued/inflight=1 async Result=0x0
+[tick=12274420437] Deferred join/close: pending=0 async Result=0x0; PASS
+[tick=12314656197] Native Alias memory probe: begin (physical mapping syscalls; no VM execution)
+[tick=12314814080] memory probe reserve aligned private 16 KiB: OK raw=0x0
+[tick=12314863491] memory probe alignment: PASS address=0x3279e00000 alignment=65536
+[tick=12314913140] memory probe commit private 4 pages: SYSTEM raw=0xfa01
+[tick=12314964518] memory probe cleanup private parent: OK raw=0x0
+[tick=12315014391] Native Alias memory probe: FAIL; retained ownership will be retried on next press
+[tick=12771296500] Closing this application process; reopen application-mode hbmenu for another native test.
+[tick=12771454638] Clean exit: zero-services-test
+[tick=14472676033] 
+Switchcraft zero-services-test 0.1.0 | hardware status: NOT TESTED
+[tick=14472717520] Applet type=0 (Application=0); firmware=21.2.0
+[tick=14472769916] Log: sdmc:/switch/mc-runtime/logs/zero-services-test.log (open)
+[tick=14472823844] OpenJDK25 Horizon OS-service components only
+NO Java VM, NO classfile execution; hardware NOT TESTED.
+A: time/synchronization probe | X: native thread/permit probe | +: exit
+[tick=14472874152] Y: experimental fault-island probe; may abort if recovery is unsupported
+[tick=14472923285] B: deferred native thread ownership / join / close probe
+[tick=14472972382] L: private VM Alias memory / split release / SDK ownership probe
+[tick=14482015721] SafeFetch target address 0: query Result=0x0 permissions=0x0
+[tick=14482171336] SafeFetch valid 32/64-bit loads=PASS
+[tick=14482219617] Attempt SafeFetch32 at unreadable address 0; recovery is hardware NOT TESTED
+[tick=14482266251] SafeFetch32 fault result=-12345 expected=-12345
+[tick=14482310224] Attempt SafeFetchN at unreadable address 0
+[tick=14482379388] SafeFetchN fault result=-67890 expected=-67890
+[tick=14482427203] SafeFetch fault-island recovery=PASS; no general Java exception/VM claim
+[tick=14567136725] Closing this application process; reopen application-mode hbmenu for another native test.
+[tick=14567196512] Clean exit: zero-services-test
+[tick=14830205842] 
+Switchcraft zero-services-test 0.1.0 | hardware status: NOT TESTED
+[tick=14830250067] Applet type=0 (Application=0); firmware=21.2.0
+[tick=14830309273] Log: sdmc:/switch/mc-runtime/logs/zero-services-test.log (open)
+[tick=14830372295] OpenJDK25 Horizon OS-service components only
+NO Java VM, NO classfile execution; hardware NOT TESTED.
+A: time/synchronization probe | X: native thread/permit probe | +: exit
+[tick=14830428076] Y: experimental fault-island probe; may abort if recovery is unsupported
+[tick=14830482530] B: deferred native thread ownership / join / close probe
+[tick=14830539075] L: private VM Alias memory / split release / SDK ownership probe
+[tick=14864095667] SafeFetch target address 0: query Result=0x0 permissions=0x0
+[tick=14864261826] SafeFetch valid 32/64-bit loads=PASS
+[tick=14864321254] Attempt SafeFetch32 at unreadable address 0; recovery is hardware NOT TESTED
+[tick=14864377863] SafeFetch32 fault result=-12345 expected=-12345
+[tick=14864434836] Attempt SafeFetchN at unreadable address 0
+[tick=14864489495] SafeFetchN fault result=-67890 expected=-67890
+[tick=14864545166] SafeFetch fault-island recovery=PASS; no general Java exception/VM claim
+[tick=14991456530] Closing this application process; reopen application-mode hbmenu for another native test.
+[tick=14991620155] Clean exit: zero-services-test

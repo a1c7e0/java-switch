@@ -1,0 +1,11 @@
+# First physical feedback and diagnostic iteration
+
+Executed runtime: b7c2ac7fd422bc2543e5c698db4e33a01cc0312d, Switchcraft native e08f36a.
+Firmware21.2.0, application mode. Atmosphere/hbmenu versions were not supplied.
+Full original logs/hashes are preserved in Switchcraft docs/evidence/device-2026-11-08; relevant runtime logs are mirrored here.
+
+- [Issue4](https://github.com/a1c7e0/java-switch/issues/4): all standalone A/X/Y and composed A/X attempts abort at FAR0x468 before observed Java output. No exact source cause is established. New stage, relative-PC and register capture must be validated on device; this is not a claim of a fixed VM startup. The new result viewer stays until + after a completed attempt and uses direct console output independently of redirected VM streams. A/X/Y in this viewer only select log panes and never create another VM. Every new VM requires a fresh process. Fatal faults still follow the stock fatal path.
+- [Issue5](https://github.com/a1c7e0/java-switch/issues/5): physical mapping returns0xfa01. Public unmapped-reservation semantics remain unchanged and report Unsupported. The private HotSpot bridge can use eager aligned C-heap backing when checked SystemResourceSizeTotal is zero. Real NONE/R/RW protection and zero-on-recommit are required; physical backing stays charged until final split release. No NPDM/privilege changes are used. Host tests use actual mprotect for the fallback but do not validate Horizon syscalls.
+- [Issue6](https://github.com/a1c7e0/java-switch/issues/6): Java8 failed exclusive-file creation after earlier checks passed. Maintained class-library patches now recognize sdmc:/ device paths; exclusive create uses native O_CREAT|O_EXCL and preserves existing files. The diagnostic chooses unique owned filenames. Genuine miniJVM host tests pass; the physical Java8 rerun remains pending.
+
+The physical native downcall/upcall, thread/TLS, SafeFetch and several VM service tests passed at the old immutable pin. They do not establish Java25 startup/execution, JNI/FFM from Java, instrumentation or Minecraft. New artifacts are cross-built and host-validated; device execution of these fixes is NOT TESTED. Leave execution issues open until follow-up physical evidence verifies them.

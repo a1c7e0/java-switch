@@ -1,9 +1,14 @@
 #include "javaswitch/runtime.h"
 #include "javaswitch/native_resolver.h"
+#include "runtime_diagnostics.h"
 #include <jni.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+extern void sc_diag_stage(unsigned) __attribute__((weak));
+static void runtime_diag_stage(unsigned stage) {
+    if (sc_diag_stage != NULL) sc_diag_stage(stage);
+}
 /* A weak import makes absence explicit. A statically linked VM can supply this
  * standard invocation symbol; no Linux shared object is loaded on Horizon. */
 extern jint JNI_CreateJavaVM(JavaVM **,void **,void *) __attribute__((weak));
@@ -12,6 +17,7 @@ int js_openjdk_launch(const JsLaunchRequest *q,JsLaunchResult *out) {
     return js_runtime_launch_with_options(q,NULL,0,out);
 }
 int js_openjdk_launch_with_options(const JsLaunchRequest *q,const char *const *extra,size_t count,JsLaunchResult *out) {
+    runtime_diag_stage(JS_DIAG_SDK_LAUNCH_ENTRY);
     static int created;
     if(created){out->code=JS_UNAVAILABLE;out->stage="JVM-reinitialization-unsupported";return out->code;}
     if(!js_openjdk_available()){out->code=JS_UNAVAILABLE;out->stage="runtime-not-linked";return out->code;}
@@ -25,9 +31,13 @@ int js_openjdk_launch_with_options(const JsLaunchRequest *q,const char *const *e
     JavaVMInitArgs init={.version=JNI_VERSION_1_8,.nOptions=(jint)(3+count),.options=options,.ignoreUnrecognized=JNI_FALSE};
     JavaVM *vm=NULL;JNIEnv *env=NULL;out->stage="JNI_CreateJavaVM";
     js_native_resolver_seal();
-    jint rc=JNI_CreateJavaVM(&vm,(void **)&env,&init);free(options);free(cp);
+    runtime_diag_stage(JS_DIAG_JNI_CREATE_ENTRY);
+    jint rc=JNI_CreateJavaVM(&vm,(void **)&env,&init);
+    runtime_diag_stage(JS_DIAG_JNI_CREATE_RETURN);
+    free(options);free(cp);
     if(rc!=JNI_OK){out->code=JS_UNAVAILABLE;return out->code;}
     created=1;
+    runtime_diag_stage(JS_DIAG_VM_READY);
     int result=JS_JAVA_EXCEPTION;out->stage="vm-ready-hook";
     jclass system=(*env)->FindClass(env,"java/lang/System");
     if(!system)goto cleanup;

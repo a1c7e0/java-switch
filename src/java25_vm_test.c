@@ -1,6 +1,7 @@
 /* Experimental genuine VM launcher. Built only by the explicit link-vm action.
  * Missing runtime/native services are link failures; never replaced by stubs. */
 #include "platform.h"
+#include "runtime_diagnostics.h"
 #include <javaswitch/runtime.h>
 #include <stdatomic.h>
 #include <errno.h>
@@ -29,13 +30,11 @@ void __libnx_exception_handler(ThreadExceptionDump *dump) {
         sc_log("libnx exception dump is NULL\n");
         return;
     }
-    sc_log("libnx fatal exception: descriptor=0x%08x PC=0x%016llx "
-           "ESR=0x%08x FAR=0x%016llx\n",
-           dump->error_desc,
-           (unsigned long long)dump->pc.x,
-           dump->esr,
-           (unsigned long long)dump->far.x);
+    sc_diag_exception(dump);
 }
+
+static char java25_stdout_path[160];
+static char java25_stderr_path[160];
 
 #ifdef JS_OPENJDK25_STATIC_PROVIDER
 #define JAVA25_WORKER_STACK_SIZE (4u * 1024u * 1024u)
@@ -160,31 +159,33 @@ static bool select_java25_mode(Java25Mode *mode) {
 
 static void java25_launch_worker(void *opaque) {
     Java25LaunchWork *work = (Java25LaunchWork *)opaque;
+    sc_diag_stage(JS_DIAG_WORKER_ENTRY);
     work->status = js_runtime_launch_with_options(
         &work->request, work->options, work->option_count, &work->result);
     atomic_store_explicit(&work->complete, true, memory_order_release);
 }
 
 static bool redirect_vm_output(void) {
-    const char *stdout_path = SC_LOGS "/java25-vm-stdout.log";
-    const char *stderr_path = SC_LOGS "/java25-vm-stderr.log";
+    unsigned long long attempt=(unsigned long long)armGetSystemTick();
+    snprintf(java25_stdout_path,sizeof(java25_stdout_path),SC_LOGS "/java25-vm-%llu-stdout.log",attempt);
+    snprintf(java25_stderr_path,sizeof(java25_stderr_path),SC_LOGS "/java25-vm-%llu-stderr.log",attempt);
 
     fflush(stdout);
     fflush(stderr);
     /* freopen can close a stream even when reopening fails. Keep status logs
      * on the existing SD log FILE without vprintf through a closed stdout. */
     sc_log_console(false);
-    if (freopen(stdout_path, "a", stdout) == NULL) {
+    if (freopen(java25_stdout_path, "a", stdout) == NULL) {
         int error = errno;
         /* sc_log calls vprintf, which can touch the failed stdout stream. */
         fprintf(stderr, "VM stdout redirect FAILED: %s errno=%d\n",
-                stdout_path, error);
+                java25_stdout_path, error);
         fflush(stderr);
         return false;
     }
-    if (freopen(stderr_path, "a", stderr) == NULL) {
+    if (freopen(java25_stderr_path, "a", stderr) == NULL) {
         int error = errno;
-        sc_log("VM stderr redirect FAILED: %s errno=%d\n", stderr_path, error);
+        sc_log("VM stderr redirect FAILED: %s errno=%d\n", java25_stderr_path, error);
         return false;
     }
     if (setvbuf(stdout, NULL, _IOLBF, 0) != 0 ||
@@ -235,6 +236,7 @@ static int run_java25_worker(const JsLaunchRequest *request,
     }
     java25_worker_ownership = JAVA25_WORKER_CREATED;
 
+    sc_diag_stage(JS_DIAG_MAIN_BEFORE_WORKER);
     rc = threadStart(&java25_worker);
     if (R_FAILED(rc)) {
         sc_log("Java25 worker threadStart failed: Result=0x%x\n", rc);
@@ -286,6 +288,7 @@ static int run_java25_worker(const JsLaunchRequest *request,
         return JS_UNAVAILABLE;
     }
     java25_worker_ownership = JAVA25_WORKER_CLOSED;
+    sc_diag_report();
     return status;
 }
 #else
@@ -385,12 +388,9 @@ int main(void) {
             result = (JsLaunchResult){ status, "openjdk25-runtime-not-linked" };
             sc_log("OpenJDK25 JNI runtime is unavailable; VM startup not attempted\n");
         } else {
-            sc_log("OpenJDK25 will run on a 4 MiB worker; UI updates pause during the "
-                   "worker join. Initial diagnostics are in "
-                   "sdmc:/switch/mc-runtime/logs/java25-test.log; VM stdout/stderr will "
-                   "append to sdmc:/switch/mc-runtime/logs/java25-vm-stdout.log and "
-                   "sdmc:/switch/mc-runtime/logs/java25-vm-stderr.log. If startup "
-                   "hangs, use Home and close the application from the system UI.\n");
+            sc_log("OpenJDK25 will run once in this process on a 4 MiB worker; UI updates pause during join. "
+                   "Prelaunch diagnostics append to java25-test.log; this attempt gets unique VM stdout/stderr files. "
+                   "If startup hangs, use Home and close the application from the system UI.\n");
             consoleUpdate(NULL);
             if (!redirect_vm_output()) {
                 status = JS_UNAVAILABLE;
@@ -410,8 +410,7 @@ int main(void) {
 #endif
     sc_log("Java25 launch status=%d stage=%s\n", status, result.stage ? result.stage : "unknown");
     sc_log("JAR success requires the actual VM output files; no Minecraft test here.\n");
-    u64 keys;
-    while (sc_frame(&keys)) { }
+    sc_result_review(status,result.stage,java25_stdout_path,java25_stderr_path);
     sc_log("Closing this application process; reopen application-mode hbmenu for another VM test.\n");
     fflush(NULL);
     sc_exit();
