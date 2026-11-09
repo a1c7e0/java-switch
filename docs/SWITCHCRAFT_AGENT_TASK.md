@@ -5,8 +5,18 @@ live `AGENTS.md`, branch, dependency lock and current changes first. Preserve
 the project's current conventions and the existing Java8/native diagnostics.
 The previous source audit used Switchcraft commit
 `7ce851b3c4fca4f85a6fee64fd9b0a40ef5d2255`; recheck findings against current HEAD.
-Do not overwrite subsequent work or edit the java-switch runtime repository.
+Do not overwrite subsequent work. The owner authorizes direct java-switch
+runtime edits, validation, commits and pushes. Use an isolated worktree and
+keep runtime code in java-switch and integration code in Switchcraft.
 Write documentation in English, commit meaningful milestones and push them.
+
+Owner workflow update (2026-11-09): do not create new runtime issues unless
+explicitly requested. An issue is not a prerequisite for a fix; record the
+reproducer, logs, immutable revisions and test limits in commits/documentation.
+This replaces the earlier issue-based reporting requirement. The runtime pin
+and build evidence below describe the historical B7 checkpoint; use the live
+Switchcraft dependency lock for current integration. R2 consumes bff51f3 and
+its fixes still require physical validation.
 
 ## Objective and pinned runtime
 

@@ -9,10 +9,12 @@ The owner authorizes the coordinating assistant to edit, commit and push directl
 to both java-switch and Switchcraft. Keep runtime implementation in java-switch
 and launcher/LWJGL/graphics integration in Switchcraft. Use an isolated worktree
 when another agent is working in the repository; preserve its uncommitted work
-and push focused commits without rewriting shared history. Report reproducible
-runtime defects in java-switch issues even when fixing them directly: search
-for an existing issue, record immutable revisions and evidence, and follow up
-with the fix and validation results.
+and push focused commits without rewriting shared history.
+Owner workflow update (2026-11-09): implement runtime fixes, validate them,
+commit and push directly. Do not create new java-switch issues unless the owner
+explicitly requests one. Issue creation or updates are not a prerequisite for
+fixes. Preserve reproduction steps, logs, immutable revisions and validation
+limits in commits and repository documentation. Existing issues remain history.
 
 Actively delegate bounded work to `gpt-6-luna` subagents with `reasoning_effort`
 set to `high`. Give each agent clear ownership of disjoint files or a read-only

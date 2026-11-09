@@ -1,5 +1,13 @@
 # Switchcraft runtime handoff
 
+Owner workflow update (2026-11-09): the coordinating assistant may edit, validate,
+commit and push runtime fixes directly. Do not create new issues unless
+explicitly requested; issue creation or updates are not a prerequisite. Keep
+reproduction, logs, exact revisions and validation limits in the repository.
+Existing issues and the B7 build checkpoint below remain historical evidence.
+Use Switchcraft's live dependency lock; R2 consumes bff51f3, with new device
+acceptance pending and the original Java25 abort still unresolved.
+
 Repository: `a1c7e0/java-switch`, branch `main`. The native VM implementation pin is
 `db7d32d59968088c1575ccf70b216f9ee5446831`; `dist/manifest.json` records
 the exact full package source revision, including later documentation/verifier fixes.
