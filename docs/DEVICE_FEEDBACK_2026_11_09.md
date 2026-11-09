@@ -105,3 +105,11 @@ Physical acceptance requires the extended L probe and actual Hello output;
 JNI/FFM and startup-agent workloads remain separate later tests. If another
 startup fatal occurs, its primary error and report footer must survive without
 the previous `DefNewGeneration::print_on` secondary fault.
+
+The fresh-cache reproduction also exposed a build-order prerequisite: host FFM
+controls read the pinned OpenJDK source before the configure step. `make host-test`
+now prepares the verified source first, so both documented build scripts can
+run their host checks before a VM configure without relying on an old source
+cache. The original empty-cache host invocation failed with the missing-source
+message; source preparation followed by all 21 tests passed. This build-order
+fix changes no VM/native archive inputs or SDK ABI.

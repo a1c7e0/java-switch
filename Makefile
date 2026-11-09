@@ -39,6 +39,8 @@ build/java25-tests.jar build/java25-hello.jar &: scripts/build-java25-tests.py t
 build/java25-agent-smoke-agent.jar build/java25-agent-smoke-app.jar build/openjdk25-agent-host.json &: scripts/test-openjdk25-agent-host.py tests/java25/AgentSmokeAgent.java tests/java25/AgentSmoke.java dependencies.lock.json | build
 	python3 scripts/test-openjdk25-agent-host.py
 host-test: build/java-test-host build/minijvm_rt.jar build/diagnostic-tests.jar build/dependency.jar build/jni25-host build/java25-tests.jar
+	# Host FFM controls require the pinned OpenJDK source even before VM configure.
+	python3 scripts/openjdk25.py prepare
 	python3 -m unittest discover -s tests -v
 clean:
 	rm -rf build dist
