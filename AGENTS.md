@@ -160,3 +160,15 @@ preserve public ABI 1, and test external crypto library composition. Do not use
 duplicate-definition linker suppression. See docs/SDK_PRIVATE_CRYPTO.md.
 
 First physical feedback is preserved in docs/DEVICE_FEEDBACK_2026_11_08.md and tracked as issues4-6. The old B7 artifacts passed native FFI/thread/SafeFetch probes but failed physical mappings and Java8 file I/O, while all Java25 attempts crashed before observed Java output. The new eager private data backend is distinct from public unmapped reservations and retains physical heap backing until release. Result panes never relaunch a VM; fatal capture is bounded and does not recover unmatched faults. New fixes remain device-unverified. Do not overwrite the immutable original evidence or close execution issues on host/cross-build success.
+
+
+2026-11-09 R2 physical feedback is in docs/DEVICE_FEEDBACK_2026_11_09.md and
+its text evidence directory. Java8 diagnostic and private-memory L passed;
+Java25 A/X/Y all failed before Java execution at memoryReserver.cpp:521.
+R3 fixes the actual uncommitted no-access request through os::protect_memory
+without changing SDK ABI 1 or committed bookkeeping. The fatal-report patch
+skips heap/GC printers until Universe is initialized. An actual maintained
+C++ wrapper host regression observes real host mprotect faults; it is not
+Horizon execution. Run extended L then one fresh A on device; X/Y depend on
+Hello success. Preserve all hs_err and unique stdout/stderr logs. No new issues
+are required; commit and push focused fixes directly per owner instruction.

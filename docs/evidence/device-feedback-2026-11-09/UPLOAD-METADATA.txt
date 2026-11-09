@@ -1,0 +1,11 @@
+Source archive: log1109.zip (uploaded archive; not copied into this repository)
+SHA-256: f42dd77d27c97a14f079f966fd8d90cb7be7e60220d8769d39213a9fb4d409f4
+
+Uploaded java25-test.nro (stored only inside the source archive; not copied into this repository)
+SHA-256: a3c25fd79c6e929ce23d3e8b3daeee3f719411f794c573d97e44e5227496f0ef
+
+Switchcraft source revision recorded in device logs: 0dc4c1377f81b849e4366c167f0a20177e1fce98
+java-switch runtime revision recorded in device logs: bff51f38e218af147ca0c9f255fcf1b43be72daf
+
+The text logs and JSON results beside this file were extracted from the uploaded archive.
+The binary NRO and original archive are intentionally not included in this evidence directory.

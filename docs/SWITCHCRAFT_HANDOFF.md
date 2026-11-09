@@ -5,8 +5,12 @@ commit and push runtime fixes directly. Do not create new issues unless
 explicitly requested; issue creation or updates are not a prerequisite. Keep
 reproduction, logs, exact revisions and validation limits in the repository.
 Existing issues and the B7 build checkpoint below remain historical evidence.
-Use Switchcraft's live dependency lock; R2 consumes bff51f3, with new device
-acceptance pending and the original Java25 abort still unresolved.
+Use Switchcraft's live immutable dependency lock for the exact R3 build. R2 at
+`bff51f38e218af147ca0c9f255fcf1b43be72daf` passed the Java8 diagnostic and private
+memory L probe on device. Java25 A/X/Y then failed at `memoryReserver.cpp:521`
+before Java execution. R3 fixes `protect_memory(..., MEM_PROT_NONE, false)` and
+the secondary `DefNewGeneration::print_on` fatal-report fault. These new fixes
+remain device-unverified. See `docs/DEVICE_FEEDBACK_2026_11_09.md`.
 
 Repository: `a1c7e0/java-switch`, branch `main`. The native VM implementation pin is
 `db7d32d59968088c1575ccf70b216f9ee5446831`; `dist/manifest.json` records
@@ -29,8 +33,9 @@ The optional java.base/java.instrument image contains 7,336 target-built
 classfile-69 classes and generated data. The base-only profile remains available.
 `java25-test.nro` A attempts Hello; X attempts actual JNI registration, threads,
 NIO/TCP/selector, FFM integer/FP downcalls and upcalls; the optional Y mode
-attempts actual premain and Class-File API transformation. **Switch VM startup, Java execution and every
-hardware workload are NOT TESTED. Minecraft/title execution is not established.**
+attempts actual premain and Class-File API transformation. **R2 Switch VM
+startup fails during heap initialization. R3 startup, Java execution, JNI/FFM,
+instrumentation and Minecraft/title execution remain NOT TESTED.**
 
 The normal SDK remains VM-free. `include/javaswitch/runtime.h` is byte-identical
 to the incoming ABI 1 header: all existing structures, entry points and status

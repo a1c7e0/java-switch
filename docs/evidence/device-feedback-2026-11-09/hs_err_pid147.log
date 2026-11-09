@@ -1,0 +1,64 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  Internal Error (memoryReserver.cpp:521), pid=147, tid=623
+#  fatal error: cannot protect protection page
+#
+# JRE version:  (25.0.5) (build )
+# Java VM: OpenJDK 64-Bit Zero VM (25.0.5.0.3-internal-adhoc.agent.openjdk25-horizon, interpreted mode, static, compressed oops, compressed class ptrs, serial gc, -aarch64)
+# No core dump will be written. Horizon does not generate POSIX core files; preserve SD/crash logs
+#
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -Xmx128M --enable-native-access=ALL-UNNAMED -javaagent:sdmc:/switch/mc-runtime/tests/java25-agent-smoke-agent.jar=premain-argument-forwarded -Dagent.smoke.property=property-forwarded 
+
+Host: AArch64 (Zero interpreter), 3 cores, 3G, Horizon
+Time: Mon Jan 27 23:08:51 2025 CST elapsed time: 0.211462 seconds (0d 0h 0m 0s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0000005632f2d040):  JavaThread "Unknown thread" [_thread_in_vm, id=623, stack(0x000000742aa1d000,0x000000742ae1cfd0) (4095K)]
+
+Stack: [0x000000742aa1d000,0x000000742ae1cfd0],  sp=0x000000742ae1a270,  free space=4084k
+Native frames: <unavailable>
+Lock stack of current Java thread (top to bottom):
+
+
+---------------  P R O C E S S  ---------------
+
+Threads class SMR info:
+_java_thread_list=0x0000005154855410, length=0, elements={
+}
+
+Java Threads: ( => current thread )
+Total: 0
+
+Other Threads:
+
+=>0x0000005632f2d040 (exited) JavaThread "Unknown thread"    [_thread_in_vm, id=623, stack(0x000000742aa1d000,0x000000742ae1cfd0) (4095K)]
+Total: 1
+
+Threads with active compile tasks:
+Total: 0
+
+VM state: not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+Heap address: 0x0000000000000000, size: 0 MB, Compressed Oops mode: 32-bit
+
+UseCompressedClassPointers 1, UseCompactObjectHeaders 0
+Narrow klass pointer bits 32, Max shift 3
+Narrow klass base: 0xffffffffffffffff, Narrow klass shift: -1
+Encoding Range: [0xffffffffffffffff - 0x000000007fffffff), (2147483648 bytes)
+Klass Range:    [0x0000000000000000 - 0x0000000000000000), (0 bytes)
+Klass ID Range:  [4294967295 - 0) (1)
+No protection zone.
+
+GC Precious Log:
+ CardTable entry size: 512
+
+Heap:
+ DefNew    

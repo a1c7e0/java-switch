@@ -90,3 +90,25 @@ mapping diagnostics remain explicitly unavailable. `vmError_horizon.cpp` tracks
 the reporting thread; secondary POSIX signal recovery is unavailable, and a
 report timeout terminates rather than pretending to interrupt that thread.
 These diagnostics do not establish general managed-fault recovery or VM startup.
+
+
+## Early startup fatal report heap guard
+
+The 2026-11-09 Horizon launch capture for the exact `java25-test.nro`
+(`a3c25fd79c6e929ce23d3e8b3daeee3f719411f794c573d97e44e5227496f0ef`) ends
+during `DefNewGeneration::print_on` in HotSpot's secondary fatal report. The
+primary failure is a separate Horizon memory-reservation error; this report
+crash had hidden its useful footer. The maintained patch
+`patches/openjdk25/0023-horizon-incomplete-heap-error-report.patch` uses
+`Universe::is_fully_initialized()` as the lifecycle boundary for Horizon heap
+and GC printer calls. Before that boundary it writes explicit unavailable
+lines and continues the ordinary fatal report and termination path. The
+non-Horizon report path remains the upstream implementation.
+
+`python3 -m unittest tests/test_openjdk25_fatal_heap_report_patch.py` checks
+that the patch applies to the pinned pristine archive with zero fuzz, preserves
+the upstream non-Horizon printer path, and guards the Horizon calls. This is a
+source regression check, not a VM execution test. The modified OpenJDK source
+must still pass the genuine Horizon VM build, and the original device scenario
+requires a fresh application process to confirm that the primary error and
+report footer survive. No hardware result is established by the host check.

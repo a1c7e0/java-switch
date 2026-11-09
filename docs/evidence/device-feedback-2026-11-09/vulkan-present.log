@@ -1,0 +1,40 @@
+[tick=2573216421] 
+SESSION start tick=2573213642 app=vulkan-present version=0.1.0 source=0dc4c1377f81b849e4366c167f0a20177e1fce98 | current run: UNVERIFIED
+[tick=2573295005] Applet type=0 (Application=0); firmware=21.2.0
+[tick=2573347192] Log: sdmc:/switch/mc-runtime/logs/vulkan-present.log (open)
+[tick=2573395467] 26.4-snapshot-6 Vulkan-only bring-up
+A: exact base feature profile | X: SDL3 VI swapchain / gamepad
+B: diagnostics | +: exit
+[tick=2603546799] Entering SDL3 / Vulkan-only window / VI surface test
+[tick=2604004935] Static native lookup SDL_CreateWindow=present SDL_Vulkan_CreateSurface=present vkGetInstanceProcAddr=present
+[tick=2604203259] SDL version=3004016 driver=Switch
+[tick=2604256887] SDL gamepad: Switch Controller
+[tick=2604306370] STAGE vulkan-instance: create API 1.2 extensions=2
+[tick=2604357126] Instance extension[0]=VK_KHR_surface
+[tick=2604406347] Instance extension[1]=VK_NN_vi_surface
+[tick=2604465742] STAGE surface: SDL_Vulkan_CreateSurface
+[tick=2604558777] Snapshot 6 Vulkan base profile: GPU=NVIDIA Tegra X1 (NVK gm20b) API=1.3.305
+[tick=2604608936] Device vendor=0x10de device=0x0 type=1 driver=0x6400007
+[tick=2604710700] multiDrawIndirect=1
+[tick=2604760634] drawIndirectFirstInstance=1
+[tick=2604810227] samplerAnisotropy=1
+[tick=2604860921] shaderDrawParameters=1
+[tick=2604910648] timelineSemaphore=1
+[tick=2604986231] hostQueryReset=1
+[tick=2605038125] synchronization2=1
+[tick=2605087256] vertexAttributeInstanceRateDivisor=1
+[tick=2605606017] VK_KHR_synchronization2=YES
+[tick=2605678859] VK_EXT_vertex_attribute_divisor=YES
+[tick=2605728750] VK_KHR_swapchain=YES
+[tick=2605900987] Required base profile: PASS (rendering/title still separate)
+[tick=2605948975] Queue family=0 flags=0x7 count=1 surface_result=0 present=1
+[tick=2606574610] Surface min/max images=3/3 usage=0x8009f transforms=0x1 current=0x1 composite=0x1
+[tick=2606728116] STAGE swapchain: create FIFO extent=1280x720 requested_images=3
+[tick=2606866846] STAGE present: family=0 extent=1280x720 images=3 format=37 colorspace=0 FIFO alpha=0x1; SDL Start/East exits
+[tick=2702212653] STAGE cleanup: vkDeviceWaitIdle (once at teardown)
+[tick=2702625493] STAGE cleanup: SDL_DestroyWindow
+[tick=2702781731] STAGE cleanup: SDL_Quit
+[tick=2702839996] STAGE cleanup: restore console
+[tick=2703063494] STAGE cleanup: graphics resources released; result follows
+[tick=2703221301] SDL input returned; waiting for native buttons to release before menu polling
+[tick=2704112116] SDL3 VI presentation result=PASS reason=frame_limit; frames=300 elapsed=5232.7ms frame_turnaround_avg=16.53ms min=0.65ms max=26.85ms last_vk_result=0 (not Minecraft title verification)

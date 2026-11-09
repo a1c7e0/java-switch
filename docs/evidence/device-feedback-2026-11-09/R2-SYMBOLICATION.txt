@@ -1,0 +1,7 @@
+R2 standalone Java25 secondary fatal-report PC
+ELF SHA256: a922138cd08429adf0baebcedf6c92307db1830ce23e1eaf1564414985705a38
+Command: .toolchain/opt/devkitpro/devkitA64/bin/aarch64-none-elf-addr2line -f -C -e build/java25-test.elf 0x3f8be0
+DefNewGeneration::print_on(outputStream*) const
+:?
+
+The NRO SHA256 is recorded in UPLOAD-METADATA.txt. This is symbolication, not execution evidence for R3.

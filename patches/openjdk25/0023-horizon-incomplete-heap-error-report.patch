@@ -1,0 +1,49 @@
+--- a/src/hotspot/share/utilities/vmError.cpp
++++ b/src/hotspot/share/utilities/vmError.cpp
+@@ -1199,6 +1199,21 @@
+ #endif
+ 
+   STEP_IF("printing heap information", _verbose)
++#ifdef HORIZON
++    // During early startup the heap may exist before its generation state is
++    // ready for virtual printing. Keep fatal reporting safe and explicit.
++    if (Universe::is_fully_initialized()) {
++      GCLogPrecious::print_on_error(st);
++      if (Universe::heap() != nullptr) {
++        st->print_cr("Heap:");
++        StreamIndentor si(st, 1);
++        Universe::heap()->print_heap_on(st);
++        st->cr();
++      }
++    } else {
++      st->print_cr("Heap: (unavailable: Universe is not fully initialized)");
++    }
++#else
+     GCLogPrecious::print_on_error(st);
+ 
+     if (Universe::heap() != nullptr) {
+@@ -1207,12 +1222,24 @@
+       Universe::heap()->print_heap_on(st);
+       st->cr();
+     }
++#endif
+ 
+   STEP_IF("printing GC information", _verbose)
++#ifdef HORIZON
++    if (Universe::is_fully_initialized()) {
++      if (Universe::heap() != nullptr) {
++        Universe::heap()->print_gc_on(st);
++        st->cr();
++      }
++    } else {
++      st->print_cr("GC information: unavailable (Universe is not fully initialized)");
++    }
++#else
+     if (Universe::heap() != nullptr) {
+       Universe::heap()->print_gc_on(st);
+       st->cr();
+     }
++#endif
+ 
+     if (Universe::is_fully_initialized()) {
+       st->print_cr("Polling page: " PTR_FORMAT, p2i(SafepointMechanism::get_polling_page()));

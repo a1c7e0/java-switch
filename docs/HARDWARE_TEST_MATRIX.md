@@ -1,6 +1,9 @@
 # Physical Switch 1 test matrix
 
-Current status for every row: **SWITCH HARDWARE NOT TESTED**. Use Atmosphere and
+The new R3 binaries below are **SWITCH HARDWARE NOT TESTED**. Historical R2
+logs establish Java8 diagnostic and private memory L passes, and Java25 startup
+failure at heap initialization; see [the evidence](DEVICE_FEEDBACK_2026_11_09.md).
+Use Atmosphere and
 application-mode hbmenu. The package contains diagnostics and source, no game
 assets or credentials. Copy `dist/COPY_TO_SD/` to the SD root.
 
@@ -17,12 +20,15 @@ assets or credentials. Copy `dist/COPY_TO_SD/` to the SD root.
 | `zero-services-test.nro`, X | Real libnx worker ID/stack bounds, compiler/library TLS isolation, 64 permit exchanges, checked join/close; failed cleanup retains state for retry | Same | IMPLEMENTED, CROSS-BUILT; thread/TLS failure/state/isolation mocks HOST-PASSED |
 | `zero-services-test.nro`, Y | Confirm address zero unreadable, valid SafeFetch32/N loads, then actual faulting reads returning -12345/-67890; may abort or stall if recovery fails | Same; retain any crash report | EXPERIMENTAL, CROSS-BUILT; 60 ARM64 instruction cases EMULATOR-PASSED with mocked kernel transfer/return |
 | `zero-services-test.nro`, B | Worker retires while still alive; reaper joins only after exit, then closes; pending cleanup can be retried | Same | IMPLEMENTED, CROSS-BUILT, reaper/start-gate failure tests HOST-PASSED |
-| `zero-services-test.nro`, L | Actual Alias reserve/commit/protect/recommit/query; release middle page; retained canaries and SDK/VM reservation separation | Same | IMPLEMENTED, CROSS-BUILT, shared-ownership/error tests HOST-PASSED |
+| `zero-services-test.nro`, L | Actual private reserve, uncommitted no-access guard and empty committed-range query, then commit/protect/recommit/query; release middle page; retained canaries and SDK/VM reservation separation | Same | IMPLEMENTED, CROSS-BUILT, shared-ownership/error tests HOST-PASSED |
 | `java25-test.nro`, A | Real VM prints Hello from Horizon Java 25 and Java major 25; status JS_OK / completed | `java25-test.log`, `java25-vm-stdout.log`, `java25-vm-stderr.log` in the same logs directory | Genuine VM/provider/image CROSS-BUILT; startup/classfile69 execution NOT TESTED |
 | Fresh `java25-test.nro`, X | Actual JNI nativeAdd=42, record/reflection, threads, NIO/TCP/selector, FFM strlen=10, pow=32, integer upcall=42 and mixed integer/FP down/upcall=14.75; final JAVA25 JNI FFM SUITE PASS | All three Java25 logs | Workloads IMPLEMENTED, host reference PASS; execution on Horizon NOT TESTED |
 | Fresh instrument-profile `java25-test.nro`, Y | Standard -javaagent runs premain once, transforms AgentSmoke before definition with the Class-File API, forwards arguments/property and prints JAVA25_AGENT_SMOKE_PASS | All three Java25 logs | Genuine JVMTI/libinstrument/image/NRO CROSS-BUILT; positive and no-agent negative controls HOST-PASSED; execution on Horizon NOT TESTED |
 
-Press + to exit. Relaunch each app and repeat once to check cleanup. The Y/B
+For the focused R3 retest, run **L first**, then **one fresh Java25 A**. Only
+if A prints Hello, continue with X and then Y, each in a fresh process. Stop
+dependent Java tests after a failure and retain every log and hs_err report.
+Press + to exit. Repeat only native probes when checking cleanup. The Y/B
 actions in ffi-test retain failed-release handles; another Y/B retries release
 before making another reservation. The ffi-test actions never deliberately
 touch unmapped/NONE pages. The separate experimental zero-services Y action
@@ -53,13 +59,13 @@ physical-device logs are reviewed.
    prerequisites before entering the real VM.
 3. Run native services Y only after the ordinary probes. It deliberately faults
    and may abort/stall. If it returns, run X again; then relaunch the application.
-4. Launch java25-test and select A. The VM runs on a 4 MiB worker and pauses UI
+4. After L passes, launch java25-test in a fresh process and select A. The VM runs on a 4 MiB worker and pauses UI
    updates while joined. Its stdout/stderr go to SD; an unchanged screen is not
    proof of success. On return use +, then relaunch before selecting X.
-5. Select X only in the new process. Keep all three complete logs, including the
+5. Select X only after A prints Hello and only in the new process. Keep all three complete logs, including the
    final suite marker or the first exception/fatal error. A successful VM cannot
    be initialized again in the same process.
-6. With the instrument-profile package, relaunch the application in a fresh
+6. Only after X passes, with the instrument-profile package, relaunch the application in a fresh
    process and select Y. Confirm the agent and app JARs are installed in tests/
    and java.instrument is in the image. Keep the premain/transform observations,
    actual capability flags and final JAVA25_AGENT_SMOKE_PASS or first failure.

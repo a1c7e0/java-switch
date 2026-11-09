@@ -1,0 +1,12 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  Internal Error (memoryReserver.cpp:521), pid=145, tid=617
+#  fatal error: cannot protect protection page
+#
+# JRE version:  (25.0.5) (build )
+# Java VM: OpenJDK 64-Bit Zero VM (25.0.5.0.3-internal-adhoc.agent.openjdk25-horizon, interpreted mode, static, compressed oops, compressed class ptrs, serial gc, -aarch64)
+# No core dump will be written. Horizon does not generate POSIX core files; preserve SD/crash logs
+#
+# An error report file with more information is saved as:
+# sdmc:/switch/java25-test/hs_err_pid145.log
