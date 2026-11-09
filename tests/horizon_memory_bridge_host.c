@@ -7,8 +7,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <signal.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #define ALIAS_BASE ((uintptr_t)0x10000000)
 #define ALIAS_SIZE ((size_t)(256 * 4096))
@@ -137,15 +140,46 @@ static void verifies_alias_allocation(void) {
   map_failure = 0;
   assert(js_horizon_memory_commit(first, 4096, &raw) == JS_HORIZON_MEMORY_OK);
   assert(raw == 0 && map_calls == 2);
+  const unsigned protects_before_uncommitted_none = protect_calls;
+  assert(js_horizon_memory_protect_with_commit((unsigned char*)first + 4096, 4096,
+      JS_HORIZON_MEMORY_NONE, 0, &raw) == JS_HORIZON_MEMORY_OK);
+  assert(protect_calls == protects_before_uncommitted_none);
+  assert(js_horizon_memory_protect_with_commit(first, 8192,
+      JS_HORIZON_MEMORY_NONE, 0, &raw) == JS_HORIZON_MEMORY_OK);
+  assert(protect_calls == protects_before_uncommitted_none + 1);
+  query_failure = 1;
+  assert(js_horizon_memory_protect_with_commit((unsigned char*)first + 4096, 4096,
+      JS_HORIZON_MEMORY_NONE, 0, &raw) == JS_HORIZON_MEMORY_SYSTEM && raw == 0x83);
+  query_failure = 0;
+  alias_full = 1;
+  assert(js_horizon_memory_protect_with_commit((unsigned char*)first + 4096, 4096,
+      JS_HORIZON_MEMORY_NONE, 0, &raw) == JS_HORIZON_MEMORY_STATE);
+  alias_full = 0;
+  assert(js_horizon_memory_protect_with_commit((unsigned char*)first + 4096, 4096,
+      JS_HORIZON_MEMORY_READ, 0, &raw) == JS_HORIZON_MEMORY_UNSUPPORTED);
+  assert(protect_calls == protects_before_uncommitted_none + 1);
   protect_failure = 1;
   assert(js_horizon_memory_protect(first, 4096, JS_HORIZON_MEMORY_READ, &raw) == JS_HORIZON_MEMORY_SYSTEM);
   assert(raw == 0x86);
   protect_failure = 0;
   assert(js_horizon_memory_protect(first, 4096, JS_HORIZON_MEMORY_READ, &raw) == JS_HORIZON_MEMORY_OK);
-  assert(protect_calls == 2);
+  assert(protect_calls == protects_before_uncommitted_none + 3);
   assert(js_horizon_memory_release(first, 8192, &raw) == JS_HORIZON_MEMORY_OK);
   assert(js_horizon_memory_release(second, 8192, &raw) == JS_HORIZON_MEMORY_OK);
   assert(!virtmem_locked);
+}
+
+static void assert_faults_on_write(void* address) {
+  pid_t child = fork();
+  assert(child >= 0);
+  if (child == 0) {
+    *(volatile unsigned char*)address = 0x5a;
+    _exit(0);
+  }
+  int status = 0;
+  assert(waitpid(child, &status, 0) == child);
+  assert(WIFSIGNALED(status) &&
+         (WTERMSIG(status) == SIGSEGV || WTERMSIG(status) == SIGBUS));
 }
 
 static void reports_region_errors_and_exhaustion(void) {
@@ -209,10 +243,23 @@ static void uses_eager_heap_backing_without_system_resources(void) {
          ((uintptr_t)address < ALIAS_BASE ||
           (uintptr_t)address >= ALIAS_BASE + ALIAS_SIZE));
   assert(raw==0 && map_calls==maps_before && unmap_calls==unmaps_before);
+  /* A compressed-oop guard request on the reserved, uncommitted prefix must
+   * apply real NONE protection without setting its logical committed bit. */
+  protect_failure_permission=Perm_None;
+  assert(js_horizon_memory_protect_with_commit(address, 4096, JS_HORIZON_MEMORY_NONE,
+      0, &raw) == JS_HORIZON_MEMORY_SYSTEM && raw==0x86);
+  protect_failure_permission=-1;
+  assert(js_horizon_memory_protect_with_commit(address, 4096, JS_HORIZON_MEMORY_NONE,
+      0, &raw) == JS_HORIZON_MEMORY_OK);
+  assert_faults_on_write(address);
+  void* committed=NULL; size_t committed_size=0;
+  assert(js_horizon_memory_committed_in_range(address, 4*4096,
+      &committed, &committed_size, &raw) == JS_HORIZON_MEMORY_STATE);
   assert(js_horizon_memory_commit(address, 2*4096, &raw) == JS_HORIZON_MEMORY_OK);
   assert(raw==0 && ((unsigned char*)address)[0]==0 && ((unsigned char*)address)[4096]==0);
+  assert(((unsigned char*)address)[0]==0); /* recommit restored RW access */
   memset(address, 0x5a, 2*4096);
-  void* committed=NULL; size_t committed_size=0;
+  committed=NULL; committed_size=0;
   assert(js_horizon_memory_committed_in_range(address, 4*4096,
       &committed, &committed_size, &raw) == JS_HORIZON_MEMORY_OK);
   assert(committed==address && committed_size==2*4096);

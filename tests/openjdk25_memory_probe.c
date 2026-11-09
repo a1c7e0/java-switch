@@ -148,8 +148,28 @@ void js_zero_memory_probe(void) {
   sc_log("memory probe alignment: PASS address=%p alignment=%zu backend=%s\n",
          base, PROBE_ALIGNMENT, heap_backed ? "eager heap" : "Alias");
 
+  /* Reproduce HotSpot memoryReserver.cpp:521's uncommitted NONE request on
+   * the reserved base before any commit has occurred. */
   raw = 0;
-  js_horizon_memory_status status = js_horizon_memory_commit(
+  js_horizon_memory_status status = js_horizon_memory_protect_with_commit(
+      base, PROBE_PAGE_SIZE, JS_HORIZON_MEMORY_NONE, 0, &raw);
+  passed &= report_memory("protect uncommitted heap prefix NONE", status, raw);
+  if (status != JS_HORIZON_MEMORY_OK) goto done;
+  void* uncommitted_start = (void*)1;
+  size_t uncommitted_size = SIZE_MAX;
+  raw = 0;
+  status = js_horizon_memory_committed_in_range(base, PROBE_PRIVATE_SIZE,
+      &uncommitted_start, &uncommitted_size, &raw);
+  const int remains_uncommitted = status == JS_HORIZON_MEMORY_STATE &&
+      uncommitted_start == NULL && uncommitted_size == 0;
+  sc_log("memory probe uncommitted guard bookkeeping: %s query=%s start=%p size=%zu raw=0x%x\n",
+      remains_uncommitted ? "PASS" : "FAIL", memory_status_name(status),
+      uncommitted_start, uncommitted_size, raw);
+  passed &= remains_uncommitted;
+  if (!passed) goto done;
+
+  raw = 0;
+  status = js_horizon_memory_commit(
       base, PROBE_PRIVATE_SIZE, &raw);
   passed &= report_memory("commit private 4 pages", status, raw);
   if (status != JS_HORIZON_MEMORY_OK) goto done;

@@ -77,7 +77,6 @@ bool os::pd_release_memory(char* addr, size_t bytes) {
 }
 
 bool os::protect_memory(char* addr, size_t bytes, ProtType protection, bool committed) {
-  if (!committed) { errno = ENOTSUP; return false; }
   js_horizon_memory_access access;
   switch (protection) {
     case MEM_PROT_NONE: access = JS_HORIZON_MEMORY_NONE; break;
@@ -86,7 +85,7 @@ bool os::protect_memory(char* addr, size_t bytes, ProtType protection, bool comm
     default: errno = ENOTSUP; return false;
   }
   uint32_t raw = 0;
-  auto status = js_horizon_memory_protect(addr, bytes, access, &raw);
+  auto status = js_horizon_memory_protect_with_commit(addr, bytes, access, committed, &raw);
   return memory_result(status, raw, "protect");
 }
 

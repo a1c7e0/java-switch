@@ -42,6 +42,9 @@ js_horizon_memory_status js_horizon_memory_uncommit(void* address, size_t size,
 js_horizon_memory_status js_horizon_memory_protect(void* address, size_t size,
                                                    js_horizon_memory_access access,
                                                    uint32_t* raw_result);
+js_horizon_memory_status js_horizon_memory_protect_with_commit(
+    void* address, size_t size, js_horizon_memory_access access, int committed,
+    uint32_t* raw_result);
 js_horizon_memory_status js_horizon_memory_release(void* address, size_t size,
                                                    uint32_t* raw_result);
 js_horizon_memory_status js_horizon_memory_committed_in_range(

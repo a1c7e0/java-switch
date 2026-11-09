@@ -149,6 +149,30 @@ static int all_mapped(const HorizonMemoryRegion* region, size_t first_page,
   return 1;
 }
 
+static js_horizon_memory_status verify_unmapped_noaccess(
+    uintptr_t start, size_t size, uint32_t* raw_result) {
+  const uintptr_t end = start + size;
+  uintptr_t cursor = start;
+  while (cursor < end) {
+    MemoryInfo info;
+    u32 page_info = 0;
+    Result result = svcQueryMemory(&info, &page_info, (u64)cursor);
+    if (R_FAILED(result)) {
+      set_raw(raw_result, result);
+      return JS_HORIZON_MEMORY_SYSTEM;
+    }
+    if (info.size == 0 || info.addr > cursor || info.addr > UINTPTR_MAX ||
+        info.size > UINTPTR_MAX || info.addr > UINTPTR_MAX - (uintptr_t)info.size ||
+        info.addr + info.size <= cursor || info.type != MemType_Unmapped ||
+        info.perm != Perm_None) {
+      return JS_HORIZON_MEMORY_STATE;
+    }
+    uintptr_t span_end = (uintptr_t)(info.addr + info.size);
+    cursor = span_end < end ? span_end : end;
+  }
+  return JS_HORIZON_MEMORY_OK;
+}
+
 js_horizon_memory_status js_horizon_memory_reserve(size_t size, size_t alignment,
                                                    void** address,
                                                    uint32_t* raw_result) {
@@ -287,15 +311,18 @@ js_horizon_memory_status js_horizon_memory_uncommit(void* address, size_t size,
   return R_SUCCEEDED(result) ? JS_HORIZON_MEMORY_OK : JS_HORIZON_MEMORY_SYSTEM;
 }
 
-js_horizon_memory_status js_horizon_memory_protect(void* address, size_t size,
-                                                   js_horizon_memory_access access,
-                                                   uint32_t* raw_result) {
+js_horizon_memory_status js_horizon_memory_protect_with_commit(
+    void* address, size_t size, js_horizon_memory_access access, int committed,
+    uint32_t* raw_result) {
   set_raw(raw_result, 0);
   const uintptr_t start = (uintptr_t)address;
   if (!valid_page_range(start, size)) {
     return JS_HORIZON_MEMORY_INVALID;
   }
   if (access == JS_HORIZON_MEMORY_EXECUTE) {
+    return JS_HORIZON_MEMORY_UNSUPPORTED;
+  }
+  if (!committed && access != JS_HORIZON_MEMORY_NONE) {
     return JS_HORIZON_MEMORY_UNSUPPORTED;
   }
   u32 permission;
@@ -314,8 +341,47 @@ js_horizon_memory_status js_horizon_memory_protect(void* address, size_t size,
   const size_t first_page = (start - region->address) / HORIZON_PAGE_SIZE;
   const size_t page_count = size / HORIZON_PAGE_SIZE;
   if (!all_mapped(region, first_page, page_count, 1)) {
-    mutexUnlock(&g_horizon_memory_lock);
-    return JS_HORIZON_MEMORY_STATE;
+    if (access != JS_HORIZON_MEMORY_NONE) {
+      mutexUnlock(&g_horizon_memory_lock);
+      return JS_HORIZON_MEMORY_STATE;
+    }
+    if (!region->heap_backed) {
+      /* Reserved Alias pages have no mapping. Verify those pages are already
+       * unmapped/NONE and protect any committed subranges with the real
+       * permission syscall. Keep the per-page permission record in sync if a
+       * later run fails. */
+      size_t page = first_page;
+      while (page < first_page + page_count) {
+        const int mapped = region->mapped[page] != 0;
+        size_t run_end = page + 1;
+        while (run_end < first_page + page_count &&
+               (region->mapped[run_end] != 0) == mapped) run_end++;
+        void* run_address = (void*)(region->address + page * HORIZON_PAGE_SIZE);
+        size_t run_size = (run_end - page) * HORIZON_PAGE_SIZE;
+        if (mapped) {
+          Result result = svcSetMemoryPermission(run_address, run_size, Perm_None);
+          set_raw(raw_result, result);
+          if (R_FAILED(result)) {
+            mutexUnlock(&g_horizon_memory_lock);
+            return JS_HORIZON_MEMORY_SYSTEM;
+          }
+        } else {
+          js_horizon_memory_status query_status = verify_unmapped_noaccess(
+              (uintptr_t)run_address, run_size, raw_result);
+          if (query_status != JS_HORIZON_MEMORY_OK) {
+            mutexUnlock(&g_horizon_memory_lock);
+            return query_status;
+          }
+        }
+        memset(region->permissions + page, JS_HORIZON_MEMORY_NONE,
+               run_end - page);
+        page = run_end;
+      }
+      mutexUnlock(&g_horizon_memory_lock);
+      return JS_HORIZON_MEMORY_OK;
+    }
+    /* The eager C-heap allocation is physically present and already has NONE
+     * permission, even while its logical committed bit is clear. */
   }
   Result result = svcSetMemoryPermission(address, size, permission);
   set_raw(raw_result, result);
@@ -324,6 +390,13 @@ js_horizon_memory_status js_horizon_memory_protect(void* address, size_t size,
   }
   mutexUnlock(&g_horizon_memory_lock);
   return R_SUCCEEDED(result) ? JS_HORIZON_MEMORY_OK : JS_HORIZON_MEMORY_SYSTEM;
+}
+
+js_horizon_memory_status js_horizon_memory_protect(void* address, size_t size,
+                                                   js_horizon_memory_access access,
+                                                   uint32_t* raw_result) {
+  return js_horizon_memory_protect_with_commit(address, size, access, 1,
+                                               raw_result);
 }
 
 js_horizon_memory_status js_horizon_memory_release(void* address, size_t size,

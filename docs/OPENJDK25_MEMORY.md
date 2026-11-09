@@ -60,6 +60,21 @@ does not provide sparse physical commitment: the complete request must fit in
 the process heap at reserve time. The public SDK reservation API remains
 unmapped and does not use this fallback.
 
+An uncommitted `MEM_PROT_NONE` request is also supported for this eager backing.
+It performs the real kernel permission call while leaving the bridge's logical
+committed-page map unchanged. This is needed by HotSpot's compressed-oop guard
+setup. Read or read/write protection still requires committed pages. For an
+Alias reservation, the bridge verifies uncommitted runs are already
+`MemType_Unmapped` with `Perm_None` and protects committed runs with the actual
+permission syscall. It never sets permission on an unmapped address. Query
+errors and foreign mappings fail. A failed syscall preserves that run's tracked
+permissions; earlier completed runs retain their accurate updates. Protection
+never changes the committed-page map. The host regression also compiles the
+maintained HotSpot `os::protect_memory` wrapper and exercises this exact
+`committed=false` call through the real bridge; host kernel protection is
+observed with a faulting child process. Horizon syscall behavior remains a
+separate physical test.
+
 ## Memory budgets and verification
 
 libnx's default zero `__nx_heap_size` commits almost the entire process budget
