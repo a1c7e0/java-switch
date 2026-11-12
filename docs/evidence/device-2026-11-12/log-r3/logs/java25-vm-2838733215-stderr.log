@@ -1,0 +1,6 @@
+java.lang.NoClassDefFoundError: org/javaswitch/test/Java25Smoke
+Caused by: java.lang.ClassNotFoundException: org.javaswitch.test.Java25Smoke
+	at java.base@25/jdk.internal.loader.BuiltinClassLoader.loadClass(Unknown Source)
+	at java.base@25/java.lang.ClassLoader.loadClass(Unknown Source)
+Exception in thread "main" Waiting for a character on stdin; homebrew hosts may not provide keyboard input
+Horizon stdin returned EOF; no keypress was observed

@@ -7,10 +7,12 @@ extern void js_zero_thread_probe(void);
 extern void js_zero_fault_probe(void);
 extern void js_zero_reaper_probe(void);
 extern void js_zero_memory_probe(void);
+/* Keep a dedicated stack for the bounded register capture. Unmatched faults
+ * retain the libnx fatal path and never use buffered stdio from this handler. */
+u64 __nx_exception_stack_size = 64u * 1024u;
+u8 __nx_exception_stack[64u * 1024u] __attribute__((aligned(16)));
 void __libnx_exception_handler(ThreadExceptionDump *context) {
-    sc_log("UNHANDLED Horizon exception: desc=0x%x PC=0x%llx ESR=0x%x FAR=0x%llx\n",
-        context->error_desc, (unsigned long long)context->pc.x, context->esr,
-        (unsigned long long)context->far.x);
+    sc_diag_exception(context);
     /* Returning lets the preserved libnx path call svcBreak; no fake recovery. */
 }
 void js_zero_probe_error(const char *format, va_list args) {
@@ -19,6 +21,7 @@ void js_zero_probe_error(const char *format, va_list args) {
 }
 int main(void) {
     sc_init("zero-services-test");
+    sc_log("Startup stage=main; NRO entry and libnx initialization completed.\n");
     sc_log("OpenJDK25 Horizon OS-service components only\n"
            "NO Java VM, NO classfile execution; hardware NOT TESTED.\n"
            "A: time/synchronization probe | X: native thread/permit probe | +: exit\n");

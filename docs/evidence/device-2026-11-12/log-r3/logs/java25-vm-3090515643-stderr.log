@@ -1,0 +1,9 @@
+java.lang.ClassNotFoundException: AgentSmokeAgent
+	at java.base@25/jdk.internal.loader.BuiltinClassLoader.loadClass(Unknown Source)
+	at java.base@25/java.lang.ClassLoader.loadClass(Unknown Source)
+	at java.instrument@25/sun.instrument.InstrumentationImpl.loadClassAndStartAgent(Unknown Source)
+	at java.instrument@25/sun.instrument.InstrumentationImpl.loadClassAndCallPremain(Unknown Source)
+Exception in thread "main" *** java.lang.instrument ASSERTION FAILED ***: "!errorOutstanding" with message Outstanding error when calling method in invokeJavaAgentMainMethod at src/java.instrument/share/native/libinstrument/JPLISAgent.c line: 627
+*** java.lang.instrument ASSERTION FAILED ***: "success" with message invokeJavaAgentMainMethod failed at src/java.instrument/share/native/libinstrument/JPLISAgent.c line: 466
+*** java.lang.instrument ASSERTION FAILED ***: "result" with message agent load/premain call failed at src/java.instrument/share/native/libinstrument/JPLISAgent.c line: 429
+Horizon core dumps unavailable; preserve SD logs and Atmosphere crash report

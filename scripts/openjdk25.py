@@ -582,6 +582,16 @@ def work():
                 raise RuntimeError('Missing real service symbol: ' + symbol)
         if not any(line.split()[-2:] == ['T', '__aarch64_read_tp'] for line in symbols.splitlines()):
             raise RuntimeError('Native compiler TLS accessor is not linked from libnx')
+        sized_symbols = subprocess.check_output(
+            [str(dk / 'devkitA64/bin/aarch64-none-elf-nm'), '-S', str(elf)], text=True)
+        exception_stack = [line.split() for line in sized_symbols.splitlines()
+                           if line.split() and line.split()[-1] == '__nx_exception_stack']
+        exception_stack_size = [line.split() for line in sized_symbols.splitlines()
+                                if line.split() and line.split()[-1] == '__nx_exception_stack_size']
+        if (len(exception_stack) != 1 or len(exception_stack_size) != 1 or
+                exception_stack[0][1:3] != ['0000000000010000', 'B'] or
+                exception_stack_size[0][1:3] != ['0000000000000008', 'D']):
+            raise RuntimeError('Probe must override libnx weak 1 KiB exception stack with 64 KiB')
         data = elf.read_bytes()
         if data[:6] != b'\x7fELF\x02\x01' or struct.unpack_from('<HH', data, 16) != (3, 183):
             raise RuntimeError('Probe is not an AArch64 Horizon PIE')
@@ -592,6 +602,8 @@ def work():
         subprocess.run([str(dk / 'tools/bin/elf2nro'), str(elf), str(nro), '--nacp=' + str(nacp),
                         '--icon=' + str(dk / 'libnx/default_icon.jpg')], check=True)
         evidence = {'port_digest': metadata['port_digest'], 'java_vm_linked': False,
+                    'exception_stack_bytes': 64 * 1024,
+                    'startup_observation': 'main reached after sc_init; pre-main launch failures remain unobservable in the SD log',
                     'inputs': {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
                                for name in ['src/zero_services_test.c', 'src/platform.c',
                                             'tests/openjdk25_services_probe.cpp',

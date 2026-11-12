@@ -57,7 +57,12 @@ alone is not VM execution.
 The standalone diagnostic defines a fatal error sink that logs and aborts. This
 is not the VM's exception dispatcher. It does not define `JNI_CreateJavaVM` and
 the builder checks that the symbol is absent. Its UI and package manifest state
-that it contains no VM. The separate `link-runtime` action builds
+that it contains no VM. The diagnostic overrides libnx's weak 1 KiB exception
+stack with a 64 KiB stack, matching the VM diagnostic, because its fatal path
+calls the logging handler on that stack. The cross-link check rejects a return
+to the weak default. After `sc_init`, the app records a `main` startup marker;
+it cannot record a failure that happens before logging is initialized. The
+separate `link-runtime` action builds
 `java25-test.nro` with the genuine VM/provider. Startup and classfile execution
 on Switch are NOT TESTED; the minimal runtime image must be installed too.
 

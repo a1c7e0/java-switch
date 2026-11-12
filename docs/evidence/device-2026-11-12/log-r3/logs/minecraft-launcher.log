@@ -1,0 +1,5 @@
+[tick=1714601355] 
+SESSION start tick=1714596615 app=minecraft-launcher version=0.1.0 source=f715f05ac90080a795f78382ba68e5bb03318e0d | current run: UNVERIFIED
+[tick=1714789825] Applet type=0 (Application=0); firmware=21.2.0
+[tick=1714914499] Log: sdmc:/switch/mc-runtime/logs/minecraft-launcher.log (open)
+[tick=2152176403] Clean exit: minecraft-launcher

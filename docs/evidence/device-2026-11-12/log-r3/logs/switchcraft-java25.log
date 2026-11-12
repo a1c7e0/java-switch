@@ -1,0 +1,15 @@
+[tick=3455388397] 
+SESSION start tick=3455383652 app=switchcraft-java25 version=0.1.0 source=f715f05ac90080a795f78382ba68e5bb03318e0d | current run: UNVERIFIED
+[tick=3455611890] Applet type=0 (Application=0); firmware=21.2.0
+[tick=3455735830] Log: sdmc:/switch/mc-runtime/logs/switchcraft-java25.log (open)
+[tick=3455858758] Experimental real Zero VM + composed JDK/SDL/Vulkan resolver; hardware NOT TESTED.
+[tick=3457544615] Process memory: total=3444572160 used=3440488448 bytes rc=0x0/0x0
+[tick=3458516102] Process limit minus current use=4083712 bytes (not JVM heap)
+[tick=3459317387] Newlib malloc arena=14336000 allocated=14308032 free-in-arena=27968 bytes
+[tick=3460095991] Kernel-used memory includes reserved heap; arena free space is separate.
+[tick=3460222660] Process system-resource memory total=0 used=0 bytes rc=0x0/0x0
+[tick=3460615858] 4 MiB allocation/write/read/free: PASS
+[tick=3461417664] Native heap=268435456 loader override=1 bytes=3419623424; worker stack=4 MiB Java heap=128 MiB
+[tick=3461535728] A: classfile-69 Hello | X: Java JNI/FFM SDL version smoke | +: exit without a VM.
+Use standalone java25-test A/X/Y in separate fresh application processes first.
+[tick=3770671751] Clean exit: switchcraft-java25

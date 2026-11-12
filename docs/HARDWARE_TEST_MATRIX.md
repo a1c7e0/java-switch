@@ -3,6 +3,10 @@
 The new R3 binaries below are **SWITCH HARDWARE NOT TESTED**. Historical R2
 logs establish Java8 diagnostic and private memory L passes, and Java25 startup
 failure at heap initialization; see [the evidence](DEVICE_FEEDBACK_2026_11_09.md).
+The R3 `zero-services-test` launch was reported as unable to start, but no log,
+crash capture, firmware/applet-mode details, or wait duration were supplied.
+That report is not enough to identify a startup fault; the run remains
+**UNVERIFIED** and no A/X/Y/B/L action is considered tested.
 Use Atmosphere and
 application-mode hbmenu. The package contains diagnostics and source, no game
 assets or credentials. Copy `dist/COPY_TO_SD/` to the SD root.

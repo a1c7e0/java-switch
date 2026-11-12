@@ -172,3 +172,14 @@ C++ wrapper host regression observes real host mprotect faults; it is not
 Horizon execution. Run extended L then one fresh A on device; X/Y depend on
 Hello success. Preserve all hs_err and unique stdout/stderr logs. No new issues
 are required; commit and push focused fixes directly per owner instruction.
+
+
+2026-11-12 physical R3 evidence (runtime4d362d4, Switchcraftf715f05) proves
+JNI_CreateJavaVM returns success, VM-ready is reached and java.base loader code
+executes. Application Hello and JNI/FFM classes are missing; premain cannot load
+AgentSmokeAgent. These workloads and Minecraft are not passed. See
+`docs/DEVICE_FEEDBACK_2026_11_12.md`. R4 fixes NIO realpath on existing SD paths
+without faking missing-file success, logs application/agent JAR preflight and
+Java resource lookup, and hardens zero-services fatal capture/exception stack.
+zero-services was reported unable to launch with no log: its cause remains
+unproven; do not require L before Java A. New R4 execution requires device logs.

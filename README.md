@@ -14,12 +14,12 @@ The main runtime target is **Java 25**, required by Minecraft
 `26.4-snapshot-6`. A genuine OpenJDK 25 Zero VM, eight base native archives
 and optional `java.instrument`/manifest archives now cross-build and link into
 `java25-test.nro`. The instrument profile includes real HotSpot JVMTI. Its runtime image
-contains target-built classfile-69 classes, configuration and data. **R2 VM
-startup fails during heap initialization; Java execution, JNI, FFM and startup
-agent execution on physical Switch remain NOT TESTED.** Minecraft's
-Horizon title screen has not been demonstrated. R3 corrects the uncommitted
-no-access guard request and protects early fatal heap reporting; these changes
-require a fresh physical retest. See [the new feedback](docs/DEVICE_FEEDBACK_2026_11_09.md).
+contains target-built classfile-69 classes, configuration and data. **R3 physical logs confirm JNI_CreateJavaVM succeeds and java.base class-loader
+code executes. Hello and JNI/FFM workloads cannot find their application
+classes, and startup-agent loading aborts before premain.** Minecraft's
+Horizon title screen has not been demonstrated. R3 passed VM initialization after the guard-page fix. R4 preserves SD device
+roots during NIO realpath resolution and adds JAR/resource diagnostics; the
+new classpath changes require a fresh physical retest. See [the new feedback](docs/DEVICE_FEEDBACK_2026_11_09.md).
 
 `java25-test.nro` A attempts the Java25 Hello JAR. X attempts the real JNI,
 thread, NIO and FFM downcall/upcall suite on that VM. The optional instrument
