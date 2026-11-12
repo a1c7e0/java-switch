@@ -22,7 +22,8 @@ def main():
                            stderr=subprocess.STDOUT, check=True, timeout=120)
 
         for name in ['java_io/test-host.sh', 'java_props/test-host.sh',
-                     'java_paths/test-host.sh', 'ffm_platform/test-host.sh',
+                     'java_paths/test-host.sh', 'java_paths/test-classpath-host.sh',
+                     'ffm_platform/test-host.sh',
                      'nio_native/test-host.sh', 'nio_native/test-inherited-channel-host.sh',
                      'nio_native/test-wakeup.sh']:
             run(['bash', TESTS / name])

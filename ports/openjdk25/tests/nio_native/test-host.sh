@@ -13,6 +13,12 @@ cc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -Werror \
     -o "${tmp}/test_file_io"
 "${tmp}/test_file_io"
 
+cc -std=c11 -D_DEFAULT_SOURCE -Wall -Wextra -Werror \
+    -I"${repo_root}/ports/openjdk25/src/java.base/horizon/native/libnio/fs" \
+    "${repo_root}/ports/openjdk25/tests/nio_native/test_horizon_realpath.c" \
+    -Wl,--wrap=realpath -Wl,--wrap=stat -o "${tmp}/test_horizon_realpath"
+"${tmp}/test_horizon_realpath"
+
 cc -std=c11 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -pthread \
     -I"${host_jdk}/include" -I"${host_jdk}/include/linux" \
     -I"${repo_root}/build/openjdk25-horizon/support/headers/java.base" \

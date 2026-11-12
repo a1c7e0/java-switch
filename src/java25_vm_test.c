@@ -92,6 +92,29 @@ typedef enum {
 #endif
 } Java25Mode;
 
+/* Keep class-loading failures distinguishable from missing device files. A
+ * Java CNFE alone cannot tell whether AppClassLoader rejected the device URI
+ * or the package copied the wrong test payload to the SD card. */
+static void diagnose_java25_jar(const char *role, const char *path) {
+    FILE *jar = fopen(path, "rb");
+    if (jar == NULL) {
+        sc_log("Java25 %s JAR preflight: path=%s open=failed errno=%d\n",
+               role, path, errno);
+        return;
+    }
+    unsigned char signature[4] = {0};
+    size_t signature_size = fread(signature, 1, sizeof(signature), jar);
+    long size = -1;
+    if (fseek(jar, 0, SEEK_END) == 0) size = ftell(jar);
+    fclose(jar);
+    bool zip_signature = signature_size == sizeof(signature) &&
+        signature[0] == 'P' && signature[1] == 'K' &&
+        ((signature[2] == 3 && signature[3] == 4) ||
+         (signature[2] == 5 && signature[3] == 6));
+    sc_log("Java25 %s JAR preflight: path=%s open=ok size=%ld signature=%s\n",
+           role, path, size, zip_signature ? "ZIP" : "not-ZIP");
+}
+
 static jint java25_smoke_native_add(JNIEnv *env, jclass klass,
                                     jint left, jint right) {
     (void)env;
@@ -362,10 +385,13 @@ int main(void) {
         extra_options = java25_agent_options;
         extra_option_count = sizeof(java25_agent_options) /
                              sizeof(java25_agent_options[0]);
+        diagnose_java25_jar("agent",
+            "sdmc:/switch/mc-runtime/tests/java25-agent-smoke-agent.jar");
         sc_log("Y selected: genuine startup -javaagent request; premain/JVMTI "
                "transformation is cross-built but device execution NOT TESTED.\n");
     }
 #endif
+    diagnose_java25_jar("application", request.classpath);
 #endif
     JsLaunchResult result = {0};
 #ifdef JS_OPENJDK25_STATIC_PROVIDER

@@ -16,6 +16,62 @@ int js_openjdk_available(void){return JNI_CreateJavaVM!=NULL;}
 int js_openjdk_launch(const JsLaunchRequest *q,JsLaunchResult *out) {
     return js_runtime_launch_with_options(q,NULL,0,out);
 }
+
+static void log_property(JNIEnv *env, jclass system, jmethodID get_property,
+                         const char *name) {
+    if((*env)->ExceptionCheck(env))return;
+    jstring key=(*env)->NewStringUTF(env,name);
+    if(!key)return;
+    jstring value=(jstring)(*env)->CallStaticObjectMethod(env,system,get_property,key);
+    (*env)->DeleteLocalRef(env,key);
+    if(!value||(*env)->ExceptionCheck(env)) {
+        fprintf(stderr,"Java bootstrap property %s unavailable\n",name);
+        if((*env)->ExceptionCheck(env))(*env)->ExceptionClear(env);
+        return;
+    }
+    const char *utf=(*env)->GetStringUTFChars(env,value,NULL);
+    if(utf) {
+        fprintf(stderr,"Java bootstrap property %s=%s\n",name,utf);
+        (*env)->ReleaseStringUTFChars(env,value,utf);
+    }
+    (*env)->DeleteLocalRef(env,value);
+}
+
+static void diagnose_app_class_resource(JNIEnv *env,const char *main_class) {
+    if((*env)->ExceptionCheck(env))return;
+    size_t length=strlen(main_class);
+    char *resource_name=malloc(length+7);
+    if(!resource_name)return;
+    memcpy(resource_name,main_class,length);
+    for(size_t i=0;i<length;i++)if(resource_name[i]=='.')resource_name[i]='/';
+    memcpy(resource_name+length,".class",7);
+    jstring name=(*env)->NewStringUTF(env,resource_name);
+    free(resource_name);
+    if(!name)return;
+    jclass loader=(*env)->FindClass(env,"java/lang/ClassLoader");
+    jmethodID get_resource=loader?(*env)->GetStaticMethodID(env,loader,
+        "getSystemResource","(Ljava/lang/String;)Ljava/net/URL;"):NULL;
+    jobject url=get_resource?(*env)->CallStaticObjectMethod(env,loader,get_resource,name):NULL;
+    (*env)->DeleteLocalRef(env,name);
+    if((*env)->ExceptionCheck(env)) {
+        fprintf(stderr,"Java system class-loader resource lookup failed for %s\n",main_class);
+        (*env)->ExceptionClear(env);
+    } else if(url==NULL) {
+        fprintf(stderr,"Java system class-loader resource missing for %s\n",main_class);
+    } else {
+        jclass url_class=(*env)->GetObjectClass(env,url);
+        jmethodID external=(*env)->GetMethodID(env,url_class,"toExternalForm","()Ljava/lang/String;");
+        jstring value=external?(jstring)(*env)->CallObjectMethod(env,url,external):NULL;
+        const char *utf=value?(*env)->GetStringUTFChars(env,value,NULL):NULL;
+        fprintf(stderr,"Java system class-loader resource %s=%s\n",main_class,
+                utf?utf:"(URL available)");
+        if(utf)(*env)->ReleaseStringUTFChars(env,value,utf);
+        if(value)(*env)->DeleteLocalRef(env,value);
+        (*env)->DeleteLocalRef(env,url);
+    }
+    if(loader)(*env)->DeleteLocalRef(env,loader);
+}
+
 int js_openjdk_launch_with_options(const JsLaunchRequest *q,const char *const *extra,size_t count,JsLaunchResult *out) {
     runtime_diag_stage(JS_DIAG_SDK_LAUNCH_ENTRY);
     static int created;
@@ -37,6 +93,22 @@ int js_openjdk_launch_with_options(const JsLaunchRequest *q,const char *const *e
     free(options);free(cp);
     if(rc!=JNI_OK){out->code=JS_UNAVAILABLE;return out->code;}
     created=1;
+    jclass bootstrap_system=(*env)->FindClass(env,"java/lang/System");
+    jmethodID bootstrap_get_property=bootstrap_system?(*env)->GetStaticMethodID(
+        env,bootstrap_system,"getProperty","(Ljava/lang/String;)Ljava/lang/String;"):NULL;
+    if(bootstrap_get_property) {
+        log_property(env,bootstrap_system,bootstrap_get_property,"java.class.path");
+        log_property(env,bootstrap_system,bootstrap_get_property,"path.separator");
+        log_property(env,bootstrap_system,bootstrap_get_property,"file.separator");
+    } else if((*env)->ExceptionCheck(env)) {
+        (*env)->ExceptionClear(env);
+    }
+    diagnose_app_class_resource(env,q->main_class);
+    if(bootstrap_system)(*env)->DeleteLocalRef(env,bootstrap_system);
+    if((*env)->ExceptionCheck(env)) {
+        fprintf(stderr,"Java bootstrap diagnostics unavailable: diagnostic exception pending\n");
+        (*env)->ExceptionClear(env);
+    }
     runtime_diag_stage(JS_DIAG_VM_READY);
     int result=JS_JAVA_EXCEPTION;out->stage="vm-ready-hook";
     jclass system=(*env)->FindClass(env,"java/lang/System");

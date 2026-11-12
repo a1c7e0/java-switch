@@ -20,6 +20,7 @@
 #include "sun_nio_fs_UnixNativeDispatcher.h"
 #include "horizon_stat_snapshot.h"
 #include "horizon_file_cursor.h"
+#include "horizon_realpath.h"
 
 static jfieldID attrs_st_mode;
 static jfieldID attrs_st_ino;
@@ -294,7 +295,8 @@ Java_sun_nio_fs_UnixNativeDispatcher_realpath0(JNIEnv *env, jclass cls,
                                                jlong path_address) {
     (void)cls;
     char resolved[PATH_MAX + 1];
-    if (realpath(jlong_to_ptr(path_address), resolved) == NULL) {
+    if (horizon_realpath(jlong_to_ptr(path_address), resolved,
+                         sizeof(resolved)) != 0) {
         throw_unix_exception(env, errno);
         return NULL;
     }

@@ -12,7 +12,7 @@ NOT TESTED.
 | Area | Implementation | Explicit limitation |
 | --- | --- | --- |
 | Platform identity | Distinct HORIZON enum and `os.name=Horizon`, target AArch64, UTF-8 | Unqueried firmware is `unknown`; user name `?` and SD application home are explicit bootstrap defaults |
-| Paths | `sdmc:/` roots in java.io/NIO, semicolon classpaths, actual newlib getcwd | Other device-root Java path handling needs separate validation |
+| Paths | `sdmc:/` roots in java.io/NIO, semicolon classpaths, actual newlib getcwd, device-preserving NIO realpath for classpath URLs | Other device-root Java path handling needs separate validation |
 | Files | Real open/read/write/seek/stat/directory/truncate/sync and cursor-preserving positional/vector I/O | mmap, file locks, at-family, owners/xattrs, symlinks and direct I/O are unavailable |
 | Shared file cursors | libjava-owned libnx monitor used by java.io and NIO | Native code bypassing these adapters must coordinate shared FD use |
 | Image reading | Read-only Alias-backed index snapshot, actual offset reads and ZIP_InflateFully | Runtime image must remain immutable while open; no general file mmap |
@@ -37,6 +37,20 @@ The `java25-test.nro` worker has a 4 MiB stack. Its native heap policy leaves
 physical budget for VM Alias mappings. The SDK supports one successful VM per
 process, and a static native provider must be installed before VM creation.
 
+OpenJDK's `URLClassPath` canonicalizes each classpath element through
+`Path.toRealPath()` and silently drops an element when that call reports an
+`IOException`. Horizon's NIO bridge therefore preserves an `sdmc:/` root even
+when newlib `realpath` fails or returns a host-style path without the mount.
+The fallback first requires `stat` on the original device path to succeed, then
+normalizes `.` and `..` without crossing the volume root. Horizon storage does
+not expose POSIX symbolic links. A mocked native regression covers failed and
+root-stripping `realpath` results; a separate host-JDK regression loads a real
+JAR from a directory named `sdmc:` using the same URI conversion sequence.
+Both are host checks and establish no Switch behavior. The VM smoke app now
+logs whether each selected SD JAR opens and reports its ZIP signature before
+calling JNI, and logs `java.class.path`, separators, and class-loader resource
+resolution after VM startup.
+
 ## Reproduction and evidence
 
 ```sh
@@ -45,6 +59,7 @@ python3 scripts/openjdk25.py native-base
 python3 scripts/build-openjdk25-image.py
 python3 scripts/openjdk25.py link-runtime
 python3 scripts/test-openjdk25-classlib-host.py
+ports/openjdk25/tests/java_paths/test-classpath-host.sh
 ```
 
 The helper checks exact upstream archive hashes, applies zero-fuzz patches and
