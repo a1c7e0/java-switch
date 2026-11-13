@@ -16,6 +16,8 @@ root = pathlib.Path(__file__).resolve().parents[1]
 dist = root / 'dist'
 BASE_PROVIDER_MODULES={'java','zip','jimage','verify','net','nio','fallbackLinker','syslookup'}
 INSTRUMENT_PROVIDER_MODULES=BASE_PROVIDER_MODULES|{'jli_manifest','instrument'}
+MINECRAFT_IMAGE_MODULES={'java.logging','jdk.unsupported','java.management','java.desktop',
+                         'java.datatransfer','java.xml','java.prefs','jdk.charsets'}
 
 def jvmti_header():
     build=root/'build/openjdk25-horizon'
@@ -69,15 +71,24 @@ java25_nro_path = dist / 'java25-test.nro'
 probe_exists = probe_path.is_file()
 java25_exists = java25_nro_path.is_file()
 if java25_exists:
-    runtime_proof = json.loads((root / 'build/openjdk25-runtime-link.json').read_text())
+    minecraft = manifest.get('java25_minecraft_profile',False)
+    profile_path=root/'build/openjdk25-runtime-profile.json'
+    profile=json.loads(profile_path.read_text())
+    assert profile.get('minecraft_profile',False) is minecraft
+    runtime_proof_path=root/('build/openjdk25-runtime-link-minecraft.json' if minecraft
+                             else 'build/openjdk25-runtime-link.json')
+    runtime_proof = json.loads(runtime_proof_path.read_text())
     image_proof = json.loads((root / 'build/openjdk25-image.json').read_text())
     java_base_proof = json.loads((root / 'build/openjdk25-java-base.json').read_text())
     assert isinstance(runtime_proof['java_instrument'],bool)
     instrument = runtime_proof['java_instrument']
     assert isinstance(runtime_proof['jvm_features'],list) and runtime_proof['jvm_features']
     assert manifest['java25_instrumentation_available'] is instrument
-    assert set(manifest['java25_runtime_image_modules']) == (
-        {'java.base','java.instrument'} if instrument else {'java.base'})
+    expected_image_modules={'java.base'}
+    if instrument:expected_image_modules.add('java.instrument')
+    if minecraft:expected_image_modules |= MINECRAFT_IMAGE_MODULES
+    assert set(manifest['java25_runtime_image_modules']) == expected_image_modules
+    assert manifest['java25_minecraft_profile'] is minecraft
     assert manifest['java25_jvm_features'] == runtime_proof['jvm_features']
     if instrument:
         assert {'jvmti','services'} <= set(runtime_proof['jvm_features'])
@@ -101,15 +112,32 @@ if java25_exists:
     assert 'Minecraft' not in manifest['java25_runtime']
     assert image_proof['classfile_major'] == java_base_proof['classfile_major'] == 69
     assert image_proof['native_vm_included'] is False
-    expected_image_modules={'java.base','java.instrument'} if instrument else {'java.base'}
+    assert runtime_proof.get('minecraft_profile',False) is minecraft
+    expected_image_modules={'java.base'}
+    if instrument:expected_image_modules.add('java.instrument')
+    if minecraft:expected_image_modules |= MINECRAFT_IMAGE_MODULES
     assert set(image_proof['modules']) == expected_image_modules
+    assert image_proof.get('minecraft_profile',False) is minecraft
+    assert image_proof.get('java_instrument',False) is instrument
     assert image_proof['java_base_port_digest'] == java_base_proof['port_digest']
     if instrument:
         assert set(image_proof['module_port_digests']) == expected_image_modules
         assert image_proof['module_port_digests']['java.base'] == java_base_proof['port_digest']
         assert image_proof['module_port_digests']['java.instrument'] == instrument_proof['port_digest']
-    elif 'module_port_digests' in image_proof:
+    elif 'module_port_digests' in image_proof and not minecraft:
         assert image_proof['module_port_digests'] == {'java.base':java_base_proof['port_digest']}
+    if minecraft:
+        assert image_proof['native_modules']==['management']
+        management=json.loads((root/'build/openjdk25-native-management.json').read_text())
+        assert management['port_digest']==runtime_proof['archive_port_digest']
+        assert image_proof['native_management_proof']==management
+        assert set(image_proof['module_port_digests'])==expected_image_modules
+        for module in MINECRAFT_IMAGE_MODULES:
+            slug=module.removeprefix('java.').replace('.','-')
+            module_proof=json.loads((root/('build/openjdk25-java-'+slug+'.json')).read_text())
+            assert module_proof['module']==module
+            assert module_proof['port_digest']==runtime_proof['archive_port_digest']
+            assert image_proof['module_port_digests'][module]==module_proof['port_digest']
     image_root = root / 'build/openjdk25-runtime'
     actual_image = {p.relative_to(image_root).as_posix() for p in image_root.rglob('*') if p.is_file()}
     assert actual_image == set(image_proof['files'])
@@ -133,7 +161,8 @@ if java25_exists:
         assert class_bytes[:4] == b'\xca\xfe\xba\xbe'
         assert struct.unpack_from('>H', class_bytes, 6)[0] == 69
 
-    elf_path = root / 'build/openjdk25-horizon/runtime-link/java25-test.elf'
+    link_dir='runtime-link-minecraft' if minecraft else 'runtime-link'
+    elf_path = root / 'build/openjdk25-horizon' / link_dir / 'java25-test.elf'
     nro = java25_nro_path.read_bytes()
     elf = elf_path.read_bytes()
     assert sha256(elf_path) == runtime_proof['elf_sha256']
@@ -149,11 +178,15 @@ if java25_exists:
         for symbol in ['JNI_OnLoad_instrument','Agent_OnLoad_instrument','JLI_ManifestIterate']:
             assert any(line.split()[-1:]==[symbol] for line in symbols.splitlines()), symbol
     assert sha256(root / 'src/java25_vm_test.c') == runtime_proof['launcher_sha256']
-    archive_proof = json.loads((root / 'build/openjdk25-archive.json').read_text())
+    archive_proof = json.loads((root / ('build/openjdk25-minecraft-archive.json' if minecraft
+                                        else 'build/openjdk25-archive.json')).read_text())
     assert archive_proof['full_upstream_archive_target'] is True
     assert archive_proof['archive_sha256'] == runtime_proof['archive_sha256']
     assert archive_proof['port_digest'] == runtime_proof['archive_port_digest']
     assert archive_proof['jvm_features'] == runtime_proof['jvm_features']
+    assert archive_proof.get('minecraft_profile',False) is minecraft
+    if minecraft:
+        assert 'management' in archive_proof['jvm_features']
 
     integration_path = dist / 'openjdk25-horizon-runtime.tar.gz'
     assert integration_path.is_file()
@@ -162,8 +195,10 @@ if java25_exists:
     assert sha256(native_archive) == runtime_proof['archive_sha256']
     provider = runtime_proof['class_library_provider']
     expected_modules=INSTRUMENT_PROVIDER_MODULES if instrument else BASE_PROVIDER_MODULES
+    if minecraft:expected_modules=expected_modules|{'management'}
     assert set(provider['modules'])==expected_modules
-    resolver_dir = root / 'build/openjdk25-horizon/runtime-link'
+    link_dir='runtime-link-minecraft' if minecraft else 'runtime-link'
+    resolver_dir = root / 'build/openjdk25-horizon' / link_dir
     resolver_json = resolver_dir / 'native_resolver.json'
     resolver_c = resolver_dir / 'native_resolver.c'
     assert json.loads(resolver_json.read_text()) == provider
@@ -223,6 +258,7 @@ if java25_exists:
         assert package_manifest['sdk_dependency'] == 'javaswitch-horizon-sdk.tar.gz (ABI 1; no VM)'
         assert package_manifest['runtime_image_files'] == image_proof['files']
         assert package_manifest['java_instrument'] is instrument
+        assert package_manifest['minecraft_profile'] is minecraft
         assert package_manifest['runtime_image_modules'] == image_proof['modules']
         assert package_manifest['jvm_features'] == runtime_proof['jvm_features']
         assert package_manifest['elf_sha256'] == sha256(elf_path)

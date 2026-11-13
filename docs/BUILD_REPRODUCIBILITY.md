@@ -45,6 +45,11 @@ directory workaround or runtime source modification was applied in either run.
 | SDK, SD package and native/image hashes | Passed | Passed |
 | Full pinned source/patch/overlay reconstruction | Passed | Passed |
 
+The optional client-referenced module profile is implemented separately in
+`docs/OPENJDK25_MINECRAFT_PROFILE.md`. It has not been cross-built or packaged
+at the time of this report; the paired verification results above cover only
+the instrument and base profiles.
+
 The paired reports in `docs/evidence/issues-1-2-clean-instrument.json` and
 `docs/evidence/issues-1-2-clean-base.json` record source pins, feature sets,
 module/class counts and each build's actual NRO hash. These checks establish

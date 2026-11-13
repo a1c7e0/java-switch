@@ -25,6 +25,14 @@ DEPS = ROOT / '.deps'
 SOURCE = DEPS / 'openjdk25-source'
 PORT = DEPS / 'openjdk25-horizon'
 BUILD = ROOT / 'build/openjdk25-horizon'
+MINECRAFT_JAVA_MODULES = [
+    'java.logging', 'jdk.unsupported', 'java.management', 'jdk.charsets',
+    'java.desktop', 'java.datatransfer', 'java.xml', 'java.prefs',
+]
+
+
+def module_slug(name):
+    return name.removeprefix('java.').replace('.', '-')
 
 
 def port_snapshot():
@@ -101,7 +109,13 @@ def prepare():
                 subprocess.run(['patch', '-p1', '--batch', '--fuzz=0'],
                                input=contents[patch], cwd=target_root, check=True)
         for source in files:
-            target = target_root / source.relative_to(overlay)
+            relative = source.relative_to(overlay)
+            # The overlay is arranged under src/ for port organization, while
+            # OpenJDK's make/ tree lives at the repository root.  HotSpot and
+            # java.base sources, by contrast, live under src/ upstream.
+            if relative.parts[:2] == ('src', 'make'):
+                relative = pathlib.Path(*relative.parts[1:])
+            target = target_root / relative
             if not target.exists() or target.read_bytes() != contents[source]:
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(contents[source])
@@ -146,22 +160,28 @@ def run(command, env, log):
     return process.returncode
 
 
-def link_vm(dk, env, native=False, instrument=False):
+def link_vm(dk, env, native=False, instrument=False, minecraft=False):
     # Never replace missing services with stubs or turn an unresolved ELF into
     # an NRO. This action intentionally stops at a real native link failure.
     archive = BUILD / 'hotspot/variant-zero/libjvm/objs/static/libjvm.a'
     archive_hash = hashlib.sha256(archive.read_bytes()).hexdigest()
-    proof = json.loads((ROOT / 'build/openjdk25-archive.json').read_text())
+    archive_proof = ROOT / ('build/openjdk25-minecraft-archive.json' if minecraft
+                            else 'build/openjdk25-archive.json')
+    proof = json.loads(archive_proof.read_text())
     if not proof['full_upstream_archive_target'] or proof['archive_sha256'] != archive_hash:
         raise RuntimeError('Build the genuine upstream archive before linking')
     features = proof.get('jvm_features', [])
     if instrument and not {'jvmti', 'services'}.issubset(features):
         raise RuntimeError('The startup agent requires a genuine JVMTI/services VM archive')
-    output = BUILD / ('runtime-link' if native else 'vm-link')
+    if minecraft and 'management' not in features:
+        raise RuntimeError('The Minecraft profile requires genuine HotSpot management/JMM support')
+    output_name = 'runtime-link-minecraft' if minecraft else ('runtime-link' if native else 'vm-link')
+    output = BUILD / output_name
     output.mkdir(exist_ok=True)
     arch = ['-march=armv8-a+crc+crypto', '-mtune=cortex-a57', '-mno-outline-atomics', '-mtp=soft', '-fPIE']
     elf = output / 'java25-test.elf'
-    evidence_prefix = 'openjdk25-runtime-link' if native else 'openjdk25-link'
+    evidence_prefix = ('openjdk25-runtime-link-minecraft' if minecraft else
+                       'openjdk25-runtime-link' if native else 'openjdk25-link')
     log_path = ROOT / 'build' / (evidence_prefix + '.log')
     libraries = []
     with log_path.open('w') as log:
@@ -186,6 +206,14 @@ def link_vm(dk, env, native=False, instrument=False):
                     if hashlib.sha256(path.read_bytes()).hexdigest() != native_proof['archives'][module]['sha256']:
                         raise RuntimeError('The instrument archive changed: ' + module)
                     libraries.append((module, path))
+            if minecraft:
+                management_proof = json.loads((ROOT / 'build/openjdk25-native-management.json').read_text())
+                if management_proof['port_digest'] != proof['port_digest']:
+                    raise RuntimeError('Rebuild native java.management for this VM port revision')
+                path = BUILD / 'support/native/java.management/libmanagement/static/libmanagement.a'
+                if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != management_proof['archives']['management']['sha256']:
+                    raise RuntimeError('Missing or changed genuine java.management native archive')
+                libraries.append(('management', path))
             generator = [sys.executable, str(ROOT / 'scripts/generate-openjdk25-native-resolver.py'),
                          '--nm', str(dk / 'devkitA64/bin/aarch64-none-elf-nm'),
                          '--output', str(output / 'native_resolver.c'),
@@ -259,10 +287,13 @@ def link_vm(dk, env, native=False, instrument=False):
     if native:
         evidence['class_library_provider'] = json.loads((output / 'native_resolver.json').read_text())
         evidence['launcher_sha256'] = hashlib.sha256((ROOT / 'src/java25_vm_test.c').read_bytes()).hexdigest()
+        evidence['minecraft_profile'] = minecraft
         if result.returncode == 0:
             required = ['JNI_OnLoad_java', 'JIMAGE_Open', 'js_openjdk25_native_resolver']
             if instrument:
                 required += ['JNI_OnLoad_instrument', 'Agent_OnLoad_instrument', 'JLI_ManifestIterate']
+            if minecraft:
+                required += ['JNI_OnLoad_management', 'JVM_GetManagement']
             for symbol in required:
                 if not re.search(r'^[0-9a-f]+ [A-Za-z] ' + symbol + '$', symbols, re.M):
                     raise RuntimeError('Missing real runtime provider symbol: ' + symbol)
@@ -276,6 +307,9 @@ def link_vm(dk, env, native=False, instrument=False):
                 raise RuntimeError('Invalid native VM NRO')
             evidence['nro_sha256'] = hashlib.sha256(nro.read_bytes()).hexdigest()
     (ROOT / 'build' / (evidence_prefix + '.json')).write_text(json.dumps(evidence, indent=2) + '\n')
+    if native and result.returncode == 0:
+        (ROOT / 'build/openjdk25-runtime-profile.json').write_text(json.dumps(
+            {'minecraft_profile': minecraft, 'java_instrument': instrument}, indent=2) + '\n')
     artifact = 'native NRO cross-built; execution NOT TESTED' if native and result.returncode == 0 else 'no NRO created'
     print(f'Genuine JNI VM ELF link: exit {result.returncode}; {len(missing)} unique missing symbols; {artifact}')
     return result.returncode
@@ -283,11 +317,17 @@ def link_vm(dk, env, native=False, instrument=False):
 
 def work():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['prepare', 'configure', 'configure-agent', 'build', 'java-base', 'native-base', 'java-instrument', 'native-instrument', 'link-vm', 'link-runtime', 'link-runtime-agent', 'components', 'probe', 'test-host'])
+    parser.add_argument('action', choices=['prepare', 'configure', 'configure-agent',
+        'configure-minecraft', 'build', 'build-minecraft', 'java-base', 'native-base',
+        'java-instrument', 'native-instrument', 'java-minecraft', 'native-management',
+        'link-vm', 'link-runtime', 'link-runtime-agent', 'link-runtime-minecraft',
+        'link-runtime-agent-minecraft',
+        'components', 'probe', 'test-host'])
     args = parser.parse_args()
     # ELF linking consumes an already verified archive, independent of source
     # preparation. Its metadata records that archive's exact source digest.
-    if args.action not in ('link-vm', 'link-runtime', 'link-runtime-agent'):
+    if args.action not in ('link-vm', 'link-runtime', 'link-runtime-agent',
+                           'link-runtime-minecraft', 'link-runtime-agent-minecraft'):
         prepare()
     if args.action == 'prepare':
         return 0
@@ -306,8 +346,11 @@ def work():
                    AUTOM4TE=str(tools / 'bin/autom4te'),
                    AUTOCONF=str(tools / 'bin/autoconf'), M4=str(tools / 'bin/m4'))
     env['PATH'] = str(dk / 'devkitA64/bin') + os.pathsep + env['PATH']
-    if args.action in ('link-vm', 'link-runtime', 'link-runtime-agent'):
-        return link_vm(dk, env, native=args.action != 'link-vm', instrument=args.action == 'link-runtime-agent')
+    if args.action in ('link-vm', 'link-runtime', 'link-runtime-agent',
+                       'link-runtime-minecraft', 'link-runtime-agent-minecraft'):
+        return link_vm(dk, env, native=args.action != 'link-vm',
+                       instrument=args.action in ('link-runtime-agent', 'link-runtime-agent-minecraft'),
+                       minecraft=args.action in ('link-runtime-minecraft', 'link-runtime-agent-minecraft'))
     if args.action == 'components':
         # Reuse the real upstream compiler command, not host-JDK headers or a
         # substitute VM. Run the normal build first to generate this command.
@@ -664,8 +707,51 @@ def work():
                      'classfile_major': 69, 'files': inventory, 'horizon_execution': 'NOT TESTED'}
             (ROOT / ('build/openjdk25-' + args.action + '.json')).write_text(json.dumps(proof, indent=2) + '\n')
         return result
-    if args.action == 'build':
-        result = run(['make', 'CONF_CHECK=auto', 'JOBS=2', 'ENABLE_JAVAC_SERVER=false', 'hotspot-zero-static-libs'], env, 'build.log')
+    if args.action == 'java-minecraft':
+        targets = [module + '-java' for module in MINECRAFT_JAVA_MODULES]
+        result = run(['make', 'CONF_CHECK=auto', 'JOBS=2', 'ENABLE_JAVAC_SERVER=false',
+                      *targets], env, 'java-minecraft.log')
+        if result == 0:
+            for module_name in MINECRAFT_JAVA_MODULES:
+                module = BUILD / 'jdk/modules' / module_name
+                inventory = {str(path.relative_to(module)): hashlib.sha256(path.read_bytes()).hexdigest()
+                             for path in sorted(module.rglob('*'))
+                             if path.is_file() and not path.name.startswith('_the.')}
+                if not inventory:
+                    raise RuntimeError('Target Java module produced no files: ' + module_name)
+                for path in module.rglob('*.class'):
+                    data = path.read_bytes()
+                    if data[:4] != b'\xca\xfe\xba\xbe' or struct.unpack_from('>H', data, 6)[0] != 69:
+                        raise RuntimeError(module_name + ' contains a non-Java25 class: ' + str(path))
+                proof = {'module': module_name,
+                         'port_digest': (PORT / '.javaswitch-patches').read_text(),
+                         'classfile_major': 69, 'files': inventory,
+                         'horizon_execution': 'NOT TESTED'}
+                proof_name = 'build/openjdk25-java-' + module_slug(module_name) + '.json'
+                (ROOT / proof_name).write_text(json.dumps(proof, indent=2) + '\n')
+        return result
+    if args.action == 'native-management':
+        result = run(['make', 'CONF_CHECK=auto', 'JOBS=2', 'ENABLE_JAVAC_SERVER=false',
+                      'java.management-static-libs'], env, 'native-management.log')
+        if result == 0:
+            path = BUILD / 'support/native/java.management/libmanagement/static/libmanagement.a'
+            ar = dk / 'devkitA64/bin/aarch64-none-elf-ar'
+            members = subprocess.check_output([str(ar), 't', str(path)], text=True).splitlines()
+            if not members:
+                raise RuntimeError('Upstream libmanagement archive is empty')
+            proof = {'port_digest': (PORT / '.javaswitch-patches').read_text(),
+                     'archives': {'management': {'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+                                                 'members': members}},
+                     'implementation': 'upstream java.management libmanagement + HotSpot JMM',
+                     'horizon_execution': 'NOT TESTED'}
+            (ROOT / 'build/openjdk25-native-management.json').write_text(
+                json.dumps(proof, indent=2) + '\n')
+        return result
+    if args.action in ('build', 'build-minecraft'):
+        if args.action == 'build-minecraft' and 'management' not in jvm_features():
+            raise RuntimeError('Configure with `configure-minecraft` before building the Minecraft VM')
+        log_name = 'build-minecraft.log' if args.action == 'build-minecraft' else 'build.log'
+        result = run(['make', 'CONF_CHECK=auto', 'JOBS=2', 'ENABLE_JAVAC_SERVER=false', 'hotspot-zero-static-libs'], env, log_name)
         if result == 0:
             archive = BUILD / 'hotspot/variant-zero/libjvm/objs/static/libjvm.a'
             members = subprocess.check_output([str(dk / 'devkitA64/bin/aarch64-none-elf-ar'),
@@ -674,8 +760,11 @@ def work():
                      'jvm_features': jvm_features(),
                      'archive_sha256': hashlib.sha256(archive.read_bytes()).hexdigest(),
                      'members': members, 'full_upstream_archive_target': True,
+                     'minecraft_profile': args.action == 'build-minecraft',
                      'vm_linked': False, 'horizon_execution': 'NOT TESTED'}
-            (ROOT / 'build/openjdk25-archive.json').write_text(json.dumps(proof, indent=2) + '\n')
+            proof_name = ('openjdk25-minecraft-archive.json' if args.action == 'build-minecraft'
+                          else 'openjdk25-archive.json')
+            (ROOT / 'build' / proof_name).write_text(json.dumps(proof, indent=2) + '\n')
         return result
     boot = next((DEPS / 'host-jdk25').glob('*/bin/javac')).parent.parent
     prefix = dk / 'devkitA64/bin/aarch64-none-elf-'
@@ -701,13 +790,15 @@ def work():
                f'--with-libffi-lib={ffi}',
                '--disable-jvm-feature-jfr', '--disable-jvm-feature-cds',
                *(['--enable-jvm-feature-services', '--enable-jvm-feature-jvmti']
-                 if args.action == 'configure-agent' else
+                 if args.action in ('configure-agent', 'configure-minecraft') else
                  ['--disable-jvm-feature-services', '--disable-jvm-feature-jvmti']),
                '--disable-jvm-feature-g1gc', '--disable-jvm-feature-parallelgc',
                '--disable-jvm-feature-shenandoahgc', '--disable-jvm-feature-epsilongc',
-               '--disable-jvm-feature-management',
+               *(['--enable-jvm-feature-management'] if args.action == 'configure-minecraft'
+                 else ['--disable-jvm-feature-management']),
                '--disable-jvm-feature-vm-structs']
-    return run(command, env, 'configure.log')
+    return run(command, env, 'configure-minecraft.log' if args.action == 'configure-minecraft'
+               else 'configure.log')
 
 
 def main():

@@ -8,6 +8,8 @@ def sha256(path):return hashlib.sha256(pathlib.Path(path).read_bytes()).hexdiges
 
 BASE_PROVIDER_MODULES={'java','zip','jimage','verify','net','nio','fallbackLinker','syslookup'}
 INSTRUMENT_PROVIDER_MODULES=BASE_PROVIDER_MODULES|{'jli_manifest','instrument'}
+MINECRAFT_IMAGE_MODULES={'java.logging','jdk.unsupported','java.management','java.desktop',
+                         'java.datatransfer','java.xml','java.prefs','jdk.charsets'}
 
 def jvmti_header():
     build=ROOT/'build/openjdk25-horizon'
@@ -19,7 +21,12 @@ def jvmti_header():
 
 def copy_verified_image(proof, destination):
     modules=set(proof['modules'])
-    assert proof['classfile_major']==69 and modules in ({'java.base'}, {'java.base','java.instrument'})
+    expected={'java.base'}
+    if proof.get('minecraft_profile'):
+        expected |= MINECRAFT_IMAGE_MODULES
+    if proof.get('java_instrument'):
+        expected.add('java.instrument')
+    assert proof['classfile_major']==69 and modules==expected
     assert proof['native_vm_included'] is False and proof['horizon_execution']=='NOT TESTED'
     image_root=ROOT/'build/openjdk25-runtime'
     assert set(proof['files'])
@@ -32,10 +39,16 @@ def copy_verified_image(proof, destination):
         shutil.copyfile(source,target)
 
 def validate_java25_runtime():
-    proof=json.loads((ROOT/'build/openjdk25-runtime-link.json').read_text())
+    active_profile=json.loads((ROOT/'build/openjdk25-runtime-profile.json').read_text())
+    minecraft=active_profile.get('minecraft_profile',False)
+    runtime_proof_path=ROOT/('build/openjdk25-runtime-link-minecraft.json' if minecraft
+                             else 'build/openjdk25-runtime-link.json')
+    proof=json.loads(runtime_proof_path.read_text())
+    assert proof.get('minecraft_profile',False) is minecraft
     assert proof['link_exit_status']==0 and proof['missing_symbols']==[]
     assert proof['java_execution']=='NOT TESTED' and proof['horizon_execution']=='NOT TESTED'
-    elf_path=ROOT/'build/openjdk25-horizon/runtime-link/java25-test.elf'
+    link_dir='runtime-link-minecraft' if minecraft else 'runtime-link'
+    elf_path=ROOT/'build/openjdk25-horizon'/link_dir/'java25-test.elf'
     nro_path=DIST/'java25-test.nro'
     archive_path=ROOT/'build/openjdk25-horizon/hotspot/variant-zero/libjvm/objs/static/libjvm.a'
     sdk_path=ROOT/'build/sdk/libjavaswitch.a'
@@ -45,15 +58,20 @@ def validate_java25_runtime():
     assert sha256(elf_path)==proof['elf_sha256'] and sha256(nro_path)==proof['nro_sha256']
     assert sha256(archive_path)==proof['archive_sha256'] and sha256(sdk_path)==proof['sdk_sha256']
     assert sha256(launcher_path)==proof['launcher_sha256']
-    archive_proof=json.loads((ROOT/'build/openjdk25-archive.json').read_text())
+    archive_proof=json.loads((ROOT/('build/openjdk25-minecraft-archive.json' if minecraft
+                                   else 'build/openjdk25-archive.json')).read_text())
     assert archive_proof['full_upstream_archive_target'] is True
     assert archive_proof['archive_sha256']==proof['archive_sha256']
     assert archive_proof['port_digest']==proof['archive_port_digest']
     assert archive_proof['port_digest']==port_digest, 'Rebuild VM for the current maintained port inputs'
+    assert archive_proof.get('minecraft_profile',False) is minecraft
+    if minecraft:
+        assert 'management' in archive_proof['jvm_features']
     assert isinstance(proof['java_instrument'],bool)
     assert isinstance(proof['jvm_features'],list) and proof['jvm_features']
     assert archive_proof['jvm_features']==proof['jvm_features']
     instrument=proof['java_instrument']
+    assert instrument is active_profile.get('java_instrument',False)
     if instrument:
         assert {'jvmti','services'}<=set(proof['jvm_features']), 'Instrument profile requires real JVMTI/services features'
         instrument_proof=json.loads((ROOT/'build/openjdk25-java-instrument.json').read_text())
@@ -83,11 +101,12 @@ def validate_java25_runtime():
             assert any(line.split()[-1:]==[symbol] for line in symbols.splitlines()), 'Missing real instrument symbol: '+symbol
 
     provider=proof['class_library_provider']
-    resolver_json=ROOT/'build/openjdk25-horizon/runtime-link/native_resolver.json'
-    resolver_c=ROOT/'build/openjdk25-horizon/runtime-link/native_resolver.c'
+    resolver_json=ROOT/'build/openjdk25-horizon'/link_dir/'native_resolver.json'
+    resolver_c=ROOT/'build/openjdk25-horizon'/link_dir/'native_resolver.c'
     assert resolver_json.is_file() and resolver_c.is_file()
     assert json.loads(resolver_json.read_text())==provider
-    expected_modules=INSTRUMENT_PROVIDER_MODULES if instrument else BASE_PROVIDER_MODULES
+    expected_modules=(INSTRUMENT_PROVIDER_MODULES if instrument else BASE_PROVIDER_MODULES)
+    if minecraft:expected_modules=expected_modules|{'management'}
     assert set(provider['modules'])==expected_modules
     assert provider['generator_sha256']==sha256(ROOT/'scripts/generate-openjdk25-native-resolver.py')
     assert provider['source_sha256']==sha256(resolver_c)
@@ -109,16 +128,29 @@ def validate_java25_runtime():
     assert java_proof['port_digest']==proof['archive_port_digest']
     assert image_proof['classfile_major']==java_proof['classfile_major']==69
     assert java_proof['files']
-    expected_image_modules={'java.base','java.instrument'} if instrument else {'java.base'}
+    expected_image_modules={'java.base'}
+    if instrument:expected_image_modules.add('java.instrument')
+    if minecraft:expected_image_modules |= MINECRAFT_IMAGE_MODULES
     assert set(image_proof['modules'])==expected_image_modules
+    assert image_proof.get('minecraft_profile',False) is minecraft
+    assert image_proof.get('java_instrument',False) is instrument
+    assert set(image_proof.get('native_modules',[]))==({'management'} if minecraft else set())
     if instrument:
         module_digests=image_proof['module_port_digests']
         assert set(module_digests)==expected_image_modules
         assert module_digests['java.base']==java_proof['port_digest']
         assert module_digests['java.instrument']==instrument_proof['port_digest']
         assert instrument_proof['port_digest']==proof['archive_port_digest']
-    elif 'module_port_digests' in image_proof:
+    elif 'module_port_digests' in image_proof and not minecraft:
         assert image_proof['module_port_digests']=={'java.base':java_proof['port_digest']}
+    if minecraft:
+        management=json.loads((ROOT/'build/openjdk25-native-management.json').read_text())
+        assert management['port_digest']==proof['archive_port_digest']
+        assert image_proof['native_management_proof']==management
+        for module in MINECRAFT_IMAGE_MODULES:
+            module_proof=json.loads((ROOT/('build/openjdk25-java-'+module.removeprefix('java.').replace('.','-')+'.json')).read_text())
+            assert module_proof['module']==module and module_proof['port_digest']==proof['archive_port_digest']
+            assert image_proof['module_port_digests'][module]==module_proof['port_digest']
     image_root=ROOT/'build/openjdk25-runtime'
     actual={path.relative_to(image_root).as_posix() for path in image_root.rglob('*') if path.is_file()}
     assert actual==set(image_proof['files']), 'Java 25 runtime image contents differ from its proof'
@@ -127,7 +159,7 @@ def validate_java25_runtime():
         assert path.is_file() and sha256(path)==digest, 'Java 25 runtime image hash mismatch: '+rel
     header=jvmti_header() if instrument else None
     if instrument:assert header is not None, 'Missing real generated/source jvmti.h'
-    return proof,elf_path,nro_path,archive_path,native_archives,resolver_json,resolver_c,image_proof,instrument,header,instrument_proof
+    return proof,elf_path,nro_path,archive_path,native_archives,resolver_json,resolver_c,image_proof,instrument,header,instrument_proof,minecraft
 assert data[16:20]==b'NRO0' and elf[:6]==b'\x7fELF\x02\x01'
 assert struct.unpack_from('<HH',elf,16)==(3,183)
 size=struct.unpack_from('<I',data,24)[0];assert data[size:size+4]==b'ASET'
@@ -197,7 +229,7 @@ with tarfile.open(DIST/'javaswitch-horizon-sdk.tar.gz','w:gz',dereference=True) 
     archive.add(ROOT/'licenses',arcname='licenses')
 shutil.copytree(ROOT/'licenses',runtime/'licenses',dirs_exist_ok=True)
 shutil.copyfile(ROOT/'README.md',sd/'JAVA-SWITCH-README.md')
-with tarfile.open(DIST/'java-switch-source.tar.gz','w:gz') as archive:
+with tarfile.open(DIST/'java-switch-source.tar.gz','w:gz',dereference=True) as archive:
     for name in subprocess.check_output(['git','ls-files','-z'],cwd=ROOT).split(b'\0'):
         if name:archive.add(ROOT/name.decode(),arcname='java-switch/'+name.decode())
     archive.add(ROOT/'.deps/minijvm-source',arcname='third-party/minijvm-source')
@@ -209,7 +241,7 @@ with tarfile.open(DIST/'java-switch-source.tar.gz','w:gz') as archive:
         assert hashlib.sha256(upstream.read_bytes()).hexdigest()==locked['sha256']
         archive.add(upstream,arcname='third-party/openjdk25-upstream.tar.gz')
 if java25:
-    proof,elf_path,nro_path,archive_path,native_archives,resolver_json,resolver_c,image_proof,instrument,jvmti_h,instrument_proof=java25
+    proof,elf_path,nro_path,archive_path,native_archives,resolver_json,resolver_c,image_proof,instrument,jvmti_h,instrument_proof,minecraft=java25
     package_root=pathlib.Path('openjdk25-horizon-runtime')
     jdk_include=ROOT/'build/openjdk25-horizon/jdk/include'
     jni_h=jdk_include/'jni.h';jni_md=jdk_include/'horizon/jni_md.h'
@@ -221,6 +253,7 @@ if java25:
     pkg_manifest={
         'runtime':'Experimental OpenJDK 25 Zero AArch64 Horizon static integration package',
         'java_instrument':instrument,
+        'minecraft_profile':minecraft,
         'jvm_features':proof['jvm_features'],
         'runtime_image_modules':image_proof['modules'],
         'cross_built_genuine_vm':True,
@@ -283,8 +316,10 @@ manifest={'source_revision':subprocess.check_output(['git','rev-parse','HEAD'],c
     'horizon_execution':'NOT TESTED','java8_interpreter':'built and host-tested',
     'java25_runtime':(('EXPERIMENTAL: genuine cross-built OpenJDK 25 Zero VM linked into an AArch64 Horizon PIE and NRO'
                        + (' with java.instrument/JVMTI support' if java25[8] else '')
+                       + (' with additional client-referenced Java modules and HotSpot JMM provider' if java25[11] else '')
                        + '; runtime startup UNVERIFIED; classfile execution NOT TESTED; hardware NOT TESTED') if java25 else 'not built'),
     'java25_instrumentation_available':bool(java25 and java25[8]),
+    'java25_minecraft_profile':bool(java25 and java25[11]),
     'java25_jvm_features':java25[0]['jvm_features'] if java25 else [],
     'java25_runtime_image_modules':java25[7]['modules'] if java25 else [],
     'java25_sdk_availability':'NOT INCLUDED; baseline Horizon SDK ABI 1 remains VM-free',
@@ -301,12 +336,20 @@ for p in sorted(DIST.iterdir()):
                        'Experimental hardware execution NOT TESTED','No Minecraft or title-execution claim']
                      if java25_artifact else
                      ['Horizon Java25 startup and execution remain unverified','Native CPU/JIT permissions NOT TESTED','No Minecraft execution on Horizon'])
-        bundled=(['OpenJDK Zero VM and native java.base/java.instrument providers linked into Horizon NRO']
+        bundled=(['OpenJDK Zero VM and native java.base/java.instrument/java.management providers linked into Horizon NRO']
+                 if p.name=='java25-test.nro' and java25 and java25[8] and java25[11] else
+                 ['OpenJDK Zero VM and native java.base/java.instrument/java.management providers linked into Horizon NRO']
                  if p.name=='java25-test.nro' and java25 and java25[8] else
+                 ['OpenJDK Zero VM and native java.base/java.management providers linked into Horizon NRO']
+                 if p.name=='java25-test.nro' and java25 and java25[11] else
                  ['OpenJDK Zero VM and native java.base providers linked into Horizon NRO']
                  if p.name=='java25-test.nro' else
+                 ['OpenJDK Zero VM archive and java.base/java.instrument/java.management archives; libc/libm excluded']
+                 if p.name=='openjdk25-horizon-runtime.tar.gz' and java25 and java25[8] and java25[11] else
                  ['OpenJDK Zero VM archive and native java.base/java.instrument archives; libc/libm excluded']
                  if p.name=='openjdk25-horizon-runtime.tar.gz' and java25 and java25[8] else
+                 ['OpenJDK Zero VM archive and native java.base/java.management archives; libc/libm excluded']
+                 if p.name=='openjdk25-horizon-runtime.tar.gz' and java25 and java25[11] else
                  ['OpenJDK Zero VM archive and eight native java.base archives; libc/libm excluded']
                  if p.name=='openjdk25-horizon-runtime.tar.gz' else
                  ['libnx/newlib','miniJVM Java8 or libffi component as applicable'])
@@ -319,6 +362,9 @@ for p in sorted(DIST.iterdir()):
         if java25 and java25[8]:
             purposes['java25-test.nro']='Experimental cross-built OpenJDK25 VM with java.instrument/JVMTI; runtime startup and classfile execution UNVERIFIED'
             purposes['openjdk25-horizon-runtime.tar.gz']='Experimental static OpenJDK25 java.base/java.instrument Horizon integration inputs; startup and classfile execution NOT TESTED'
+        if java25 and java25[11]:
+            purposes['java25-test.nro']='Experimental OpenJDK25 VM with target-built client-referenced Java modules and genuine HotSpot JMM provider; startup UNVERIFIED, no title execution claim'
+            purposes['openjdk25-horizon-runtime.tar.gz']='Experimental static OpenJDK25 VM, client-referenced Java modules, and native java.management provider; execution NOT TESTED'
         manifest['artifacts'].append({'name':p.name,'purpose':purposes.get(p.name,'Build artifact'),
             'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'source_revision':manifest['source_revision'],'build_date':datetime.datetime.now(datetime.timezone.utc).isoformat(),
             'toolchain':compiler,'bundled_dependencies':bundled,'build_dependencies':json.loads((ROOT/'dependencies.lock.json').read_text()),'build_verification':verification,'tested_environment':tested,

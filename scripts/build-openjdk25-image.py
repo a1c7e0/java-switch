@@ -16,6 +16,13 @@ import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 BUILD = ROOT / 'build/openjdk25-horizon'
+MINECRAFT_MODULES = ['java.logging', 'jdk.unsupported', 'java.management',
+                     'java.desktop', 'java.datatransfer', 'java.xml', 'java.prefs',
+                     'jdk.charsets']
+
+
+def module_slug(module_name):
+    return module_name.removeprefix('java.').replace('.', '-')
 
 
 def sha(path):
@@ -23,7 +30,7 @@ def sha(path):
 
 
 def load_module(module_name):
-    proof_name = module_name.removeprefix('java.')
+    proof_name = module_slug(module_name)
     proof_path = ROOT / ('build/openjdk25-java-' + proof_name + '.json')
     module = BUILD / 'jdk/modules' / module_name
     if not proof_path.is_file():
@@ -33,6 +40,8 @@ def load_module(module_name):
     proof = json.loads(proof_path.read_text())
     if proof.get('classfile_major') != 69 or not isinstance(proof.get('files'), dict) or not proof['files']:
         raise RuntimeError('Invalid classfile-69 target proof for ' + module_name)
+    if proof.get('module', module_name) != module_name:
+        raise RuntimeError('Target proof is for a different Java module: ' + module_name)
     actual = {path.relative_to(module).as_posix(): sha(path)
               for path in sorted(module.rglob('*'))
               if path.is_file() and not path.name.startswith('_the.')}
@@ -66,12 +75,29 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--with-instrument', action='store_true',
                         help='include target-built java.instrument classes')
+    parser.add_argument('--with-minecraft', action='store_true',
+                        help='include actual target-built logging, unsafe, management, desktop, preferences, datatransfer and XML modules')
     args = parser.parse_args()
-    module_names = ['java.base'] + (['java.instrument'] if args.with_instrument else [])
+    module_names = (['java.base'] + (MINECRAFT_MODULES if args.with_minecraft else []) +
+                    (['java.instrument'] if args.with_instrument else []))
     module_proofs = {name: load_module(name) for name in module_names}
     port_digests = {entry[1]['port_digest'] for entry in module_proofs.values()}
     if len(port_digests) != 1:
         raise RuntimeError('Target module proofs have different port digests; rebuild selected modules together')
+    native_management = None
+    if args.with_minecraft:
+        native_path = ROOT / 'build/openjdk25-native-management.json'
+        archive_path = ROOT / 'build/openjdk25-minecraft-archive.json'
+        if not native_path.is_file() or not archive_path.is_file():
+            raise RuntimeError('Minecraft profile requires actual native-management and management-enabled VM build proofs')
+        native_management = json.loads(native_path.read_text())
+        archive = json.loads(archive_path.read_text())
+        if native_management.get('port_digest') != next(iter(port_digests)) or archive.get('port_digest') != next(iter(port_digests)):
+            raise RuntimeError('Minecraft native/VM proofs have a different source port digest')
+        if not archive.get('minecraft_profile') or 'management' not in archive.get('jvm_features', []):
+            raise RuntimeError('Minecraft image requires the management-enabled genuine HotSpot archive')
+        if not native_management.get('archives', {}).get('management', {}).get('members'):
+            raise RuntimeError('Missing actual upstream java.management native archive proof')
     jdk = next((ROOT / '.deps/host-jdk25').glob('*/bin/javac')).parent.parent
     output = ROOT / 'build/openjdk25-runtime'
     log_path = ROOT / 'build/openjdk25-image.log'
@@ -105,10 +131,12 @@ def main():
             shutil.copytree(ROOT / '.deps/openjdk25-source/src/java.base/share/legal', legal)
             for name in ['LICENSE', 'ADDITIONAL_LICENSE_INFO', 'ASSEMBLY_EXCEPTION']:
                 shutil.copyfile(ROOT / '.deps/openjdk25-source' / name, legal / name)
-            if args.with_instrument:
-                instrument_legal = ROOT / '.deps/openjdk25-source/src/java.instrument/share/legal'
-                if instrument_legal.is_dir():
-                    shutil.copytree(instrument_legal, legal / 'java.instrument')
+            for module_name in module_names:
+                if module_name == 'java.base':
+                    continue
+                module_legal = ROOT / '.deps/openjdk25-source/src' / module_name / 'share/legal'
+                if module_legal.is_dir():
+                    shutil.copytree(module_legal, legal / module_name)
 
             for module_name in module_names:
                 module_classes = classes / module_name
@@ -150,11 +178,15 @@ def main():
                     'module_port_digests': {name: module_proofs[name][1]['port_digest']
                                             for name in module_names},
                     'classfile_major': 69, 'class_count': class_count, 'modules': module_names,
+                    'minecraft_profile': args.with_minecraft,
+                    'java_instrument': args.with_instrument,
+                    'native_modules': (['management'] if args.with_minecraft else []),
+                    'native_management_proof': (native_management if args.with_minecraft else None),
                     'native_vm_included': False, 'horizon_execution': 'NOT TESTED',
                     'files': {str(path.relative_to(output)): sha(path)
                               for path in sorted(output.rglob('*')) if path.is_file()}}
         (ROOT / 'build/openjdk25-image.json').write_text(json.dumps(manifest, indent=2) + '\n')
-        print('Minimal Horizon ' + ', '.join(module_names) +
+        print('Horizon ' + ', '.join(module_names) +
               ' image built; requires linked native VM; hardware NOT TESTED')
 
 

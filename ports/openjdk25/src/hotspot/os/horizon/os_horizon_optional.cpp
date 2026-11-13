@@ -24,6 +24,7 @@ bool os::getTimesSecs(double* real, double* user, double* system) {
   return false; // No invented process CPU accounting.
 }
 jlong os::thread_cpu_time(Thread*) { return -1; }
+jlong os::current_thread_cpu_time(bool) { return -1; }
 jlong os::thread_cpu_time(Thread*, bool) { return -1; }
 
 int os::get_signal_number(const char*) { errno = ENOTSUP; return -1; }

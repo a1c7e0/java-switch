@@ -44,13 +44,21 @@ The complete upstream static target now produces **577 AArch64 objects and a
 real libjvm.a** in the optional JVMTI/services profile. The JNI VM links with
 eight base native archives, genuine libinstrument and the upstream-only manifest
 parser subset through an archive-derived resolver into a Horizon PIE/NRO.
-The two-module target image contains 7,336 classfile-69 classes and generated
-data. The base-only profile remains available. See `docs/OPENJDK25_CLASSLIB.md` and the latest build/link evidence.
+The optional instrument target image contains 7,336 classfile-69 classes and
+generated data. The base-only profile remains available. The separate
+`--with-minecraft` profile is being built from actual target module classes for
+logging, Unsafe, management, desktop, data transfer, and XML; management also
+requires the genuine HotSpot JMM feature and upstream `libmanagement` archive.
+JNDI, HTTP client, JFR, Java Sound providers, downstream native libraries and
+game execution remain outstanding. See
+`docs/OPENJDK25_MINECRAFT_PROFILE.md` and `docs/OPENJDK25_CLASSLIB.md`.
 **VM startup and Java execution on Switch remain NOT TESTED.**
 
 Build and verify the complete experimental instrument profile with
 `bash scripts/build-openjdk25-runtime.sh --with-instrument`. Omit the option
-for the base profile. Individual base build steps remain available:
+for the base profile. The optional client-referenced module profile uses
+`bash scripts/build-openjdk25-runtime.sh --with-minecraft`; the profiles can be
+combined. Individual base build steps remain available:
 
 ```sh
 bash scripts/build-all.sh
