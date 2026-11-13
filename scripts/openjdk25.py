@@ -160,6 +160,12 @@ def run(command, env, log):
     return process.returncode
 
 
+def refresh_build_info():
+    """Refresh source identity before direct platform.c compilation."""
+    subprocess.run([sys.executable, str(ROOT / 'scripts/build-info.py')],
+                   cwd=ROOT, check=True)
+
+
 def link_vm(dk, env, native=False, instrument=False, minecraft=False):
     # Never replace missing services with stubs or turn an unresolved ELF into
     # an NRO. This action intentionally stops at a real native link failure.
@@ -246,6 +252,10 @@ def link_vm(dk, env, native=False, instrument=False, minecraft=False):
                        '-o', str(output / 'native_resolver.o')]
             log.write('$ ' + shlex.join(command) + '\n'); log.flush()
             subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, check=True)
+        # This script bypasses Make's build/build-info.h prerequisite. Refresh
+        # immediately before compiling platform.c so the embedded run stamp
+        # describes the source tree that produced this ELF.
+        refresh_build_info()
         for name in ['java25_vm_test', 'platform', 'runtime_openjdk']:
             command = [str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'), *arch,
                        *(['-DJS_OPENJDK25_STATIC_PROVIDER'] if native else []),
@@ -590,6 +600,9 @@ def work():
         subprocess.run([cc, *flags, '-c', str(ROOT / 'tests/openjdk25_reaper_probe.cpp'),
                         '-o', str(output / 'reaper_probe.o')], env=env, check=True)
         arch = ['-march=armv8-a+crc+crypto', '-mtune=cortex-a57', '-mtp=soft', '-fPIE']
+        # The standalone probe compiles platform.c directly and does not pass
+        # through Make's build-info header prerequisite either.
+        refresh_build_info()
         for source, obj in [('src/zero_services_test.c', runner), ('src/platform.c', output / 'platform.o')]:
             subprocess.run([str(dk / 'devkitA64/bin/aarch64-none-elf-gcc'), *arch, '-D__SWITCH__', '-I' + str(dk / 'libnx/include'),
                             '-I' + str(ROOT / 'src'), '-I' + str(ROOT / 'build'), '-c', str(ROOT / source), '-o', str(obj)],
