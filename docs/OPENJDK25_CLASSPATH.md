@@ -38,7 +38,10 @@ Validation completed:
 - `python3 scripts/openjdk25.py prepare` — pinned source prepared with zero-fuzz patches.
 - `bash ports/openjdk25/tests/java_paths/test-classpath-host.sh` — host JAR, directory, and resource reads passed; the negative control reproduced the payload `ClassNotFoundException`.
 - `python3 scripts/test-openjdk25-classlib-host.py` — class-library host suite passed.
+- `bash scripts/build-openjdk25-runtime.sh --with-instrument --with-minecraft` — full instrumented Minecraft profile built, linked and packaged; full source and package verification passed.
 
-These are host results, not Horizon execution. The runtime image and physical
-application class loading must be rebuilt and checked separately. No conclusion
-is made here about JNI, agents, graphics, or Minecraft workloads.
+The package manifest records a clean immutable source revision and
+`source_tree_dirty=false`. The built image contains the patched loader classes,
+and the VM-linked AArch64 NRO passed the ELF/package checks. This is cross-build
+evidence only: Horizon startup, Java execution, resource loading, JNI, agents,
+graphics, and Minecraft remain unverified on device.
