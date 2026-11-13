@@ -10,6 +10,23 @@ def fetch(name):
         urllib.request.urlretrieve(entry["url"],p)
     assert hashlib.sha256(p.read_bytes()).hexdigest()==entry["sha256"]
     return p
+def prepare_minijvm(source,target,patch,header,stamp,digest):
+    if not stamp.is_file() or stamp.read_text()!=digest:
+        # A downstream workspace may share pristine dependency inputs through
+        # symlinks.  Replace only our cache entry; never recurse through a link
+        # and remove the owner's source or prepared tree.
+        if target.is_symlink():
+            target.unlink()
+        elif target.is_dir():
+            shutil.rmtree(target)
+        elif target.exists():
+            target.unlink()
+        shutil.copytree(source/"minijvm/c",target)
+        subprocess.run(["patch","-p1","--batch","-i",str(patch)],cwd=target,check=True)
+        shutil.copyfile(header,target/"jvm/sc_mman.h")
+        if stamp.is_symlink():
+            stamp.unlink()
+        stamp.write_text(digest)
 def main():
     DEPS.mkdir(exist_ok=True)
     source=DEPS/"minijvm-source"
@@ -22,12 +39,7 @@ def main():
     patch=ROOT/"patches/minijvm-horizon.patch"
     digest=hashlib.sha256(patch.read_bytes()+(ROOT/"src/minijvm_mman.h").read_bytes()).hexdigest()
     stamp=DEPS/"minijvm-patch.sha256"
-    if not stamp.exists() or stamp.read_text()!=digest:
-        target=DEPS/"minijvm"
-        if target.exists():shutil.rmtree(target)
-        shutil.copytree(source/"minijvm/c",target)
-        subprocess.run(["patch","-p1","--batch","-i",str(patch)],cwd=target,check=True)
-        shutil.copyfile(ROOT/"src/minijvm_mman.h",target/"jvm/sc_mman.h");stamp.write_text(digest)
+    prepare_minijvm(source,DEPS/"minijvm",patch,ROOT/"src/minijvm_mman.h",stamp,digest)
     if not (DEPS/"host-jdk8/jdk8u504-b01/bin/javac").exists():
         with tarfile.open(fetch("host_jdk8")) as archive:archive.extractall(DEPS/"host-jdk8",filter='data')
     if not any((DEPS/'host-jdk25').glob('*/bin/javac')):
