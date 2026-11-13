@@ -25,6 +25,11 @@ files=(
     make/common/Modules.gmk
     make/modules/java.base/Java.gmk
     src/java.base/share/classes/jdk/internal/util/OperatingSystem.java
+    src/java.base/unix/classes/jdk/internal/loader/FileURLMapper.java
+    src/java.base/share/classes/jdk/internal/loader/URLClassPath.java
+    src/java.base/share/classes/sun/net/www/ParseUtil.java
+    src/java.base/share/classes/sun/net/www/protocol/jar/URLJarFile.java
+    src/java.base/unix/classes/sun/net/www/protocol/file/Handler.java
     src/java.base/unix/classes/java/io/UnixFileSystem.java
     src/java.base/unix/classes/sun/net/PortConfig.java
     src/java.base/unix/classes/sun/nio/ch/UnixFileDispatcherImpl.java

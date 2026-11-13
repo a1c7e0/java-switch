@@ -39,6 +39,59 @@
      ;
  
      // The current OperatingSystem
+--- a/src/java.base/share/classes/sun/net/www/ParseUtil.java
++++ b/src/java.base/share/classes/sun/net/www/ParseUtil.java
+@@ -177,0 +178,16 @@
++    /**
++     * Decodes a local file URL path and restores the Horizon SD device root.
++     * Horizon's URL encoding adds a leading slash to {@code sdmc:/}; newlib
++     * devoptab requires the original device-root spelling. Remote authorities
++     * retain their decoded path and are never mapped to the local SD device.
++     */
++    public static String decodeFileURLPath(URL url) {
++        String decoded = decode(url.getFile());
++        if (isLocalFileURL(url) &&
++            jdk.internal.util.StaticProperty.osName().equals("Horizon") &&
++            decoded.startsWith("/sdmc:/")) {
++            return decoded.substring(1);
++        }
++        return decoded;
++    }
++
+
+--- a/src/java.base/unix/classes/jdk/internal/loader/FileURLMapper.java
++++ b/src/java.base/unix/classes/jdk/internal/loader/FileURLMapper.java
+@@ -64 +63,0 @@
+-            path = url.getFile();
+@@ -66 +65 @@
+-                path = ParseUtil.decode(path);
++                path = ParseUtil.decodeFileURLPath(url);
+
+--- a/src/java.base/share/classes/jdk/internal/loader/URLClassPath.java
++++ b/src/java.base/share/classes/jdk/internal/loader/URLClassPath.java
+@@ -907,3 +907,6 @@
+-            String path = url.getFile().replace('/', File.separatorChar);
+-            try {
+-                path = ParseUtil.decode(path);
++            if (!ParseUtil.isLocalFileURL(url)) {
++                throw new FileNotFoundException(url.toString());
++            }
++            String path;
++            try {
++                path = ParseUtil.decodeFileURLPath(url).replace('/', File.separatorChar);
+
+--- a/src/java.base/share/classes/sun/net/www/protocol/jar/URLJarFile.java
++++ b/src/java.base/share/classes/sun/net/www/protocol/jar/URLJarFile.java
+@@ -70 +70 @@
+-        super(new File(ParseUtil.decode(url.getFile())), true, ZipFile.OPEN_READ, version);
++        super(new File(ParseUtil.decodeFileURLPath(url)), true, ZipFile.OPEN_READ, version);
+
+--- a/src/java.base/unix/classes/sun/net/www/protocol/file/Handler.java
++++ b/src/java.base/unix/classes/sun/net/www/protocol/file/Handler.java
+@@ -68 +68 @@
+-            File file = new File(ParseUtil.decode(u.getPath()));
++            File file = new File(ParseUtil.decodeFileURLPath(u));
+
 --- a/src/java.base/unix/classes/java/io/UnixFileSystem.java
 +++ b/src/java.base/unix/classes/java/io/UnixFileSystem.java
 @@ -27,8 +27,19 @@
