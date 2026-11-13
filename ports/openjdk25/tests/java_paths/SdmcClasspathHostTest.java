@@ -57,6 +57,8 @@ public final class SdmcClasspathHostTest {
         equalResource(jarResource.openStream());
         URL fileResource = URI.create("file:/sdmc%3A/switch/mc%20runtime/%E6%B8%AC%E8%A9%A6/classes/payload.txt").toURL();
         equalResource(fileResource.openStream());
+        URL queriedFileResource = URI.create("file:/sdmc%3A/switch/mc%20runtime/%E6%B8%AC%E8%A9%A6/classes/payload.txt?ignored=1").toURL();
+        equalResource(queriedFileResource.openStream());
         URL unixJar = Path.of(args[0]).toUri().toURL();
         try (URLClassLoader loader = new URLClassLoader(new URL[] {unixJar}, null)) {
             loader.loadClass("hostclasspath.SdmcClasspathPayload");

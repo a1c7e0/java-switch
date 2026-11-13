@@ -41,7 +41,8 @@
      // The current OperatingSystem
 --- a/src/java.base/share/classes/sun/net/www/ParseUtil.java
 +++ b/src/java.base/share/classes/sun/net/www/ParseUtil.java
-@@ -177,0 +178,16 @@
+@@ -170,0 +171,21 @@
++
 +    /**
 +     * Decodes a local file URL path and restores the Horizon SD device root.
 +     * Horizon's URL encoding adds a leading slash to {@code sdmc:/}; newlib
@@ -49,7 +50,12 @@
 +     * retain their decoded path and are never mapped to the local SD device.
 +     */
 +    public static String decodeFileURLPath(URL url) {
-+        String decoded = decode(url.getFile());
++        return decodeFileURLPath(url, url.getFile());
++    }
++
++    /** Decodes the supplied path using local-file URL device-root rules. */
++    public static String decodeFileURLPath(URL url, String path) {
++        String decoded = decode(path);
 +        if (isLocalFileURL(url) &&
 +            jdk.internal.util.StaticProperty.osName().equals("Horizon") &&
 +            decoded.startsWith("/sdmc:/")) {
@@ -57,7 +63,6 @@
 +        }
 +        return decoded;
 +    }
-+
 
 --- a/src/java.base/unix/classes/jdk/internal/loader/FileURLMapper.java
 +++ b/src/java.base/unix/classes/jdk/internal/loader/FileURLMapper.java
@@ -90,7 +95,7 @@
 +++ b/src/java.base/unix/classes/sun/net/www/protocol/file/Handler.java
 @@ -68 +68 @@
 -            File file = new File(ParseUtil.decode(u.getPath()));
-+            File file = new File(ParseUtil.decodeFileURLPath(u));
++            File file = new File(ParseUtil.decodeFileURLPath(u, u.getPath()));
 
 --- a/src/java.base/unix/classes/java/io/UnixFileSystem.java
 +++ b/src/java.base/unix/classes/java/io/UnixFileSystem.java

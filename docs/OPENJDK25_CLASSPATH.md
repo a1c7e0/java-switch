@@ -27,8 +27,9 @@ and file URL handler into the host JDK's `java.base` module and exercises actual
 `URLClassLoader` JAR and directory loading. The fixture uses an encoded device
 colon, escaped space, and Unicode directory. The test checks default-package
 and packaged classes, JAR and directory resource streams, direct `jar:` and
-`file:` URL resource reads, localhost and ordinary Unix JAR URLs, an absent
-resource, and remote JAR and directory file URLs. It also runs the unpatched
+`file:` URL resource reads with and without a query string, localhost and
+ordinary Unix JAR URLs, an absent resource, and remote JAR and directory file
+URLs. It also runs the unpatched
 host loader and requires the same payload `ClassNotFoundException` seen in the
 physical logs before verifying the patched loader succeeds.
 
